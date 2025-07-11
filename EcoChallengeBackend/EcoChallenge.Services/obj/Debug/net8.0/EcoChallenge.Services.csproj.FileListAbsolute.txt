@@ -1,0 +1,17 @@
+C:\Users\nedim\Desktop\EcoChallenge\EcoChallenge\EcoChallenge.Services\bin\Debug\net8.0\EcoChallenge.Services.deps.json
+C:\Users\nedim\Desktop\EcoChallenge\EcoChallenge\EcoChallenge.Services\bin\Debug\net8.0\EcoChallenge.Services.dll
+C:\Users\nedim\Desktop\EcoChallenge\EcoChallenge\EcoChallenge.Services\bin\Debug\net8.0\EcoChallenge.Services.pdb
+C:\Users\nedim\Desktop\EcoChallenge\EcoChallenge\EcoChallenge.Services\bin\Debug\net8.0\EcoChallenge.Models.dll
+C:\Users\nedim\Desktop\EcoChallenge\EcoChallenge\EcoChallenge.Services\bin\Debug\net8.0\EcoChallenge.Models.pdb
+C:\Users\nedim\Desktop\EcoChallenge\EcoChallenge\EcoChallenge.Services\obj\Debug\net8.0\EcoChallenge.Services.csproj.AssemblyReference.cache
+C:\Users\nedim\Desktop\EcoChallenge\EcoChallenge\EcoChallenge.Services\obj\Debug\net8.0\EcoChallenge.Services.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\nedim\Desktop\EcoChallenge\EcoChallenge\EcoChallenge.Services\obj\Debug\net8.0\EcoChallenge.Services.AssemblyInfoInputs.cache
+C:\Users\nedim\Desktop\EcoChallenge\EcoChallenge\EcoChallenge.Services\obj\Debug\net8.0\EcoChallenge.Services.AssemblyInfo.cs
+C:\Users\nedim\Desktop\EcoChallenge\EcoChallenge\EcoChallenge.Services\obj\Debug\net8.0\EcoChallenge.Services.csproj.CoreCompileInputs.cache
+C:\Users\nedim\Desktop\EcoChallenge\EcoChallenge\EcoChallenge.Services\obj\Debug\net8.0\EcoChall.3BB66601.Up2Date
+C:\Users\nedim\Desktop\EcoChallenge\EcoChallenge\EcoChallenge.Services\obj\Debug\net8.0\EcoChallenge.Services.dll
+C:\Users\nedim\Desktop\EcoChallenge\EcoChallenge\EcoChallenge.Services\obj\Debug\net8.0\refint\EcoChallenge.Services.dll
+C:\Users\nedim\Desktop\EcoChallenge\EcoChallenge\EcoChallenge.Services\obj\Debug\net8.0\EcoChallenge.Services.pdb
+C:\Users\nedim\Desktop\EcoChallenge\EcoChallenge\EcoChallenge.Services\obj\Debug\net8.0\ref\EcoChallenge.Services.dll
+C:\Users\nedim\Desktop\EcoChallenge\EcoChallenge\EcoChallenge.Services\bin\Debug\net8.0\EcoChallenge.Services.runtimeconfig.json
+C:\Users\nedim\Desktop\EcoChallenge\EcoChallenge\EcoChallenge.Services\obj\Debug\net8.0\EcoChallenge.Services.genruntimeconfig.cache

@@ -1,0 +1,71 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallenge\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{8CAAB18C-2195-4CDF-8EBF-7A67135E4AF3}|EcoChallenge.Services\\EcoChallenge.Services.csproj|c:\\users\\nedim\\desktop\\ecochallenge\\ecochallenge\\ecochallenge.services\\database\\ecochallengedbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8CAAB18C-2195-4CDF-8EBF-7A67135E4AF3}|EcoChallenge.Services\\EcoChallenge.Services.csproj|solutionrelative:ecochallenge.services\\database\\ecochallengedbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8CAAB18C-2195-4CDF-8EBF-7A67135E4AF3}|EcoChallenge.Services\\EcoChallenge.Services.csproj|c:\\users\\nedim\\desktop\\ecochallenge\\ecochallenge\\ecochallenge.services\\database\\entities\\request.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8CAAB18C-2195-4CDF-8EBF-7A67135E4AF3}|EcoChallenge.Services\\EcoChallenge.Services.csproj|solutionrelative:ecochallenge.services\\database\\entities\\request.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8CAAB18C-2195-4CDF-8EBF-7A67135E4AF3}|EcoChallenge.Services\\EcoChallenge.Services.csproj|c:\\users\\nedim\\desktop\\ecochallenge\\ecochallenge\\ecochallenge.services\\database\\entities\\adminlog.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8CAAB18C-2195-4CDF-8EBF-7A67135E4AF3}|EcoChallenge.Services\\EcoChallenge.Services.csproj|solutionrelative:ecochallenge.services\\database\\entities\\adminlog.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "EcoChallengeDbContext.cs",
+              "DocumentMoniker": "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallenge\\EcoChallenge.Services\\Database\\EcoChallengeDbContext.cs",
+              "RelativeDocumentMoniker": "EcoChallenge.Services\\Database\\EcoChallengeDbContext.cs",
+              "ToolTip": "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallenge\\EcoChallenge.Services\\Database\\EcoChallengeDbContext.cs",
+              "RelativeToolTip": "EcoChallenge.Services\\Database\\EcoChallengeDbContext.cs",
+              "ViewState": "AgIAAH4BAAAAAAAAAAAiwJYBAAAuAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-11T22:57:01.893Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Request.cs",
+              "DocumentMoniker": "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallenge\\EcoChallenge.Services\\Database\\Entities\\Request.cs",
+              "RelativeDocumentMoniker": "EcoChallenge.Services\\Database\\Entities\\Request.cs",
+              "ToolTip": "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallenge\\EcoChallenge.Services\\Database\\Entities\\Request.cs",
+              "RelativeToolTip": "EcoChallenge.Services\\Database\\Entities\\Request.cs",
+              "ViewState": "AgIAADAAAAAAAAAAAAAAADsAAAA4AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-11T22:52:34.996Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "AdminLog.cs",
+              "DocumentMoniker": "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallenge\\EcoChallenge.Services\\Database\\Entities\\AdminLog.cs",
+              "RelativeDocumentMoniker": "EcoChallenge.Services\\Database\\Entities\\AdminLog.cs",
+              "ToolTip": "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallenge\\EcoChallenge.Services\\Database\\Entities\\AdminLog.cs",
+              "RelativeToolTip": "EcoChallenge.Services\\Database\\Entities\\AdminLog.cs",
+              "ViewState": "AgIAAA4AAAAAAAAAAAAIwBsAAAAuAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-11T22:49:59.265Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

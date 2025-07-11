@@ -1,0 +1,11 @@
+C:\Users\nedim\Desktop\EcoChallenge\EcoChallenge\EcoChallenge.Model\bin\Debug\net8.0\EcoChallenge.Models.deps.json
+C:\Users\nedim\Desktop\EcoChallenge\EcoChallenge\EcoChallenge.Model\bin\Debug\net8.0\EcoChallenge.Models.dll
+C:\Users\nedim\Desktop\EcoChallenge\EcoChallenge\EcoChallenge.Model\bin\Debug\net8.0\EcoChallenge.Models.pdb
+C:\Users\nedim\Desktop\EcoChallenge\EcoChallenge\EcoChallenge.Model\obj\Debug\net8.0\EcoChallenge.Models.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\nedim\Desktop\EcoChallenge\EcoChallenge\EcoChallenge.Model\obj\Debug\net8.0\EcoChallenge.Models.AssemblyInfoInputs.cache
+C:\Users\nedim\Desktop\EcoChallenge\EcoChallenge\EcoChallenge.Model\obj\Debug\net8.0\EcoChallenge.Models.AssemblyInfo.cs
+C:\Users\nedim\Desktop\EcoChallenge\EcoChallenge\EcoChallenge.Model\obj\Debug\net8.0\EcoChallenge.Models.csproj.CoreCompileInputs.cache
+C:\Users\nedim\Desktop\EcoChallenge\EcoChallenge\EcoChallenge.Model\obj\Debug\net8.0\EcoChallenge.Models.dll
+C:\Users\nedim\Desktop\EcoChallenge\EcoChallenge\EcoChallenge.Model\obj\Debug\net8.0\refint\EcoChallenge.Models.dll
+C:\Users\nedim\Desktop\EcoChallenge\EcoChallenge\EcoChallenge.Model\obj\Debug\net8.0\EcoChallenge.Models.pdb
+C:\Users\nedim\Desktop\EcoChallenge\EcoChallenge\EcoChallenge.Model\obj\Debug\net8.0\ref\EcoChallenge.Models.dll
