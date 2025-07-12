@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallenge\\EcoChallenge.WebAPI\\EcoChallenge.WebAPI.csproj": {}
+    "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallengeBackend\\EcoChallenge.WebAPI\\EcoChallenge.WebAPI.csproj": {}
   },
   "projects": {
-    "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallenge\\EcoChallenge.Model\\EcoChallenge.Models.csproj": {
+    "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallengeBackend\\EcoChallenge.Model\\EcoChallenge.Models.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallenge\\EcoChallenge.Model\\EcoChallenge.Models.csproj",
+        "projectUniqueName": "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallengeBackend\\EcoChallenge.Model\\EcoChallenge.Models.csproj",
         "projectName": "EcoChallenge.Models",
-        "projectPath": "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallenge\\EcoChallenge.Model\\EcoChallenge.Models.csproj",
+        "projectPath": "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallengeBackend\\EcoChallenge.Model\\EcoChallenge.Models.csproj",
         "packagesPath": "C:\\Users\\nedim\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallenge\\EcoChallenge.Model\\obj\\",
+        "outputPath": "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallengeBackend\\EcoChallenge.Model\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -69,14 +69,14 @@
         }
       }
     },
-    "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallenge\\EcoChallenge.Services\\EcoChallenge.Services.csproj": {
+    "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallengeBackend\\EcoChallenge.Services\\EcoChallenge.Services.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallenge\\EcoChallenge.Services\\EcoChallenge.Services.csproj",
+        "projectUniqueName": "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallengeBackend\\EcoChallenge.Services\\EcoChallenge.Services.csproj",
         "projectName": "EcoChallenge.Services",
-        "projectPath": "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallenge\\EcoChallenge.Services\\EcoChallenge.Services.csproj",
+        "projectPath": "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallengeBackend\\EcoChallenge.Services\\EcoChallenge.Services.csproj",
         "packagesPath": "C:\\Users\\nedim\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallenge\\EcoChallenge.Services\\obj\\",
+        "outputPath": "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallengeBackend\\EcoChallenge.Services\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -97,8 +97,8 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallenge\\EcoChallenge.Model\\EcoChallenge.Models.csproj": {
-                "projectPath": "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallenge\\EcoChallenge.Model\\EcoChallenge.Models.csproj"
+              "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallengeBackend\\EcoChallenge.Model\\EcoChallenge.Models.csproj": {
+                "projectPath": "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallengeBackend\\EcoChallenge.Model\\EcoChallenge.Models.csproj"
               }
             }
           }
@@ -119,6 +119,10 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "dependencies": {
+            "AutoMapper": {
+              "target": "Package",
+              "version": "[15.0.1, )"
+            },
             "Microsoft.EntityFrameworkCore": {
               "target": "Package",
               "version": "[9.0.7, )"
@@ -138,6 +142,10 @@
               "suppressParent": "All",
               "target": "Package",
               "version": "[9.0.7, )"
+            },
+            "System.Linq.Dynamic.Core": {
+              "target": "Package",
+              "version": "[1.6.6, )"
             }
           },
           "imports": [
@@ -160,14 +168,14 @@
         }
       }
     },
-    "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallenge\\EcoChallenge.WebAPI\\EcoChallenge.WebAPI.csproj": {
+    "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallengeBackend\\EcoChallenge.WebAPI\\EcoChallenge.WebAPI.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallenge\\EcoChallenge.WebAPI\\EcoChallenge.WebAPI.csproj",
+        "projectUniqueName": "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallengeBackend\\EcoChallenge.WebAPI\\EcoChallenge.WebAPI.csproj",
         "projectName": "EcoChallenge.WebAPI",
-        "projectPath": "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallenge\\EcoChallenge.WebAPI\\EcoChallenge.WebAPI.csproj",
+        "projectPath": "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallengeBackend\\EcoChallenge.WebAPI\\EcoChallenge.WebAPI.csproj",
         "packagesPath": "C:\\Users\\nedim\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallenge\\EcoChallenge.WebAPI\\obj\\",
+        "outputPath": "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallengeBackend\\EcoChallenge.WebAPI\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -188,11 +196,11 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallenge\\EcoChallenge.Model\\EcoChallenge.Models.csproj": {
-                "projectPath": "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallenge\\EcoChallenge.Model\\EcoChallenge.Models.csproj"
+              "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallengeBackend\\EcoChallenge.Model\\EcoChallenge.Models.csproj": {
+                "projectPath": "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallengeBackend\\EcoChallenge.Model\\EcoChallenge.Models.csproj"
               },
-              "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallenge\\EcoChallenge.Services\\EcoChallenge.Services.csproj": {
-                "projectPath": "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallenge\\EcoChallenge.Services\\EcoChallenge.Services.csproj"
+              "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallengeBackend\\EcoChallenge.Services\\EcoChallenge.Services.csproj": {
+                "projectPath": "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallengeBackend\\EcoChallenge.Services\\EcoChallenge.Services.csproj"
               }
             }
           }

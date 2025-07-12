@@ -90,6 +90,18 @@ namespace EcoChallenge.Services.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("ActivityHistories");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            ActivityType = 0,
+                            CreatedAt = new DateTime(2025, 6, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            PointsEarned = 0,
+                            RelatedEntityId = 1,
+                            RelatedEntityType = 0,
+                            UserId = 2
+                        });
                 });
 
             modelBuilder.Entity("EcoChallenge.Services.Database.Entities.AdminLog", b =>
@@ -146,6 +158,18 @@ namespace EcoChallenge.Services.Migrations
                     b.HasIndex("AdminUserId");
 
                     b.ToTable("AdminLogs");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            ActionDescription = "Approved request #2",
+                            ActionType = 0,
+                            AdminUserId = 1,
+                            CreatedAt = new DateTime(2025, 6, 2, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            TargetEntityId = 2,
+                            TargetEntityType = 1
+                        });
                 });
 
             modelBuilder.Entity("EcoChallenge.Services.Database.Entities.Badge", b =>
@@ -194,6 +218,28 @@ namespace EcoChallenge.Services.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Badges");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            BadgeType = 2,
+                            CreatedAt = new DateTime(2025, 4, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            CriteriaType = 0,
+                            CriteriaValue = 1,
+                            IsActive = true,
+                            Name = "First Cleanup"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            BadgeType = 1,
+                            CreatedAt = new DateTime(2025, 4, 2, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            CriteriaType = 3,
+                            CriteriaValue = 1,
+                            IsActive = true,
+                            Name = "Donation Star"
+                        });
                 });
 
             modelBuilder.Entity("EcoChallenge.Services.Database.Entities.ChatMessage", b =>
@@ -259,6 +305,20 @@ namespace EcoChallenge.Services.Migrations
                     b.HasIndex("SenderUserId");
 
                     b.ToTable("ChatMessages");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            EventId = 1,
+                            IsAdminMessage = false,
+                            IsDeleted = false,
+                            IsReported = false,
+                            MessageText = "Looking forward to helping!",
+                            MessageType = 0,
+                            SenderUserId = 2,
+                            SentAt = new DateTime(2025, 6, 20, 0, 0, 0, 0, DateTimeKind.Unspecified)
+                        });
                 });
 
             modelBuilder.Entity("EcoChallenge.Services.Database.Entities.Donation", b =>
@@ -329,6 +389,21 @@ namespace EcoChallenge.Services.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Donations");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Amount = 20.00m,
+                            CreatedAt = new DateTime(2025, 6, 5, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Currency = "USD",
+                            IsAnonymous = false,
+                            OrganizationId = 1,
+                            PointsEarned = 0,
+                            ProcessedAt = new DateTime(2025, 6, 6, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Status = 1,
+                            UserId = 2
+                        });
                 });
 
             modelBuilder.Entity("EcoChallenge.Services.Database.Entities.Event", b =>
@@ -440,6 +515,47 @@ namespace EcoChallenge.Services.Migrations
                     b.HasIndex("Status");
 
                     b.ToTable("Events");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            AdminApproved = false,
+                            CreatedAt = new DateTime(2025, 6, 10, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            CreatorUserId = 1,
+                            CurrentParticipants = 0,
+                            DurationMinutes = 120,
+                            EquipmentProvided = false,
+                            EventDate = new DateTime(2025, 7, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            EventTime = new TimeSpan(0, 9, 0, 0, 0),
+                            EventType = 0,
+                            IsPaidRequest = false,
+                            LocationId = 1,
+                            MaxParticipants = 0,
+                            RelatedRequestId = 1,
+                            Status = 1,
+                            Title = "Park Cleanup",
+                            UpdatedAt = new DateTime(2025, 6, 10, 0, 0, 0, 0, DateTimeKind.Unspecified)
+                        },
+                        new
+                        {
+                            Id = 2,
+                            AdminApproved = false,
+                            CreatedAt = new DateTime(2025, 6, 11, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            CreatorUserId = 3,
+                            CurrentParticipants = 0,
+                            DurationMinutes = 120,
+                            EquipmentProvided = false,
+                            EventDate = new DateTime(2025, 7, 5, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            EventTime = new TimeSpan(0, 14, 0, 0, 0),
+                            EventType = 1,
+                            IsPaidRequest = false,
+                            LocationId = 2,
+                            MaxParticipants = 0,
+                            Status = 0,
+                            Title = "Beach Education",
+                            UpdatedAt = new DateTime(2025, 6, 11, 0, 0, 0, 0, DateTimeKind.Unspecified)
+                        });
                 });
 
             modelBuilder.Entity("EcoChallenge.Services.Database.Entities.EventParticipant", b =>
@@ -478,6 +594,26 @@ namespace EcoChallenge.Services.Migrations
                         .IsUnique();
 
                     b.ToTable("EventParticipants");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            EventId = 1,
+                            JoinedAt = new DateTime(2025, 6, 15, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            PointsEarned = 0,
+                            Status = 0,
+                            UserId = 2
+                        },
+                        new
+                        {
+                            Id = 2,
+                            EventId = 1,
+                            JoinedAt = new DateTime(2025, 6, 16, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            PointsEarned = 0,
+                            Status = 0,
+                            UserId = 3
+                        });
                 });
 
             modelBuilder.Entity("EcoChallenge.Services.Database.Entities.Gallery", b =>
@@ -564,6 +700,40 @@ namespace EcoChallenge.Services.Migrations
                         {
                             t.HasCheckConstraint("CK_Gallery_RelatedEntity", "request_id IS NOT NULL OR event_id IS NOT NULL");
                         });
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            DislikesCount = 0,
+                            ImageType = 0,
+                            ImageUrl = "/images/before1.jpg",
+                            IsApproved = true,
+                            IsFeatured = false,
+                            IsReported = false,
+                            LikesCount = 0,
+                            LocationId = 1,
+                            ReportCount = 0,
+                            RequestId = 1,
+                            UploadedAt = new DateTime(2025, 6, 2, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            UserId = 2
+                        },
+                        new
+                        {
+                            Id = 2,
+                            DislikesCount = 0,
+                            EventId = 1,
+                            ImageType = 2,
+                            ImageUrl = "/images/during1.jpg",
+                            IsApproved = true,
+                            IsFeatured = false,
+                            IsReported = false,
+                            LikesCount = 0,
+                            LocationId = 1,
+                            ReportCount = 0,
+                            UploadedAt = new DateTime(2025, 7, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            UserId = 3
+                        });
                 });
 
             modelBuilder.Entity("EcoChallenge.Services.Database.Entities.GalleryReaction", b =>
@@ -603,6 +773,16 @@ namespace EcoChallenge.Services.Migrations
                         .IsUnique();
 
                     b.ToTable("GalleryReactions");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedAt = new DateTime(2025, 6, 3, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            GalleryId = 1,
+                            ReactionType = 0,
+                            UserId = 3
+                        });
                 });
 
             modelBuilder.Entity("EcoChallenge.Services.Database.Entities.Location", b =>
@@ -664,6 +844,30 @@ namespace EcoChallenge.Services.Migrations
                     b.HasIndex("Latitude", "Longitude");
 
                     b.ToTable("Locations");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            City = "Mostar",
+                            Country = "BiH",
+                            CreatedAt = new DateTime(2025, 3, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Latitude = 43.3436m,
+                            LocationType = 4,
+                            Longitude = 17.8083m,
+                            Name = "Riverbank Park"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            City = "Neum",
+                            Country = "BiH",
+                            CreatedAt = new DateTime(2025, 3, 2, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Latitude = 42.4300m,
+                            LocationType = 2,
+                            Longitude = 18.6413m,
+                            Name = "City Beach"
+                        });
                 });
 
             modelBuilder.Entity("EcoChallenge.Services.Database.Entities.Notification", b =>
@@ -727,6 +931,30 @@ namespace EcoChallenge.Services.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Notifications");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedAt = new DateTime(2025, 6, 8, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsPushed = false,
+                            IsRead = false,
+                            Message = "We’ve approved your request #1. Thank you!",
+                            NotificationType = 0,
+                            Title = "Your cleanup request was approved",
+                            UserId = 2
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CreatedAt = new DateTime(2025, 6, 30, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsPushed = false,
+                            IsRead = false,
+                            Message = "Don’t forget our Park Cleanup event on 2025-07-01 at 09:00.",
+                            NotificationType = 2,
+                            Title = "Reminder: Park Cleanup tomorrow",
+                            UserId = 2
+                        });
                 });
 
             modelBuilder.Entity("EcoChallenge.Services.Database.Entities.Organization", b =>
@@ -791,6 +1019,32 @@ namespace EcoChallenge.Services.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Organizations");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            ContactEmail = "contact@greenearth.org",
+                            CreatedAt = new DateTime(2025, 2, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Description = "Environmental NGO",
+                            IsActive = true,
+                            IsVerified = false,
+                            Name = "GreenEarth",
+                            UpdatedAt = new DateTime(2025, 2, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Website = "https://greenearth.org"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            ContactEmail = "info@oceancare.org",
+                            CreatedAt = new DateTime(2025, 2, 2, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Description = "Marine conservation group",
+                            IsActive = true,
+                            IsVerified = false,
+                            Name = "OceanCare",
+                            UpdatedAt = new DateTime(2025, 2, 2, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Website = "https://oceancare.org"
+                        });
                 });
 
             modelBuilder.Entity("EcoChallenge.Services.Database.Entities.Report", b =>
@@ -848,6 +1102,18 @@ namespace EcoChallenge.Services.Migrations
                     b.HasIndex("ResolvedByAdminId");
 
                     b.ToTable("Reports");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedAt = new DateTime(2025, 6, 15, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            EntityId = 2,
+                            EntityType = 0,
+                            Reason = 0,
+                            ReporterUserId = 3,
+                            Status = 0
+                        });
                 });
 
             modelBuilder.Entity("EcoChallenge.Services.Database.Entities.Request", b =>
@@ -981,6 +1247,43 @@ namespace EcoChallenge.Services.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Requests");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            ActualRewardMoney = 0m,
+                            ActualRewardPoints = 0,
+                            CreatedAt = new DateTime(2025, 6, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            EstimatedAmount = 0,
+                            LocationId = 1,
+                            Status = 0,
+                            SuggestedRewardMoney = 0m,
+                            SuggestedRewardPoints = 0,
+                            Title = "Trash at Park",
+                            UpdatedAt = new DateTime(2025, 6, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            UrgencyLevel = 1,
+                            UserId = 2,
+                            WasteType = 4
+                        },
+                        new
+                        {
+                            Id = 2,
+                            ActualRewardMoney = 0m,
+                            ActualRewardPoints = 0,
+                            AssignedAdminId = 1,
+                            CreatedAt = new DateTime(2025, 6, 2, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            EstimatedAmount = 2,
+                            LocationId = 2,
+                            Status = 1,
+                            SuggestedRewardMoney = 0m,
+                            SuggestedRewardPoints = 0,
+                            Title = "Plastic on Beach",
+                            UpdatedAt = new DateTime(2025, 6, 2, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            UrgencyLevel = 2,
+                            UserId = 3,
+                            WasteType = 0
+                        });
                 });
 
             modelBuilder.Entity("EcoChallenge.Services.Database.Entities.Reward", b =>
@@ -1069,15 +1372,44 @@ namespace EcoChallenge.Services.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Rewards");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            ApprovedAt = new DateTime(2025, 6, 8, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            CreatedAt = new DateTime(2025, 6, 7, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Currency = "USD",
+                            MoneyAmount = 0m,
+                            PointsAmount = 50,
+                            RequestId = 1,
+                            RewardType = 0,
+                            Status = 1,
+                            UserId = 2
+                        },
+                        new
+                        {
+                            Id = 2,
+                            BadgeId = 2,
+                            CreatedAt = new DateTime(2025, 6, 10, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Currency = "USD",
+                            DonationId = 1,
+                            MoneyAmount = 0m,
+                            PaidAt = new DateTime(2025, 6, 11, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            PointsAmount = 0,
+                            RewardType = 2,
+                            Status = 2,
+                            UserId = 2
+                        });
                 });
 
             modelBuilder.Entity("EcoChallenge.Services.Database.Entities.SystemSetting", b =>
                 {
-                    b.Property<int>("SettingId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SettingId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2")
@@ -1113,7 +1445,7 @@ namespace EcoChallenge.Services.Migrations
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("setting_value");
 
-                    b.HasKey("SettingId");
+                    b.HasKey("Id");
 
                     b.HasIndex("Key")
                         .IsUnique();
@@ -1121,6 +1453,28 @@ namespace EcoChallenge.Services.Migrations
                     b.HasIndex("UpdatedByAdminId");
 
                     b.ToTable("SystemSettings");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedAt = new DateTime(2025, 5, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsPublic = true,
+                            Key = "default_points_per_cleanup",
+                            Type = 1,
+                            UpdatedAt = new DateTime(2025, 5, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Value = "50"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CreatedAt = new DateTime(2025, 5, 2, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsPublic = false,
+                            Key = "maintenance_mode",
+                            Type = 3,
+                            UpdatedAt = new DateTime(2025, 5, 2, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Value = "false"
+                        });
                 });
 
             modelBuilder.Entity("EcoChallenge.Services.Database.Entities.User", b =>
@@ -1234,6 +1588,65 @@ namespace EcoChallenge.Services.Migrations
                         .IsUnique();
 
                     b.ToTable("Users");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            City = "Mostar",
+                            Country = "BiH",
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Email = "alice@example.com",
+                            FirstName = "Alice",
+                            IsActive = true,
+                            LastName = "Anderson",
+                            PasswordHash = "HASH1",
+                            TotalCleanups = 0,
+                            TotalEventsOrganized = 0,
+                            TotalEventsParticipated = 0,
+                            TotalPoints = 0,
+                            UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            UserType = 1,
+                            Username = "alice"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            City = "Sarajevo",
+                            Country = "BiH",
+                            CreatedAt = new DateTime(2025, 1, 2, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Email = "bob@example.com",
+                            FirstName = "Bob",
+                            IsActive = true,
+                            LastName = "Baker",
+                            PasswordHash = "HASH2",
+                            TotalCleanups = 0,
+                            TotalEventsOrganized = 0,
+                            TotalEventsParticipated = 0,
+                            TotalPoints = 0,
+                            UpdatedAt = new DateTime(2025, 1, 2, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            UserType = 0,
+                            Username = "bob"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            City = "Mostar",
+                            Country = "BiH",
+                            CreatedAt = new DateTime(2025, 1, 3, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Email = "carol@example.com",
+                            FirstName = "Carol",
+                            IsActive = true,
+                            LastName = "Clark",
+                            PasswordHash = "HASH3",
+                            TotalCleanups = 0,
+                            TotalEventsOrganized = 0,
+                            TotalEventsParticipated = 0,
+                            TotalPoints = 0,
+                            UpdatedAt = new DateTime(2025, 1, 3, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            UserType = 2,
+                            Username = "carol"
+                        });
                 });
 
             modelBuilder.Entity("EcoChallenge.Services.Database.Entities.UserBadge", b =>
@@ -1264,6 +1677,15 @@ namespace EcoChallenge.Services.Migrations
                         .IsUnique();
 
                     b.ToTable("UserBadges");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            BadgeId = 1,
+                            EarnedAt = new DateTime(2025, 6, 9, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            UserId = 2
+                        });
                 });
 
             modelBuilder.Entity("EcoChallenge.Services.Database.Entities.ActivityHistory", b =>

@@ -14,11 +14,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallenge\\EcoChallenge.Model\\EcoChallenge.Models.csproj",
+      "projectUniqueName": "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallengeBackend\\EcoChallenge.Model\\EcoChallenge.Models.csproj",
       "projectName": "EcoChallenge.Models",
-      "projectPath": "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallenge\\EcoChallenge.Model\\EcoChallenge.Models.csproj",
+      "projectPath": "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallengeBackend\\EcoChallenge.Model\\EcoChallenge.Models.csproj",
       "packagesPath": "C:\\Users\\nedim\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallenge\\EcoChallenge.Model\\obj\\",
+      "outputPath": "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallengeBackend\\EcoChallenge.Model\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

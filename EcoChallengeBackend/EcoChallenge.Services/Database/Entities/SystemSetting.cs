@@ -1,14 +1,14 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using EcoChallenge.Services.Database.Enums;
+using EcoChallenge.Models.Enums;
 
 namespace EcoChallenge.Services.Database.Entities
 {
     public class SystemSetting
     {
         [Key] 
-        public int SettingId { get; set; }
+        public int Id { get; set; }
         [Required, Column("setting_key"), MaxLength(100)]
         public string? Key { get; set; }
         [Column("setting_value")]

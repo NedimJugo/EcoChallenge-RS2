@@ -413,6 +413,10 @@ namespace EcoChallenge.Services.Database
             modelBuilder.Entity<SystemSetting>()
                 .HasIndex(ss => ss.Key)
                 .IsUnique();
+
+
+
+            modelBuilder.SeedTestData();
         }
 
         private void ConfigureConstraints(ModelBuilder modelBuilder)

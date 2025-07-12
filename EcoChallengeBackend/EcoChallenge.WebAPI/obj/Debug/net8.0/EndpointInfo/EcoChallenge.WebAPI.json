@@ -106,38 +106,869 @@
         }
       }
     },
-    "/WeatherForecast": {
-      "get": {
+    "/Event": {
+      "post": {
         "tags": [
-          "WeatherForecast"
+          "Event"
         ],
-        "operationId": "GetWeatherForecast",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EventInsertRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EventInsertRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/EventInsertRequest"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "OK",
             "content": {
               "text/plain": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/WeatherForecast"
-                  }
+                  "$ref": "#/components/schemas/EventResponse"
                 }
               },
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/WeatherForecast"
-                  }
+                  "$ref": "#/components/schemas/EventResponse"
                 }
               },
               "text/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/WeatherForecast"
-                  }
+                  "$ref": "#/components/schemas/EventResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Event"
+        ],
+        "parameters": [
+          {
+            "name": "Type",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/EventType"
+            }
+          },
+          {
+            "name": "Status",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/EventStatus"
+            }
+          },
+          {
+            "name": "CreatorUserId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "LocationId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Text",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "PageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "SortBy",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Desc",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "IncludeTotalCount",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "RetrieveAll",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventResponsePagedResult"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventResponsePagedResult"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventResponsePagedResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Event/{id}": {
+      "put": {
+        "tags": [
+          "Event"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EventUpdateRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EventUpdateRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/EventUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Event"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "boolean"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Event"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Request": {
+      "post": {
+        "tags": [
+          "Request"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestInsertRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestInsertRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestInsertRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Request"
+        ],
+        "parameters": [
+          {
+            "name": "Urgency",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/UrgencyLevel"
+            }
+          },
+          {
+            "name": "Status",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/RequestStatus"
+            }
+          },
+          {
+            "name": "UserId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "LocationId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Text",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "PageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "SortBy",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Desc",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "IncludeTotalCount",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "RetrieveAll",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestResponsePagedResult"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestResponsePagedResult"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestResponsePagedResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Request/{id}": {
+      "put": {
+        "tags": [
+          "Request"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestUpdateRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestUpdateRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Request"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "boolean"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Request"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Users": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserInsertRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserInsertRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserInsertRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "parameters": [
+          {
+            "name": "Text",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "IsActive",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "City",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Country",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "PageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "SortBy",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Desc",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "IncludeTotalCount",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "RetrieveAll",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponsePagedResult"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponsePagedResult"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponsePagedResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Users/{id}": {
+      "put": {
+        "tags": [
+          "Users"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserUpdateRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserUpdateRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Users"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "boolean"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
                 }
               }
             }
@@ -166,28 +997,926 @@
         },
         "additionalProperties": false
       },
-      "WeatherForecast": {
+      "EstimatedAmount": {
+        "enum": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "type": "integer",
+        "format": "int32"
+      },
+      "EventInsertRequest": {
+        "required": [
+          "creatorUserId",
+          "eventDate",
+          "eventTime",
+          "eventType",
+          "locationId",
+          "title"
+        ],
         "type": "object",
         "properties": {
-          "date": {
-            "type": "string",
-            "format": "date"
-          },
-          "temperatureC": {
+          "creatorUserId": {
             "type": "integer",
             "format": "int32"
           },
-          "temperatureF": {
+          "locationId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "title": {
+            "maxLength": 200,
+            "minLength": 0,
+            "type": "string"
+          },
+          "description": {
+            "maxLength": 2000,
+            "minLength": 0,
+            "type": "string",
+            "nullable": true
+          },
+          "imageUrl": {
+            "maxLength": 255,
+            "minLength": 0,
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "eventType": {
+            "$ref": "#/components/schemas/EventType"
+          },
+          "maxParticipants": {
+            "maximum": 10000,
+            "minimum": 0,
+            "type": "integer",
+            "format": "int32"
+          },
+          "eventDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "eventTime": {
+            "type": "string",
+            "format": "time"
+          },
+          "durationMinutes": {
+            "maximum": 1440,
+            "minimum": 15,
+            "type": "integer",
+            "format": "int32"
+          },
+          "equipmentProvided": {
+            "type": "boolean"
+          },
+          "equipmentList": {
+            "maxLength": 1000,
+            "minLength": 0,
+            "type": "string",
+            "nullable": true
+          },
+          "meetingPoint": {
+            "maxLength": 500,
+            "minLength": 0,
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "$ref": "#/components/schemas/EventStatus"
+          },
+          "isPaidRequest": {
+            "type": "boolean"
+          },
+          "relatedRequestId": {
             "type": "integer",
             "format": "int32",
-            "readOnly": true
+            "nullable": true
           },
-          "summary": {
+          "adminApproved": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "EventResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "title": {
             "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "imageUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "eventType": {
+            "$ref": "#/components/schemas/EventType"
+          },
+          "maxParticipants": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "currentParticipants": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "eventDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "eventTime": {
+            "type": "string",
+            "format": "date-span"
+          },
+          "durationMinutes": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "equipmentProvided": {
+            "type": "boolean"
+          },
+          "equipmentList": {
+            "type": "string",
+            "nullable": true
+          },
+          "meetingPoint": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "$ref": "#/components/schemas/EventStatus"
+          },
+          "adminApproved": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
+      "EventResponsePagedResult": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EventResponse"
+            },
+            "nullable": true
+          },
+          "totalCount": {
+            "type": "integer",
+            "format": "int32",
             "nullable": true
           }
         },
         "additionalProperties": false
+      },
+      "EventStatus": {
+        "enum": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        "type": "integer",
+        "format": "int32"
+      },
+      "EventType": {
+        "enum": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "type": "integer",
+        "format": "int32"
+      },
+      "EventUpdateRequest": {
+        "required": [
+          "eventDate",
+          "eventTime",
+          "eventType",
+          "id",
+          "locationId",
+          "status",
+          "title"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "locationId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "title": {
+            "maxLength": 200,
+            "minLength": 0,
+            "type": "string"
+          },
+          "description": {
+            "maxLength": 2000,
+            "minLength": 0,
+            "type": "string",
+            "nullable": true
+          },
+          "imageUrl": {
+            "maxLength": 255,
+            "minLength": 0,
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "eventType": {
+            "$ref": "#/components/schemas/EventType"
+          },
+          "maxParticipants": {
+            "maximum": 10000,
+            "minimum": 0,
+            "type": "integer",
+            "format": "int32"
+          },
+          "eventDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "eventTime": {
+            "type": "string",
+            "format": "time"
+          },
+          "durationMinutes": {
+            "maximum": 1440,
+            "minimum": 15,
+            "type": "integer",
+            "format": "int32"
+          },
+          "equipmentProvided": {
+            "type": "boolean"
+          },
+          "equipmentList": {
+            "maxLength": 1000,
+            "minLength": 0,
+            "type": "string",
+            "nullable": true
+          },
+          "meetingPoint": {
+            "maxLength": 500,
+            "minLength": 0,
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "$ref": "#/components/schemas/EventStatus"
+          },
+          "isPaidRequest": {
+            "type": "boolean"
+          },
+          "relatedRequestId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "adminApproved": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "RequestInsertRequest": {
+        "required": [
+          "estimatedAmount",
+          "locationId",
+          "title",
+          "urgencyLevel",
+          "userId",
+          "wasteType"
+        ],
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "locationId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "title": {
+            "maxLength": 200,
+            "minLength": 1,
+            "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "imageUrl": {
+            "maxLength": 255,
+            "type": "string",
+            "nullable": true
+          },
+          "estimatedCleanupTime": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "urgencyLevel": {
+            "$ref": "#/components/schemas/UrgencyLevel"
+          },
+          "wasteType": {
+            "$ref": "#/components/schemas/WasteType"
+          },
+          "estimatedAmount": {
+            "$ref": "#/components/schemas/EstimatedAmount"
+          },
+          "proposedDate": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "proposedTime": {
+            "type": "string",
+            "format": "time",
+            "nullable": true
+          },
+          "suggestedRewardPoints": {
+            "maximum": 2147483647,
+            "minimum": 0,
+            "type": "integer",
+            "format": "int32"
+          },
+          "suggestedRewardMoney": {
+            "minimum": 0,
+            "type": "number",
+            "format": "double"
+          }
+        },
+        "additionalProperties": false
+      },
+      "RequestResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "imageUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "urgencyLevel": {
+            "$ref": "#/components/schemas/UrgencyLevel"
+          },
+          "wasteType": {
+            "$ref": "#/components/schemas/WasteType"
+          },
+          "estimatedAmount": {
+            "$ref": "#/components/schemas/EstimatedAmount"
+          },
+          "proposedDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "proposedTime": {
+            "type": "string",
+            "format": "date-span",
+            "nullable": true
+          },
+          "status": {
+            "$ref": "#/components/schemas/RequestStatus"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
+      "RequestResponsePagedResult": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RequestResponse"
+            },
+            "nullable": true
+          },
+          "totalCount": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "RequestStatus": {
+        "enum": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "type": "integer",
+        "format": "int32"
+      },
+      "RequestUpdateRequest": {
+        "required": [
+          "id"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "title": {
+            "maxLength": 200,
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "imageUrl": {
+            "maxLength": 255,
+            "type": "string",
+            "nullable": true
+          },
+          "estimatedCleanupTime": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "urgencyLevel": {
+            "$ref": "#/components/schemas/UrgencyLevel"
+          },
+          "wasteType": {
+            "$ref": "#/components/schemas/WasteType"
+          },
+          "estimatedAmount": {
+            "$ref": "#/components/schemas/EstimatedAmount"
+          },
+          "proposedDate": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "proposedTime": {
+            "type": "string",
+            "format": "time",
+            "nullable": true
+          },
+          "status": {
+            "$ref": "#/components/schemas/RequestStatus"
+          },
+          "adminNotes": {
+            "type": "string",
+            "nullable": true
+          },
+          "rejectionReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "suggestedRewardPoints": {
+            "maximum": 2147483647,
+            "minimum": 0,
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "suggestedRewardMoney": {
+            "minimum": 0,
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "actualRewardPoints": {
+            "maximum": 2147483647,
+            "minimum": 0,
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "actualRewardMoney": {
+            "minimum": 0,
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "aiAnalysisResult": {
+            "type": "string",
+            "nullable": true
+          },
+          "completionImageUrl": {
+            "maxLength": 255,
+            "type": "string",
+            "nullable": true
+          },
+          "completionNotes": {
+            "type": "string",
+            "nullable": true
+          },
+          "assignedAdminId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "approvedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "completedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "UrgencyLevel": {
+        "enum": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "type": "integer",
+        "format": "int32"
+      },
+      "UserInsertRequest": {
+        "required": [
+          "email",
+          "firstName",
+          "lastName",
+          "passwordHash",
+          "username",
+          "userType"
+        ],
+        "type": "object",
+        "properties": {
+          "username": {
+            "maxLength": 50,
+            "minLength": 1,
+            "type": "string"
+          },
+          "email": {
+            "maxLength": 100,
+            "minLength": 1,
+            "type": "string",
+            "format": "email"
+          },
+          "passwordHash": {
+            "maxLength": 255,
+            "minLength": 1,
+            "type": "string"
+          },
+          "firstName": {
+            "maxLength": 50,
+            "minLength": 1,
+            "type": "string"
+          },
+          "lastName": {
+            "maxLength": 50,
+            "minLength": 1,
+            "type": "string"
+          },
+          "profileImageUrl": {
+            "maxLength": 255,
+            "type": "string",
+            "nullable": true
+          },
+          "phoneNumber": {
+            "maxLength": 20,
+            "type": "string",
+            "nullable": true
+          },
+          "dateOfBirth": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "city": {
+            "maxLength": 100,
+            "type": "string",
+            "nullable": true
+          },
+          "country": {
+            "maxLength": 100,
+            "type": "string",
+            "nullable": true
+          },
+          "totalPoints": {
+            "maximum": 2147483647,
+            "minimum": 0,
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalCleanups": {
+            "maximum": 2147483647,
+            "minimum": 0,
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalEventsOrganized": {
+            "maximum": 2147483647,
+            "minimum": 0,
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalEventsParticipated": {
+            "maximum": 2147483647,
+            "minimum": 0,
+            "type": "integer",
+            "format": "int32"
+          },
+          "userType": {
+            "$ref": "#/components/schemas/UserType"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "lastLogin": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "deactivatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "UserResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "username": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "firstName": {
+            "type": "string",
+            "nullable": true
+          },
+          "lastName": {
+            "type": "string",
+            "nullable": true
+          },
+          "profileImageUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "phoneNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "dateOfBirth": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "city": {
+            "type": "string",
+            "nullable": true
+          },
+          "country": {
+            "type": "string",
+            "nullable": true
+          },
+          "totalPoints": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalCleanups": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalEventsOrganized": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalEventsParticipated": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "userType": {
+            "$ref": "#/components/schemas/UserType"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lastLogin": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "deactivatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "UserResponsePagedResult": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserResponse"
+            },
+            "nullable": true
+          },
+          "totalCount": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "UserType": {
+        "enum": [
+          0,
+          1,
+          2
+        ],
+        "type": "integer",
+        "format": "int32"
+      },
+      "UserUpdateRequest": {
+        "required": [
+          "id"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "username": {
+            "maxLength": 50,
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "maxLength": 100,
+            "type": "string",
+            "format": "email",
+            "nullable": true
+          },
+          "passwordHash": {
+            "maxLength": 255,
+            "type": "string",
+            "nullable": true
+          },
+          "firstName": {
+            "maxLength": 50,
+            "type": "string",
+            "nullable": true
+          },
+          "lastName": {
+            "maxLength": 50,
+            "type": "string",
+            "nullable": true
+          },
+          "profileImageUrl": {
+            "maxLength": 255,
+            "type": "string",
+            "nullable": true
+          },
+          "phoneNumber": {
+            "maxLength": 20,
+            "type": "string",
+            "nullable": true
+          },
+          "dateOfBirth": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "city": {
+            "maxLength": 100,
+            "type": "string",
+            "nullable": true
+          },
+          "country": {
+            "maxLength": 100,
+            "type": "string",
+            "nullable": true
+          },
+          "totalPoints": {
+            "maximum": 2147483647,
+            "minimum": 0,
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "totalCleanups": {
+            "maximum": 2147483647,
+            "minimum": 0,
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "totalEventsOrganized": {
+            "maximum": 2147483647,
+            "minimum": 0,
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "totalEventsParticipated": {
+            "maximum": 2147483647,
+            "minimum": 0,
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "userType": {
+            "$ref": "#/components/schemas/UserType"
+          },
+          "isActive": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "lastLogin": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "deactivatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "WasteType": {
+        "enum": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "type": "integer",
+        "format": "int32"
       }
     }
   }

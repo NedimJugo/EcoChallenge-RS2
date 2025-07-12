@@ -7,7 +7,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using EcoChallenge.Services.Database.Enums;
+using EcoChallenge.Models.Enums;
 
 namespace EcoChallenge.Services.Database.Entities
 {

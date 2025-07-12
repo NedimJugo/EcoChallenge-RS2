@@ -1,7 +1,10 @@
 using EcoChallenge.Services.Database;
 using EcoChallenge.Services.Interfeces;
+using EcoChallenge.Services.Mapping;
+using EcoChallenge.Services.Security;
 using EcoChallenge.Services.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,8 +15,14 @@ var builder = WebApplication.CreateBuilder(args);
 //    .AddEnvironmentVariables();
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? "Server=localhost;Database=EcoChallenge;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True";
 builder.Services.AddDatabaseServices(connectionString);
+builder.Services.AddAutoMapper(cfg => {}, typeof(UserProfile).Assembly, typeof(RequestProfile).Assembly, typeof(EventProfile).Assembly);
+
 // Add services to the container.
-builder.Services.AddTransient<IChallengeService, ChallengeService>();
+builder.Services.AddSingleton<IPasswordHasher, Pbkdf2PasswordHasher>();
+builder.Services.AddScoped<IRequestService, RequestService>();
+builder.Services.AddScoped<IEventService, EventService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IChallengeService, ChallengeService>();
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
