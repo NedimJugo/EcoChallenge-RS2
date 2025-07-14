@@ -16,8 +16,12 @@ namespace EcoChallenge.Services.Mapping
         {
             CreateMap<User, UserResponse>();
 
-            CreateMap<UserRequest, User>()
+            CreateMap<UserInsertRequest, User>()
                 .ForMember(u => u.PasswordHash, o => o.Ignore()); // keep PasswordHash out
+
+            CreateMap<UserUpdateRequest, User>()
+                  .ForMember(u => u.PasswordHash, o => o.Ignore())
+                  .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
         }
     }
 }

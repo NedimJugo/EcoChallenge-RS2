@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("EcoChallenge.Services")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e44529579a1c7b3b0f36650084157ed91f0e0ad3")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c6621493ec6386419a143d9aaa8f161668b23c77")]
 [assembly: System.Reflection.AssemblyProductAttribute("EcoChallenge.Services")]
 [assembly: System.Reflection.AssemblyTitleAttribute("EcoChallenge.Services")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

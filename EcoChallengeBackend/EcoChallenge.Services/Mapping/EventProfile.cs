@@ -15,11 +15,14 @@ namespace EcoChallenge.Services.Mapping
         public EventProfile()
         {
             CreateMap<Event, EventResponse>();
-            CreateMap<EventRequest, Event>()
+            CreateMap<EventInsertRequest, Event>()
                 .ForMember(e => e.Id, o => o.Ignore())
                 .ForMember(e => e.CreatedAt, o => o.Ignore())
                 .ForMember(e => e.UpdatedAt, o => o.Ignore())
                 .ForMember(e => e.CurrentParticipants, o => o.Ignore());
+
+            CreateMap<EventUpdateRequest, Event>()
+              .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
         }
     }
 }

@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 
 namespace EcoChallenge.Services.Services
 {
-    public class RequestService: BaseCRUDService<RequestResponse, RequestSearchObject, Request, RequestInsertRequest, RequestUpdateRequest>, IRequestService
+    public class RequestService : BaseCRUDService<RequestResponse, RequestSearchObject, Request, RequestInsertRequest, RequestUpdateRequest>, IRequestService
     {
         private readonly EcoChallengeDbContext _db;
 
@@ -24,6 +24,33 @@ namespace EcoChallenge.Services.Services
         {
             _db = db;
 
+        }
+
+        protected override IQueryable<Request> ApplyFilter(IQueryable<Request> query, RequestSearchObject s)
+        {
+            if (!string.IsNullOrWhiteSpace(s.Text))
+            {
+                string t = s.Text.ToLower();
+                query = query.Where(r =>
+                    r.Title!.ToLower().Contains(t) ||
+                    r.Description!.ToLower().Contains(t) ||
+                    r.AdminNotes!.ToLower().Contains(t) ||
+                    r.RejectionReason!.ToLower().Contains(t));
+            }
+
+            if (s.Status.HasValue)
+                query = query.Where(r => r.Status == s.Status);
+
+            if (s.Urgency.HasValue)
+                query = query.Where(r => r.UrgencyLevel == s.Urgency);
+
+            if (s.UserId.HasValue)
+                query = query.Where(r => r.UserId == s.UserId);
+
+            if (s.LocationId.HasValue)
+                query = query.Where(r => r.LocationId == s.LocationId);
+
+            return query;
         }
     }
 }

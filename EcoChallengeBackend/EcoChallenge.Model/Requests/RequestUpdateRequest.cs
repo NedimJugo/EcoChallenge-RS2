@@ -10,8 +10,6 @@ namespace EcoChallenge.Models.Requests
 {
     public class RequestUpdateRequest
     {
-        [Required]
-        public int Id { get; set; }
 
         [MaxLength(200)]
         public string? Title { get; set; }

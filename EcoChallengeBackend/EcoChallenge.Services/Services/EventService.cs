@@ -16,7 +16,7 @@ using EcoChallenge.Services.BaseServices;
 
 namespace EcoChallenge.Services.Services
 {
-    public class EventService: BaseCRUDService<EventResponse, EventSearchObject, Event, EventInsertRequest, EventUpdateRequest>, IEventService
+    public class EventService : BaseCRUDService<EventResponse, EventSearchObject, Event, EventInsertRequest, EventUpdateRequest>, IEventService
 
     {
         private readonly EcoChallengeDbContext _db;
@@ -25,6 +25,33 @@ namespace EcoChallenge.Services.Services
         {
             _db = db;
 
+        }
+
+        protected override IQueryable<Event> ApplyFilter(IQueryable<Event> query, EventSearchObject s)
+        {
+            if (!string.IsNullOrWhiteSpace(s.Text))
+            {
+                string t = s.Text.ToLower();
+                query = query.Where(e =>
+                    e.Title!.ToLower().Contains(t) ||
+                    e.Description!.ToLower().Contains(t) ||
+                    e.EquipmentList!.ToLower().Contains(t) ||
+                    e.MeetingPoint!.ToLower().Contains(t));
+            }
+
+            if (s.Status.HasValue)
+                query = query.Where(e => e.Status == s.Status);
+
+            if (s.Type.HasValue)
+                query = query.Where(e => e.EventType == s.Type);
+
+            if (s.CreatorUserId.HasValue)
+                query = query.Where(e => e.CreatorUserId == s.CreatorUserId);
+
+            if (s.LocationId.HasValue)
+                query = query.Where(e => e.LocationId == s.LocationId);
+
+            return query;
         }
     }
 }

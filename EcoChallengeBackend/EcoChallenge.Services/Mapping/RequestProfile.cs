@@ -15,10 +15,13 @@ namespace EcoChallenge.Services.Mapping
         public RequestProfile()
         {
             CreateMap<Request, RequestResponse>();
-            CreateMap<RequestRequest, Request>()
+            CreateMap<RequestInsertRequest, Request>()
                 .ForMember(r => r.Id, o => o.Ignore())
                 .ForMember(r => r.CreatedAt, o => o.Ignore())
                 .ForMember(r => r.UpdatedAt, o => o.Ignore());
+
+            CreateMap<RequestUpdateRequest, Request>()
+              .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
         }
     }
 }

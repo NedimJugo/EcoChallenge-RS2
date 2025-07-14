@@ -10,8 +10,6 @@ namespace EcoChallenge.Models.Requests
 {
     public class EventUpdateRequest
     {
-        [Required(ErrorMessage = "Event ID is required")]
-        public int Id { get; set; }
 
         [Required(ErrorMessage = "Location ID is required")]
         public int LocationId { get; set; }

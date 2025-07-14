@@ -12,7 +12,7 @@ namespace EcoChallenge.Models.SearchObjects
         public int? PageSize { get; set; } = 20;
         public string SortBy { get; set; } = "Id"; // or whatever is default
         public bool Desc { get; set; } = false;
-        public bool IncludeTotalCount { get; set; } = false;
+        public bool IncludeTotalCount { get; set; } = true;
         public bool RetrieveAll { get; set; } = false;
     }
 }
