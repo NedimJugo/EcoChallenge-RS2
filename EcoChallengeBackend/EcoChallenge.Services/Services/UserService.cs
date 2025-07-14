@@ -20,7 +20,7 @@ using EcoChallenge.Services.BaseServices;
 
 namespace EcoChallenge.Services.Services
 {
-    public class UserService: BaseCRUDService<UserResponse, UserSearchObject, User, UserInsertRequest, UserUpdateRequest>, IUserService
+    public class UserService : BaseCRUDService<UserResponse, UserSearchObject, User, UserInsertRequest, UserUpdateRequest>, IUserService
     {
         private readonly IPasswordHasher _hasher;
         private readonly EcoChallengeDbContext _db;
@@ -78,7 +78,7 @@ namespace EcoChallenge.Services.Services
                     u.Email!.ToLower().Contains(t));
             }
 
-            if (s.IsActive.HasValue)    
+            if (s.IsActive.HasValue)
                 query = query.Where(u => u.IsActive == s.IsActive);
 
             if (!string.IsNullOrWhiteSpace(s.City))
@@ -89,5 +89,18 @@ namespace EcoChallenge.Services.Services
 
             return query;
         }
+
+        public async Task<UserResponse?> AuthenticateUser(UserLoginRequest request, CancellationToken ct = default)
+        {
+            var user = await _db.Users.FirstOrDefaultAsync(u => u.Username == request.Username, ct);
+            if (user == null || string.IsNullOrEmpty(user.PasswordHash))
+                return null;
+
+            if (!_hasher.Verify(request.Password, user.PasswordHash))
+                return null;
+
+            return MapToResponse(user);
+        }
+
     }
 }
