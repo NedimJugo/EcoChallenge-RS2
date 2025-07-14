@@ -548,5 +548,31 @@
         "StatusCode": 200
       }
     ]
+  },
+  {
+    "ContainingType": "EcoChallenge.WebAPI.Controllers.UsersController",
+    "Method": "Login",
+    "RelativePath": "Users/login",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "EcoChallenge.Models.Requests.UserLoginRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "EcoChallenge.Models.Responses.UserResponse",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
   }
 ]

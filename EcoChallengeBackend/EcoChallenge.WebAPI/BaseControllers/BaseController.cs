@@ -1,5 +1,6 @@
 ﻿using EcoChallenge.Models.SearchObjects;
 using EcoChallenge.Services.BaseInterfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq.Dynamic.Core;
 
@@ -7,6 +8,7 @@ namespace EcoChallenge.WebAPI.BaseControllers
 {
     [ApiController]
     [Route("[controller]")]
+    [Authorize]
 
     public class BaseController<T, TSearch> : ControllerBase where T : class where TSearch : BaseSearchObject, new()
     {
