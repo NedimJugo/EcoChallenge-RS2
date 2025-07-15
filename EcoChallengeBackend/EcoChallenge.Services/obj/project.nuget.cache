@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "B/h6heHjoiE=",
+  "dgSpecHash": "RcJk7HqBX6Y=",
   "success": true,
-  "projectFilePath": "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallengeBackend\\EcoChallenge.Services\\EcoChallenge.Services.csproj",
+  "projectFilePath": "C:\\Users\\nedim\\Desktop\\EcoChallenge-RS2\\EcoChallengeBackend\\EcoChallenge.Services\\EcoChallenge.Services.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\nedim\\.nuget\\packages\\automapper\\15.0.1\\automapper.15.0.1.nupkg.sha512",
     "C:\\Users\\nedim\\.nuget\\packages\\azure.core\\1.38.0\\azure.core.1.38.0.nupkg.sha512",

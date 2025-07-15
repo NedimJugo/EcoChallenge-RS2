@@ -3,12 +3,16 @@
   "WorkspaceRootPath": "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallengeBackend\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{8CAAB18C-2195-4CDF-8EBF-7A67135E4AF3}|EcoChallenge.Services\\EcoChallenge.Services.csproj|c:\\users\\nedim\\desktop\\ecochallenge\\ecochallengebackend\\ecochallenge.services\\services\\userservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{8CAAB18C-2195-4CDF-8EBF-7A67135E4AF3}|EcoChallenge.Services\\EcoChallenge.Services.csproj|solutionrelative:ecochallenge.services\\services\\userservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{AE1F7ACA-0E7C-46C2-AF08-E412F8789D56}|EcoChallenge.WebAPI\\EcoChallenge.WebAPI.csproj|c:\\users\\nedim\\desktop\\ecochallenge\\ecochallengebackend\\ecochallenge.webapi\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{AE1F7ACA-0E7C-46C2-AF08-E412F8789D56}|EcoChallenge.WebAPI\\EcoChallenge.WebAPI.csproj|solutionrelative:ecochallenge.webapi\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{AE1F7ACA-0E7C-46C2-AF08-E412F8789D56}|EcoChallenge.WebAPI\\EcoChallenge.WebAPI.csproj|c:\\users\\nedim\\desktop\\ecochallenge\\ecochallengebackend\\ecochallenge.webapi\\filters\\basicauthenticationhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{AE1F7ACA-0E7C-46C2-AF08-E412F8789D56}|EcoChallenge.WebAPI\\EcoChallenge.WebAPI.csproj|solutionrelative:ecochallenge.webapi\\filters\\basicauthenticationhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8CAAB18C-2195-4CDF-8EBF-7A67135E4AF3}|EcoChallenge.Services\\EcoChallenge.Services.csproj|c:\\users\\nedim\\desktop\\ecochallenge\\ecochallengebackend\\ecochallenge.services\\services\\userservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8CAAB18C-2195-4CDF-8EBF-7A67135E4AF3}|EcoChallenge.Services\\EcoChallenge.Services.csproj|solutionrelative:ecochallenge.services\\services\\userservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{8CAAB18C-2195-4CDF-8EBF-7A67135E4AF3}|EcoChallenge.Services\\EcoChallenge.Services.csproj|c:\\users\\nedim\\desktop\\ecochallenge\\ecochallengebackend\\ecochallenge.services\\database\\entities\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -33,10 +37,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{8CAAB18C-2195-4CDF-8EBF-7A67135E4AF3}|EcoChallenge.Services\\EcoChallenge.Services.csproj|c:\\users\\nedim\\desktop\\ecochallenge\\ecochallengebackend\\ecochallenge.services\\services\\requestservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{8CAAB18C-2195-4CDF-8EBF-7A67135E4AF3}|EcoChallenge.Services\\EcoChallenge.Services.csproj|solutionrelative:ecochallenge.services\\services\\requestservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{AE1F7ACA-0E7C-46C2-AF08-E412F8789D56}|EcoChallenge.WebAPI\\EcoChallenge.WebAPI.csproj|c:\\users\\nedim\\desktop\\ecochallenge\\ecochallengebackend\\ecochallenge.webapi\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{AE1F7ACA-0E7C-46C2-AF08-E412F8789D56}|EcoChallenge.WebAPI\\EcoChallenge.WebAPI.csproj|solutionrelative:ecochallenge.webapi\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -50,46 +50,7 @@
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "User.cs",
-              "DocumentMoniker": "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallengeBackend\\EcoChallenge.Services\\Database\\Entities\\User.cs",
-              "RelativeDocumentMoniker": "EcoChallenge.Services\\Database\\Entities\\User.cs",
-              "ToolTip": "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallengeBackend\\EcoChallenge.Services\\Database\\Entities\\User.cs",
-              "RelativeToolTip": "EcoChallenge.Services\\Database\\Entities\\User.cs",
-              "ViewState": "AgIAAD4AAAAAAAAAAAAswEgAAABIAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-14T14:17:00.477Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "IUserService.cs",
-              "DocumentMoniker": "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallengeBackend\\EcoChallenge.Services\\Interfeces\\IUserService.cs",
-              "RelativeDocumentMoniker": "EcoChallenge.Services\\Interfeces\\IUserService.cs",
-              "ToolTip": "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallengeBackend\\EcoChallenge.Services\\Interfeces\\IUserService.cs*",
-              "RelativeToolTip": "EcoChallenge.Services\\Interfeces\\IUserService.cs*",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAABlAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-14T14:12:02.604Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "UsersController.cs",
-              "DocumentMoniker": "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallengeBackend\\EcoChallenge.WebAPI\\Controllers\\UsersController.cs",
-              "RelativeDocumentMoniker": "EcoChallenge.WebAPI\\Controllers\\UsersController.cs",
-              "ToolTip": "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallengeBackend\\EcoChallenge.WebAPI\\Controllers\\UsersController.cs*",
-              "RelativeToolTip": "EcoChallenge.WebAPI\\Controllers\\UsersController.cs*",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABYAAABVAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-14T14:10:21.275Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 6,
               "Title": "RequestController.cs",
               "DocumentMoniker": "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallengeBackend\\EcoChallenge.WebAPI\\Controllers\\RequestController.cs",
               "RelativeDocumentMoniker": "EcoChallenge.WebAPI\\Controllers\\RequestController.cs",
@@ -102,7 +63,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 7,
               "Title": "BaseController.cs",
               "DocumentMoniker": "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallengeBackend\\EcoChallenge.WebAPI\\BaseControllers\\BaseController.cs",
               "RelativeDocumentMoniker": "EcoChallenge.WebAPI\\BaseControllers\\BaseController.cs",
@@ -119,29 +80,81 @@
               "Title": "BasicAuthenticationHandler.cs",
               "DocumentMoniker": "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallengeBackend\\EcoChallenge.WebAPI\\Filters\\BasicAuthenticationHandler.cs",
               "RelativeDocumentMoniker": "EcoChallenge.WebAPI\\Filters\\BasicAuthenticationHandler.cs",
-              "ToolTip": "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallengeBackend\\EcoChallenge.WebAPI\\Filters\\BasicAuthenticationHandler.cs*",
-              "RelativeToolTip": "EcoChallenge.WebAPI\\Filters\\BasicAuthenticationHandler.cs*",
-              "ViewState": "AgIAAA0AAAAAAAAAAAAwwCQAAAANAAAAAAAAAA==",
+              "ToolTip": "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallengeBackend\\EcoChallenge.WebAPI\\Filters\\BasicAuthenticationHandler.cs",
+              "RelativeToolTip": "EcoChallenge.WebAPI\\Filters\\BasicAuthenticationHandler.cs",
+              "ViewState": "AgIAADAAAAAAAAAAAAAYwE8AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-07-14T13:16:10.498Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 2,
               "Title": "UserService.cs",
               "DocumentMoniker": "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallengeBackend\\EcoChallenge.Services\\Services\\UserService.cs",
               "RelativeDocumentMoniker": "EcoChallenge.Services\\Services\\UserService.cs",
-              "ToolTip": "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallengeBackend\\EcoChallenge.Services\\Services\\UserService.cs*",
-              "RelativeToolTip": "EcoChallenge.Services\\Services\\UserService.cs*",
-              "ViewState": "AgIAAFMAAAAAAAAAAADwv2YAAAAJAAAAAAAAAA==",
+              "ToolTip": "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallengeBackend\\EcoChallenge.Services\\Services\\UserService.cs",
+              "RelativeToolTip": "EcoChallenge.Services\\Services\\UserService.cs",
+              "ViewState": "AgIAAEEAAAAAAAAAAAAAwGoAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-07-14T13:26:09.226Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 5,
+              "Title": "IUserService.cs",
+              "DocumentMoniker": "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallengeBackend\\EcoChallenge.Services\\Interfeces\\IUserService.cs",
+              "RelativeDocumentMoniker": "EcoChallenge.Services\\Interfeces\\IUserService.cs",
+              "ToolTip": "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallengeBackend\\EcoChallenge.Services\\Interfeces\\IUserService.cs",
+              "RelativeToolTip": "EcoChallenge.Services\\Interfeces\\IUserService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAABlAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-14T14:12:02.604Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "User.cs",
+              "DocumentMoniker": "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallengeBackend\\EcoChallenge.Services\\Database\\Entities\\User.cs",
+              "RelativeDocumentMoniker": "EcoChallenge.Services\\Database\\Entities\\User.cs",
+              "ToolTip": "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallengeBackend\\EcoChallenge.Services\\Database\\Entities\\User.cs",
+              "RelativeToolTip": "EcoChallenge.Services\\Database\\Entities\\User.cs",
+              "ViewState": "AgIAAD4AAAAAAAAAAAAswEgAAABIAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-14T14:17:00.477Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallengeBackend\\EcoChallenge.WebAPI\\Program.cs",
+              "RelativeDocumentMoniker": "EcoChallenge.WebAPI\\Program.cs",
+              "ToolTip": "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallengeBackend\\EcoChallenge.WebAPI\\Program.cs",
+              "RelativeToolTip": "EcoChallenge.WebAPI\\Program.cs",
+              "ViewState": "AgIAAC4AAAAAAAAAAAAYwDgAAAAuAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-14T13:48:15.177Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "UsersController.cs",
+              "DocumentMoniker": "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallengeBackend\\EcoChallenge.WebAPI\\Controllers\\UsersController.cs",
+              "RelativeDocumentMoniker": "EcoChallenge.WebAPI\\Controllers\\UsersController.cs",
+              "ToolTip": "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallengeBackend\\EcoChallenge.WebAPI\\Controllers\\UsersController.cs",
+              "RelativeToolTip": "EcoChallenge.WebAPI\\Controllers\\UsersController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABYAAABVAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-14T14:10:21.275Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
               "Title": "RequestService.cs",
               "DocumentMoniker": "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallengeBackend\\EcoChallenge.Services\\Services\\RequestService.cs",
               "RelativeDocumentMoniker": "EcoChallenge.Services\\Services\\RequestService.cs",
@@ -150,19 +163,6 @@
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-07-14T14:09:37.865Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 8,
-              "Title": "Program.cs",
-              "DocumentMoniker": "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallengeBackend\\EcoChallenge.WebAPI\\Program.cs",
-              "RelativeDocumentMoniker": "EcoChallenge.WebAPI\\Program.cs",
-              "ToolTip": "C:\\Users\\nedim\\Desktop\\EcoChallenge\\EcoChallengeBackend\\EcoChallenge.WebAPI\\Program.cs",
-              "RelativeToolTip": "EcoChallenge.WebAPI\\Program.cs",
-              "ViewState": "AgIAABgAAAAAAAAAAAAIwBkAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-14T13:48:15.177Z",
               "EditorCaption": ""
             }
           ]
