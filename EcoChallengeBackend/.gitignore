@@ -1,0 +1,53 @@
+# Ignore build output
+bin/
+obj/
+out/
+Debug/
+Release/
+
+# Visual Studio
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# IIS Express
+*.vspscc
+*.vssscc
+*.scc
+*.cache
+*.launch
+*.dbmdl
+
+# Temporary files
+*.log
+*.tmp
+
+# Entity Framework + generated files
+*.g.cs
+*.g.i.cs
+*.AssemblyInfo.cs
+
+# NuGet packages
+*.nupkg
+packages/
+project.lock.json
+
+# Test/coverage results
+TestResults/
+coverage/
+*.coverage
+*.codecoverage
+
+# Node + front-end
+node_modules/
+dist/
+bundle.js
+wwwroot/dist/
+
+# JetBrains Rider
+.idea/
+
+# Local secrets
+secrets.json
