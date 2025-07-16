@@ -21,10 +21,13 @@ namespace EcoChallenge.Services.Database
         public DbSet<User> Users { get; set; }
         public DbSet<Organization> Organizations { get; set; }
         public DbSet<Location> Locations { get; set; }
+        public DbSet<RequestStatus> RequestStatuses { get; set; }
         public DbSet<Request> Requests { get; set; }
+        public DbSet<EventStatus> EventStatuses { get; set; }
         public DbSet<Event> Events { get; set; }
         public DbSet<EventParticipant> EventParticipants { get; set; }
         public DbSet<ChatMessage> ChatMessages { get; set; }
+        public DbSet<DonationStatus> DonationStatuses { get; set; }
         public DbSet<Donation> Donations { get; set; }
         public DbSet<Reward> Rewards { get; set; }
         public DbSet<Badge> Badges { get; set; }
@@ -36,6 +39,15 @@ namespace EcoChallenge.Services.Database
         public DbSet<SystemSetting> SystemSettings { get; set; }
         public DbSet<Report> Reports { get; set; }
         public DbSet<Notification> Notifications { get; set; }
+        public DbSet<BadgeType> BadgeTypes { get; set; }
+        public DbSet<EventType> EventTypes { get; set; }
+        public DbSet<RewardType> RewardTypes { get; set; }
+        public DbSet<TargetEntityType> TargetEntityTypes { get; set; }
+        public DbSet<UserType> UserTypes { get; set; }
+        public DbSet<WasteType> WasteTypes { get; set; }
+        public DbSet<EntityType> EntityTypes { get; set; }
+
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -373,7 +385,7 @@ namespace EcoChallenge.Services.Database
 
             // Request indexes
             modelBuilder.Entity<Request>()
-                .HasIndex(r => r.Status);
+                .HasIndex(r => r.StatusId);
 
             modelBuilder.Entity<Request>()
                 .HasIndex(r => r.CreatedAt);
@@ -386,7 +398,7 @@ namespace EcoChallenge.Services.Database
                 .HasIndex(e => e.EventDate);
 
             modelBuilder.Entity<Event>()
-                .HasIndex(e => e.Status);
+                .HasIndex(e => e.StatusId);
 
             modelBuilder.Entity<Event>()
                 .HasIndex(e => e.CreatorUserId);

@@ -13,6 +13,95 @@ namespace EcoChallenge.Services.Database
     {
         public static void SeedTestData(this ModelBuilder builder)
         {
+            builder.Entity<BadgeType>().HasData(
+                new BadgeType { Id = 1, Name = "Participation" },
+                new BadgeType { Id = 2, Name = "Achievement" },
+                new BadgeType { Id = 3, Name = "Milestone" },
+                new BadgeType { Id = 4, Name = "Special" }
+            );
+
+            builder.Entity<CriteriaType>().HasData(
+                new CriteriaType { Id = 1, Name = "Count" },
+                new CriteriaType { Id = 2, Name = "Points" },
+                new CriteriaType { Id = 3, Name = "EventsOrganized" },
+                new CriteriaType { Id = 4, Name = "DonationsMade" },
+                new CriteriaType { Id = 5, Name = "Special" }
+            );
+
+            builder.Entity<DonationStatus>().HasData(
+                new DonationStatus { Id = 1, Name = "Pending" },
+                new DonationStatus { Id = 2, Name = "Completed" },
+                new DonationStatus { Id = 3, Name = "Failed" }
+            );
+
+            builder.Entity<EntityType>().HasData(
+                new EntityType { Id = 1, Name = "Request" },
+                new EntityType { Id = 2, Name = "Event" },
+                new EntityType { Id = 3, Name = "Donation" },
+                new EntityType { Id = 4, Name = "Badge" },
+                new EntityType { Id = 5, Name = "Reward" },
+                new EntityType { Id = 6, Name = "Message" },
+                new EntityType { Id = 7, Name = "Gallery" },
+                new EntityType { Id = 8, Name = "User " }
+            );
+
+            builder.Entity<EventStatus>().HasData(
+                new EventStatus { Id = 1, Name = "Draft" },
+                new EventStatus { Id = 2, Name = "Published" },
+                new EventStatus { Id = 3, Name = "Completed" },
+                new EventStatus { Id = 4, Name = "InProgress" },
+                new EventStatus { Id = 5, Name = "Cancelled" }
+            );
+
+            builder.Entity<EventType>().HasData(
+                new EventType { Id = 1, Name = "Cleanup" },
+                new EventType { Id = 2, Name = "Community " },
+                new EventType { Id = 3, Name = "Fundraiser" }
+            );
+
+            builder.Entity<RequestStatus>().HasData(
+                new RequestStatus { Id = 1, Name = "Pending" },
+                new RequestStatus { Id = 2, Name = "UnderReview" },
+                new RequestStatus { Id = 3, Name = "Approved" },
+                new RequestStatus { Id = 4, Name = "Rejected" },
+                new RequestStatus { Id = 5, Name = "InProgress" },
+                new RequestStatus { Id = 6, Name = "Completed" },
+                new RequestStatus { Id = 7, Name = "Cancelled " }
+            );
+
+            builder.Entity<RewardType>().HasData(
+                new RewardType { Id = 1, Name = "Points" },
+                new RewardType { Id = 2, Name = "Money" },
+                new RewardType { Id = 3, Name = "Badge" },
+                new RewardType { Id = 4, Name = "Combo" }
+            );
+
+            builder.Entity<TargetEntityType>().HasData(
+                new TargetEntityType { Id = 1, Name = "User" },
+                new TargetEntityType { Id = 2, Name = "Request" },
+                new TargetEntityType { Id = 3, Name = "Event" },
+                new TargetEntityType { Id = 4, Name = "Reward" },
+                new TargetEntityType { Id = 5, Name = "Organization" },
+                new TargetEntityType { Id = 6, Name = "System " }
+            );
+
+            builder.Entity<UserType>().HasData(
+                new UserType { Id = 1, Name = "Admin" },
+                new UserType { Id = 2, Name = "User" },
+                new UserType { Id = 3, Name = "Moderator" },
+                new UserType { Id = 4, Name = "Finance" }
+            );
+
+            builder.Entity<WasteType>().HasData(
+                new WasteType { Id = 1, Name = "Plastic" },
+                new WasteType { Id = 2, Name = "Glass" },
+                new WasteType { Id = 3, Name = "Metal" },
+                new WasteType { Id = 4, Name = "Organic" },
+                new WasteType { Id = 5, Name = "Mixed" },
+                new WasteType { Id = 6, Name = "Hazardous" },
+                new WasteType { Id = 7, Name = "Other " }
+            );
+
             builder.Entity<User>().HasData(
        new User
        {
@@ -24,7 +113,7 @@ namespace EcoChallenge.Services.Database
            LastName = "Anderson",
            City = "Mostar",
            Country = "BiH",
-           UserType = UserType.Admin,
+           UserTypeId = 1,
            CreatedAt = new DateTime(2025, 1, 1),
            UpdatedAt = new DateTime(2025, 1, 1)
        },
@@ -38,7 +127,7 @@ namespace EcoChallenge.Services.Database
            LastName = "Baker",
            City = "Sarajevo",
            Country = "BiH",
-           UserType = UserType.User,
+           UserTypeId = 2,
            CreatedAt = new DateTime(2025, 1, 2),
            UpdatedAt = new DateTime(2025, 1, 2)
        },
@@ -52,13 +141,12 @@ namespace EcoChallenge.Services.Database
            LastName = "Clark",
            City = "Mostar",
            Country = "BiH",
-           UserType = UserType.Moderator,
+           UserTypeId = 4,
            CreatedAt = new DateTime(2025, 1, 3),
            UpdatedAt = new DateTime(2025, 1, 3)
        }
    );
 
-            // 2) Organizations
             builder.Entity<Organization>().HasData(
                 new Organization
                 {
@@ -114,18 +202,18 @@ namespace EcoChallenge.Services.Database
                 {
                     Id = 1,
                     Name = "First Cleanup",
-                    CriteriaType = CriteriaType.CleanupsCount,
+                    CriteriaTypeId = 1,
                     CriteriaValue = 1,
-                    BadgeType = BadgeType.Milestone,
+                    BadgeTypeId = 3,
                     CreatedAt = new DateTime(2025, 4, 1)
                 },
                 new Badge
                 {
                     Id = 2,
                     Name = "Donation Star",
-                    CriteriaType = CriteriaType.DonationsMade,
+                    CriteriaTypeId = 4,
                     CriteriaValue = 1,
-                    BadgeType = BadgeType.Achievement,
+                    BadgeTypeId = 2,
                     CreatedAt = new DateTime(2025, 4, 2)
                 }
             );
@@ -163,9 +251,9 @@ namespace EcoChallenge.Services.Database
                     LocationId = 1,        // Riverbank Park
                     Title = "Trash at Park",
                     UrgencyLevel = UrgencyLevel.Medium,
-                    WasteType = WasteType.Mixed,
+                    WasteTypeId = 5,
                     EstimatedAmount = EstimatedAmount.Small,
-                    Status = RequestStatus.Pending,
+                    StatusId = 1,
                     CreatedAt = new DateTime(2025, 6, 1),
                     UpdatedAt = new DateTime(2025, 6, 1)
                 },
@@ -176,16 +264,15 @@ namespace EcoChallenge.Services.Database
                     LocationId = 2,        // City Beach
                     Title = "Plastic on Beach",
                     UrgencyLevel = UrgencyLevel.High,
-                    WasteType = WasteType.Plastic,
+                    WasteTypeId = 1,
                     EstimatedAmount = EstimatedAmount.Large,
-                    Status = RequestStatus.UnderReview,
+                    StatusId = 2,
                     CreatedAt = new DateTime(2025, 6, 2),
                     UpdatedAt = new DateTime(2025, 6, 2),
                     AssignedAdminId = 1    // alice
                 }
             );
 
-            // 7) Events
             builder.Entity<Event>().HasData(
                 new Event
                 {
@@ -193,10 +280,10 @@ namespace EcoChallenge.Services.Database
                     CreatorUserId = 1,     // alice
                     LocationId = 1,
                     Title = "Park Cleanup",
-                    EventType = EventType.Cleanup,
+                    EventTypeId = 1,
                     EventDate = new DateTime(2025, 7, 1),
                     EventTime = new TimeSpan(9, 0, 0),
-                    Status = EventStatus.Published,
+                    StatusId = 2,
                     CreatedAt = new DateTime(2025, 6, 10),
                     UpdatedAt = new DateTime(2025, 6, 10),
                     RelatedRequestId = 1
@@ -207,10 +294,10 @@ namespace EcoChallenge.Services.Database
                     CreatorUserId = 3,     // carol
                     LocationId = 2,
                     Title = "Beach Education",
-                    EventType = EventType.Educational,
+                    EventTypeId = 2,
                     EventDate = new DateTime(2025, 7, 5),
                     EventTime = new TimeSpan(14, 0, 0),
-                    Status = EventStatus.Draft,
+                    StatusId = 1,
                     CreatedAt = new DateTime(2025, 6, 11),
                     UpdatedAt = new DateTime(2025, 6, 11)
                 }
@@ -259,7 +346,7 @@ namespace EcoChallenge.Services.Database
                     UserId = 2,
                     OrganizationId = 1,
                     Amount = 20.00m,
-                    Status = DonationStatus.Completed,
+                    StatusId = 2,
                     CreatedAt = new DateTime(2025, 6, 5),
                     ProcessedAt = new DateTime(2025, 6, 6)
                 }
@@ -272,7 +359,7 @@ namespace EcoChallenge.Services.Database
                     Id = 1,
                     UserId = 2,
                     RequestId = 1,
-                    RewardType = RewardType.Points,
+                    RewardTypeId = 1,
                     PointsAmount = 50,
                     Currency = "USD",
                     Status = RewardStatus.Approved,
@@ -284,7 +371,7 @@ namespace EcoChallenge.Services.Database
                     Id = 2,
                     UserId = 2,
                     DonationId = 1,
-                    RewardType = RewardType.Badge,
+                    RewardTypeId = 3,
                     BadgeId = 2,
                     Status = RewardStatus.Paid,
                     CreatedAt = new DateTime(2025, 6, 10),
@@ -346,8 +433,7 @@ namespace EcoChallenge.Services.Database
                     Id = 1,
                     UserId = 2,
                     ActivityType = ActivityType.RequestCreated,
-                    RelatedEntityType = EntityType.Request,
-                    RelatedEntityId = 1,
+                    RelatedEntityTypeId = 1,
                     PointsEarned = 0,
                     CreatedAt = new DateTime(2025, 6, 1)
                 }
@@ -360,8 +446,7 @@ namespace EcoChallenge.Services.Database
                     Id = 1,
                     AdminUserId = 1,
                     ActionType = AdminActionType.ApproveRequest,
-                    TargetEntityType = TargetEntityType.Request,
-                    TargetEntityId = 2,
+                    TargetEntityTypeId = 2,
                     CreatedAt = new DateTime(2025, 6, 2),
                     ActionDescription = "Approved request #2"
                 }
@@ -373,8 +458,7 @@ namespace EcoChallenge.Services.Database
                 {
                     Id = 1,
                     ReporterUserId = 3,
-                    EntityType = TargetEntityType.User,
-                    EntityId = 2,
+                    EntityTypeId = 2,
                     Reason = ReportReason.Spam,
                     Status = ReportStatus.Pending,
                     CreatedAt = new DateTime(2025, 6, 15)

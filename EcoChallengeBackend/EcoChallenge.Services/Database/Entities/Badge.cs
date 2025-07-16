@@ -7,18 +7,20 @@ namespace EcoChallenge.Services.Database.Entities
 {
     public class Badge
     {
-        [Key] 
+        [Key]
         public int Id { get; set; }
-        [Required, Column("name"), MaxLength(100)] 
+        [Required, Column("name"), MaxLength(100)]
         public string? Name { get; set; }
         [Column("description")]
         public string? Description { get; set; }
         [Column("icon_url"), MaxLength(255)]
         public string? IconUrl { get; set; }
-        [Required, Column("badge_type")]
-        public BadgeType BadgeType { get; set; }
-        [Required, Column("criteria_type")]
-        public CriteriaType CriteriaType { get; set; }
+        [Required, ForeignKey(nameof(BadgeType)), Column("badge_type_id")]
+        public int BadgeTypeId { get; set; }
+        public virtual BadgeType? BadgeType { get; set; }
+        [Required, ForeignKey(nameof(CriteriaType)), Column("criteria_type_id")]
+        public int CriteriaTypeId { get; set; }
+        public virtual CriteriaType? CriteriaType { get; set; }
         [Column("criteria_value")]
         public int CriteriaValue { get; set; }
         [Column("is_active")]

@@ -3,8 +3,10 @@ using EcoChallenge.Models.Responses;
 using EcoChallenge.Models.SearchObjects;
 using EcoChallenge.Services.Interfeces;
 using EcoChallenge.WebAPI.BaseControllers;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Identity.Client;
+using System.Security.Claims;
 
 namespace EcoChallenge.WebAPI.Controllers
 {
@@ -22,6 +24,19 @@ namespace EcoChallenge.WebAPI.Controllers
         {
             var user = await _userService.AuthenticateUser(request, cancellationToken);
             return Ok(user);
+        }
+        [Authorize]
+        [HttpGet("whoami")]
+        public IActionResult WhoAmI()
+        {
+            var username = User.Identity?.Name;
+            var role = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
+
+            return Ok(new
+            {
+                Username = username,
+                Role = role
+            });
         }
     }
 }

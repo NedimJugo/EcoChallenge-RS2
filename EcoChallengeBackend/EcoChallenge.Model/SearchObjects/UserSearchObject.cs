@@ -6,11 +6,12 @@ using System.Threading.Tasks;
 
 namespace EcoChallenge.Models.SearchObjects
 {
-    public class UserSearchObject: BaseSearchObject
+    public class UserSearchObject : BaseSearchObject
     {
-        public string? Text { get; set; }          // matches username, first name, last name, or email
-        public bool? IsActive { get; set; }        // filter by active flag
-        public string? City { get; set; }          // exact city match
-        public string? Country { get; set; }       // exact country match
+        public string? Text { get; set; }
+        public int? UserTypeId { get; set; }
+        public bool? IsActive { get; set; }
+        public string? Country { get; set; }
+        public string? City { get; set; }
     }
 }

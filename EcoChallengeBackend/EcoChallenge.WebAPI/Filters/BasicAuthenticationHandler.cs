@@ -10,15 +10,15 @@ using System.Text.Encodings.Web;
 
 namespace EcoChallenge.WebAPI.Filters
 {
-    public class BasicAuthenticationHandler: AuthenticationHandler<AuthenticationSchemeOptions>
+    public class BasicAuthenticationHandler : AuthenticationHandler<AuthenticationSchemeOptions>
     {
         private readonly IUserService _userService;
 
         public BasicAuthenticationHandler(
-            IOptionsMonitor<AuthenticationSchemeOptions> options, 
-            ILoggerFactory logger, 
-            UrlEncoder encoder, 
-            IUserService userService) 
+            IOptionsMonitor<AuthenticationSchemeOptions> options,
+            ILoggerFactory logger,
+            UrlEncoder encoder,
+            IUserService userService)
             : base(options, logger, encoder)
         {
             _userService = userService;
@@ -65,7 +65,7 @@ namespace EcoChallenge.WebAPI.Filters
                 new Claim(ClaimTypes.GivenName, user.FirstName),
                 new Claim(ClaimTypes.Surname, user.LastName),
                 new Claim(ClaimTypes.Email, user.Email),
-                new(ClaimTypes.Role,          user.UserType.ToString())
+                new Claim(ClaimTypes.Role, user.UserTypeName)
             };
 
             var identity = new ClaimsIdentity(claims, Scheme.Name);

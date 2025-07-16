@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EcoChallenge.Services.Migrations
 {
     [DbContext(typeof(EcoChallengeDbContext))]
-    [Migration("20250711231204_InitialCreate")]
+    [Migration("20250716221351_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -60,13 +60,9 @@ namespace EcoChallenge.Services.Migrations
                         .HasColumnType("int")
                         .HasColumnName("points_earned");
 
-                    b.Property<int>("RelatedEntityId")
+                    b.Property<int>("RelatedEntityTypeId")
                         .HasColumnType("int")
-                        .HasColumnName("related_entity_id");
-
-                    b.Property<int>("RelatedEntityType")
-                        .HasColumnType("int")
-                        .HasColumnName("related_entity_type");
+                        .HasColumnName("related_entity_type_id");
 
                     b.Property<int?>("RequestId")
                         .HasColumnType("int");
@@ -86,6 +82,8 @@ namespace EcoChallenge.Services.Migrations
 
                     b.HasIndex("EventId");
 
+                    b.HasIndex("RelatedEntityTypeId");
+
                     b.HasIndex("RequestId");
 
                     b.HasIndex("RewardId");
@@ -93,6 +91,17 @@ namespace EcoChallenge.Services.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("ActivityHistories");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            ActivityType = 0,
+                            CreatedAt = new DateTime(2025, 6, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            PointsEarned = 0,
+                            RelatedEntityTypeId = 1,
+                            UserId = 2
+                        });
                 });
 
             modelBuilder.Entity("EcoChallenge.Services.Database.Entities.AdminLog", b =>
@@ -132,13 +141,9 @@ namespace EcoChallenge.Services.Migrations
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("old_values");
 
-                    b.Property<int?>("TargetEntityId")
+                    b.Property<int>("TargetEntityTypeId")
                         .HasColumnType("int")
-                        .HasColumnName("target_entity_id");
-
-                    b.Property<int>("TargetEntityType")
-                        .HasColumnType("int")
-                        .HasColumnName("target_entity_type");
+                        .HasColumnName("target_entity_type_id");
 
                     b.Property<string>("UserAgent")
                         .HasColumnType("nvarchar(max)")
@@ -148,7 +153,20 @@ namespace EcoChallenge.Services.Migrations
 
                     b.HasIndex("AdminUserId");
 
+                    b.HasIndex("TargetEntityTypeId");
+
                     b.ToTable("AdminLogs");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            ActionDescription = "Approved request #2",
+                            ActionType = 0,
+                            AdminUserId = 1,
+                            CreatedAt = new DateTime(2025, 6, 2, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            TargetEntityTypeId = 2
+                        });
                 });
 
             modelBuilder.Entity("EcoChallenge.Services.Database.Entities.Badge", b =>
@@ -159,17 +177,17 @@ namespace EcoChallenge.Services.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("BadgeType")
+                    b.Property<int>("BadgeTypeId")
                         .HasColumnType("int")
-                        .HasColumnName("badge_type");
+                        .HasColumnName("badge_type_id");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2")
                         .HasColumnName("created_at");
 
-                    b.Property<int>("CriteriaType")
+                    b.Property<int>("CriteriaTypeId")
                         .HasColumnType("int")
-                        .HasColumnName("criteria_type");
+                        .HasColumnName("criteria_type_id");
 
                     b.Property<int>("CriteriaValue")
                         .HasColumnType("int")
@@ -196,7 +214,72 @@ namespace EcoChallenge.Services.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("BadgeTypeId");
+
+                    b.HasIndex("CriteriaTypeId");
+
                     b.ToTable("Badges");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            BadgeTypeId = 3,
+                            CreatedAt = new DateTime(2025, 4, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            CriteriaTypeId = 1,
+                            CriteriaValue = 1,
+                            IsActive = true,
+                            Name = "First Cleanup"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            BadgeTypeId = 2,
+                            CreatedAt = new DateTime(2025, 4, 2, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            CriteriaTypeId = 4,
+                            CriteriaValue = 1,
+                            IsActive = true,
+                            Name = "Donation Star"
+                        });
+                });
+
+            modelBuilder.Entity("EcoChallenge.Services.Database.Entities.BadgeType", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("BadgeTypes");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "Participation"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "Achievement"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Name = "Milestone"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Name = "Special"
+                        });
                 });
 
             modelBuilder.Entity("EcoChallenge.Services.Database.Entities.ChatMessage", b =>
@@ -262,6 +345,64 @@ namespace EcoChallenge.Services.Migrations
                     b.HasIndex("SenderUserId");
 
                     b.ToTable("ChatMessages");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            EventId = 1,
+                            IsAdminMessage = false,
+                            IsDeleted = false,
+                            IsReported = false,
+                            MessageText = "Looking forward to helping!",
+                            MessageType = 0,
+                            SenderUserId = 2,
+                            SentAt = new DateTime(2025, 6, 20, 0, 0, 0, 0, DateTimeKind.Unspecified)
+                        });
+                });
+
+            modelBuilder.Entity("EcoChallenge.Services.Database.Entities.CriteriaType", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("CriteriaType");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "Count"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "Points"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Name = "EventsOrganized"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Name = "DonationsMade"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Name = "Special"
+                        });
                 });
 
             modelBuilder.Entity("EcoChallenge.Services.Database.Entities.Donation", b =>
@@ -317,9 +458,9 @@ namespace EcoChallenge.Services.Migrations
                         .HasColumnType("datetime2")
                         .HasColumnName("processed_at");
 
-                    b.Property<int>("Status")
+                    b.Property<int>("StatusId")
                         .HasColumnType("int")
-                        .HasColumnName("status");
+                        .HasColumnName("status_id");
 
                     b.Property<int>("UserId")
                         .HasColumnType("int")
@@ -329,9 +470,119 @@ namespace EcoChallenge.Services.Migrations
 
                     b.HasIndex("OrganizationId");
 
+                    b.HasIndex("StatusId");
+
                     b.HasIndex("UserId");
 
                     b.ToTable("Donations");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Amount = 20.00m,
+                            CreatedAt = new DateTime(2025, 6, 5, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Currency = "USD",
+                            IsAnonymous = false,
+                            OrganizationId = 1,
+                            PointsEarned = 0,
+                            ProcessedAt = new DateTime(2025, 6, 6, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            StatusId = 2,
+                            UserId = 2
+                        });
+                });
+
+            modelBuilder.Entity("EcoChallenge.Services.Database.Entities.DonationStatus", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("DonationStatuses");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "Pending"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "Completed"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Name = "Failed"
+                        });
+                });
+
+            modelBuilder.Entity("EcoChallenge.Services.Database.Entities.EntityType", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("EntityTypes");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "Request"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "Event"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Name = "Donation"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Name = "Badge"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Name = "Reward"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Name = "Message"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Name = "Gallery"
+                        },
+                        new
+                        {
+                            Id = 8,
+                            Name = "User "
+                        });
                 });
 
             modelBuilder.Entity("EcoChallenge.Services.Database.Entities.Event", b =>
@@ -382,9 +633,9 @@ namespace EcoChallenge.Services.Migrations
                         .HasColumnType("time")
                         .HasColumnName("event_time");
 
-                    b.Property<int>("EventType")
+                    b.Property<int>("EventTypeId")
                         .HasColumnType("int")
-                        .HasColumnName("event_type");
+                        .HasColumnName("event_type_id");
 
                     b.Property<string>("ImageUrl")
                         .HasMaxLength(255)
@@ -414,9 +665,9 @@ namespace EcoChallenge.Services.Migrations
                     b.Property<int?>("RequestId")
                         .HasColumnType("int");
 
-                    b.Property<int>("Status")
+                    b.Property<int>("StatusId")
                         .HasColumnType("int")
-                        .HasColumnName("status");
+                        .HasColumnName("status_id");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -434,15 +685,58 @@ namespace EcoChallenge.Services.Migrations
 
                     b.HasIndex("EventDate");
 
+                    b.HasIndex("EventTypeId");
+
                     b.HasIndex("LocationId");
 
                     b.HasIndex("RelatedRequestId");
 
                     b.HasIndex("RequestId");
 
-                    b.HasIndex("Status");
+                    b.HasIndex("StatusId");
 
                     b.ToTable("Events");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            AdminApproved = false,
+                            CreatedAt = new DateTime(2025, 6, 10, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            CreatorUserId = 1,
+                            CurrentParticipants = 0,
+                            DurationMinutes = 120,
+                            EquipmentProvided = false,
+                            EventDate = new DateTime(2025, 7, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            EventTime = new TimeSpan(0, 9, 0, 0, 0),
+                            EventTypeId = 1,
+                            IsPaidRequest = false,
+                            LocationId = 1,
+                            MaxParticipants = 0,
+                            RelatedRequestId = 1,
+                            StatusId = 2,
+                            Title = "Park Cleanup",
+                            UpdatedAt = new DateTime(2025, 6, 10, 0, 0, 0, 0, DateTimeKind.Unspecified)
+                        },
+                        new
+                        {
+                            Id = 2,
+                            AdminApproved = false,
+                            CreatedAt = new DateTime(2025, 6, 11, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            CreatorUserId = 3,
+                            CurrentParticipants = 0,
+                            DurationMinutes = 120,
+                            EquipmentProvided = false,
+                            EventDate = new DateTime(2025, 7, 5, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            EventTime = new TimeSpan(0, 14, 0, 0, 0),
+                            EventTypeId = 2,
+                            IsPaidRequest = false,
+                            LocationId = 2,
+                            MaxParticipants = 0,
+                            StatusId = 1,
+                            Title = "Beach Education",
+                            UpdatedAt = new DateTime(2025, 6, 11, 0, 0, 0, 0, DateTimeKind.Unspecified)
+                        });
                 });
 
             modelBuilder.Entity("EcoChallenge.Services.Database.Entities.EventParticipant", b =>
@@ -481,6 +775,104 @@ namespace EcoChallenge.Services.Migrations
                         .IsUnique();
 
                     b.ToTable("EventParticipants");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            EventId = 1,
+                            JoinedAt = new DateTime(2025, 6, 15, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            PointsEarned = 0,
+                            Status = 0,
+                            UserId = 2
+                        },
+                        new
+                        {
+                            Id = 2,
+                            EventId = 1,
+                            JoinedAt = new DateTime(2025, 6, 16, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            PointsEarned = 0,
+                            Status = 0,
+                            UserId = 3
+                        });
+                });
+
+            modelBuilder.Entity("EcoChallenge.Services.Database.Entities.EventStatus", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("EventStatuses");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "Draft"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "Published"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Name = "Completed"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Name = "InProgress"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Name = "Cancelled"
+                        });
+                });
+
+            modelBuilder.Entity("EcoChallenge.Services.Database.Entities.EventType", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("EventTypes");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "Cleanup"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "Community "
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Name = "Fundraiser"
+                        });
                 });
 
             modelBuilder.Entity("EcoChallenge.Services.Database.Entities.Gallery", b =>
@@ -567,6 +959,40 @@ namespace EcoChallenge.Services.Migrations
                         {
                             t.HasCheckConstraint("CK_Gallery_RelatedEntity", "request_id IS NOT NULL OR event_id IS NOT NULL");
                         });
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            DislikesCount = 0,
+                            ImageType = 0,
+                            ImageUrl = "/images/before1.jpg",
+                            IsApproved = true,
+                            IsFeatured = false,
+                            IsReported = false,
+                            LikesCount = 0,
+                            LocationId = 1,
+                            ReportCount = 0,
+                            RequestId = 1,
+                            UploadedAt = new DateTime(2025, 6, 2, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            UserId = 2
+                        },
+                        new
+                        {
+                            Id = 2,
+                            DislikesCount = 0,
+                            EventId = 1,
+                            ImageType = 2,
+                            ImageUrl = "/images/during1.jpg",
+                            IsApproved = true,
+                            IsFeatured = false,
+                            IsReported = false,
+                            LikesCount = 0,
+                            LocationId = 1,
+                            ReportCount = 0,
+                            UploadedAt = new DateTime(2025, 7, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            UserId = 3
+                        });
                 });
 
             modelBuilder.Entity("EcoChallenge.Services.Database.Entities.GalleryReaction", b =>
@@ -606,6 +1032,16 @@ namespace EcoChallenge.Services.Migrations
                         .IsUnique();
 
                     b.ToTable("GalleryReactions");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedAt = new DateTime(2025, 6, 3, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            GalleryId = 1,
+                            ReactionType = 0,
+                            UserId = 3
+                        });
                 });
 
             modelBuilder.Entity("EcoChallenge.Services.Database.Entities.Location", b =>
@@ -667,6 +1103,30 @@ namespace EcoChallenge.Services.Migrations
                     b.HasIndex("Latitude", "Longitude");
 
                     b.ToTable("Locations");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            City = "Mostar",
+                            Country = "BiH",
+                            CreatedAt = new DateTime(2025, 3, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Latitude = 43.3436m,
+                            LocationType = 4,
+                            Longitude = 17.8083m,
+                            Name = "Riverbank Park"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            City = "Neum",
+                            Country = "BiH",
+                            CreatedAt = new DateTime(2025, 3, 2, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Latitude = 42.4300m,
+                            LocationType = 2,
+                            Longitude = 18.6413m,
+                            Name = "City Beach"
+                        });
                 });
 
             modelBuilder.Entity("EcoChallenge.Services.Database.Entities.Notification", b =>
@@ -702,14 +1162,6 @@ namespace EcoChallenge.Services.Migrations
                         .HasColumnType("datetime2")
                         .HasColumnName("read_at");
 
-                    b.Property<int?>("RelatedEntityId")
-                        .HasColumnType("int")
-                        .HasColumnName("related_entity_id");
-
-                    b.Property<int?>("RelatedEntityType")
-                        .HasColumnType("int")
-                        .HasColumnName("related_entity_type");
-
                     b.Property<int?>("RewardId")
                         .HasColumnType("int");
 
@@ -730,6 +1182,30 @@ namespace EcoChallenge.Services.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Notifications");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedAt = new DateTime(2025, 6, 8, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsPushed = false,
+                            IsRead = false,
+                            Message = "We’ve approved your request #1. Thank you!",
+                            NotificationType = 0,
+                            Title = "Your cleanup request was approved",
+                            UserId = 2
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CreatedAt = new DateTime(2025, 6, 30, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsPushed = false,
+                            IsRead = false,
+                            Message = "Don’t forget our Park Cleanup event on 2025-07-01 at 09:00.",
+                            NotificationType = 2,
+                            Title = "Reminder: Park Cleanup tomorrow",
+                            UserId = 2
+                        });
                 });
 
             modelBuilder.Entity("EcoChallenge.Services.Database.Entities.Organization", b =>
@@ -794,6 +1270,32 @@ namespace EcoChallenge.Services.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Organizations");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            ContactEmail = "contact@greenearth.org",
+                            CreatedAt = new DateTime(2025, 2, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Description = "Environmental NGO",
+                            IsActive = true,
+                            IsVerified = false,
+                            Name = "GreenEarth",
+                            UpdatedAt = new DateTime(2025, 2, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Website = "https://greenearth.org"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            ContactEmail = "info@oceancare.org",
+                            CreatedAt = new DateTime(2025, 2, 2, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Description = "Marine conservation group",
+                            IsActive = true,
+                            IsVerified = false,
+                            Name = "OceanCare",
+                            UpdatedAt = new DateTime(2025, 2, 2, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Website = "https://oceancare.org"
+                        });
                 });
 
             modelBuilder.Entity("EcoChallenge.Services.Database.Entities.Report", b =>
@@ -816,13 +1318,9 @@ namespace EcoChallenge.Services.Migrations
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("report_description");
 
-                    b.Property<int>("EntityId")
+                    b.Property<int>("EntityTypeId")
                         .HasColumnType("int")
-                        .HasColumnName("reported_entity_id");
-
-                    b.Property<int>("EntityType")
-                        .HasColumnType("int")
-                        .HasColumnName("reported_entity_type");
+                        .HasColumnName("reported_entity_type_id");
 
                     b.Property<int>("Reason")
                         .HasColumnType("int")
@@ -846,11 +1344,24 @@ namespace EcoChallenge.Services.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("EntityTypeId");
+
                     b.HasIndex("ReporterUserId");
 
                     b.HasIndex("ResolvedByAdminId");
 
                     b.ToTable("Reports");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedAt = new DateTime(2025, 6, 15, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            EntityTypeId = 2,
+                            Reason = 0,
+                            ReporterUserId = 3,
+                            Status = 0
+                        });
                 });
 
             modelBuilder.Entity("EcoChallenge.Services.Database.Entities.Request", b =>
@@ -936,9 +1447,9 @@ namespace EcoChallenge.Services.Migrations
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("rejection_reason");
 
-                    b.Property<int>("Status")
+                    b.Property<int>("StatusId")
                         .HasColumnType("int")
-                        .HasColumnName("status");
+                        .HasColumnName("status_id");
 
                     b.Property<decimal>("SuggestedRewardMoney")
                         .HasPrecision(10, 2)
@@ -967,9 +1478,9 @@ namespace EcoChallenge.Services.Migrations
                         .HasColumnType("int")
                         .HasColumnName("user_id");
 
-                    b.Property<int>("WasteType")
+                    b.Property<int>("WasteTypeId")
                         .HasColumnType("int")
-                        .HasColumnName("waste_type");
+                        .HasColumnName("waste_type_id");
 
                     b.HasKey("Id");
 
@@ -979,11 +1490,104 @@ namespace EcoChallenge.Services.Migrations
 
                     b.HasIndex("LocationId");
 
-                    b.HasIndex("Status");
+                    b.HasIndex("StatusId");
 
                     b.HasIndex("UserId");
 
+                    b.HasIndex("WasteTypeId");
+
                     b.ToTable("Requests");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            ActualRewardMoney = 0m,
+                            ActualRewardPoints = 0,
+                            CreatedAt = new DateTime(2025, 6, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            EstimatedAmount = 0,
+                            LocationId = 1,
+                            StatusId = 1,
+                            SuggestedRewardMoney = 0m,
+                            SuggestedRewardPoints = 0,
+                            Title = "Trash at Park",
+                            UpdatedAt = new DateTime(2025, 6, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            UrgencyLevel = 1,
+                            UserId = 2,
+                            WasteTypeId = 5
+                        },
+                        new
+                        {
+                            Id = 2,
+                            ActualRewardMoney = 0m,
+                            ActualRewardPoints = 0,
+                            AssignedAdminId = 1,
+                            CreatedAt = new DateTime(2025, 6, 2, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            EstimatedAmount = 2,
+                            LocationId = 2,
+                            StatusId = 2,
+                            SuggestedRewardMoney = 0m,
+                            SuggestedRewardPoints = 0,
+                            Title = "Plastic on Beach",
+                            UpdatedAt = new DateTime(2025, 6, 2, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            UrgencyLevel = 2,
+                            UserId = 3,
+                            WasteTypeId = 1
+                        });
+                });
+
+            modelBuilder.Entity("EcoChallenge.Services.Database.Entities.RequestStatus", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("RequestStatuses");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "Pending"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "UnderReview"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Name = "Approved"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Name = "Rejected"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Name = "InProgress"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Name = "Completed"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Name = "Cancelled "
+                        });
                 });
 
             modelBuilder.Entity("EcoChallenge.Services.Database.Entities.Reward", b =>
@@ -1045,9 +1649,9 @@ namespace EcoChallenge.Services.Migrations
                         .HasColumnType("int")
                         .HasColumnName("request_id");
 
-                    b.Property<int>("RewardType")
+                    b.Property<int>("RewardTypeId")
                         .HasColumnType("int")
-                        .HasColumnName("reward_type");
+                        .HasColumnName("reward_type_id");
 
                     b.Property<int>("Status")
                         .HasColumnType("int")
@@ -1069,18 +1673,88 @@ namespace EcoChallenge.Services.Migrations
 
                     b.HasIndex("RequestId");
 
+                    b.HasIndex("RewardTypeId");
+
                     b.HasIndex("UserId");
 
                     b.ToTable("Rewards");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            ApprovedAt = new DateTime(2025, 6, 8, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            CreatedAt = new DateTime(2025, 6, 7, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Currency = "USD",
+                            MoneyAmount = 0m,
+                            PointsAmount = 50,
+                            RequestId = 1,
+                            RewardTypeId = 1,
+                            Status = 1,
+                            UserId = 2
+                        },
+                        new
+                        {
+                            Id = 2,
+                            BadgeId = 2,
+                            CreatedAt = new DateTime(2025, 6, 10, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Currency = "USD",
+                            DonationId = 1,
+                            MoneyAmount = 0m,
+                            PaidAt = new DateTime(2025, 6, 11, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            PointsAmount = 0,
+                            RewardTypeId = 3,
+                            Status = 2,
+                            UserId = 2
+                        });
+                });
+
+            modelBuilder.Entity("EcoChallenge.Services.Database.Entities.RewardType", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("RewardTypes");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "Points"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "Money"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Name = "Badge"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Name = "Combo"
+                        });
                 });
 
             modelBuilder.Entity("EcoChallenge.Services.Database.Entities.SystemSetting", b =>
                 {
-                    b.Property<int>("SettingId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SettingId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2")
@@ -1116,7 +1790,7 @@ namespace EcoChallenge.Services.Migrations
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("setting_value");
 
-                    b.HasKey("SettingId");
+                    b.HasKey("Id");
 
                     b.HasIndex("Key")
                         .IsUnique();
@@ -1124,6 +1798,77 @@ namespace EcoChallenge.Services.Migrations
                     b.HasIndex("UpdatedByAdminId");
 
                     b.ToTable("SystemSettings");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedAt = new DateTime(2025, 5, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsPublic = true,
+                            Key = "default_points_per_cleanup",
+                            Type = 1,
+                            UpdatedAt = new DateTime(2025, 5, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Value = "50"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CreatedAt = new DateTime(2025, 5, 2, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsPublic = false,
+                            Key = "maintenance_mode",
+                            Type = 3,
+                            UpdatedAt = new DateTime(2025, 5, 2, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Value = "false"
+                        });
+                });
+
+            modelBuilder.Entity("EcoChallenge.Services.Database.Entities.TargetEntityType", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("TargetEntityTypes");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "User"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "Request"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Name = "Event"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Name = "Reward"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Name = "Organization"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Name = "System "
+                        });
                 });
 
             modelBuilder.Entity("EcoChallenge.Services.Database.Entities.User", b =>
@@ -1218,9 +1963,9 @@ namespace EcoChallenge.Services.Migrations
                         .HasColumnType("datetime2")
                         .HasColumnName("updated_at");
 
-                    b.Property<int>("UserType")
+                    b.Property<int>("UserTypeId")
                         .HasColumnType("int")
-                        .HasColumnName("user_type");
+                        .HasColumnName("user_type_id");
 
                     b.Property<string>("Username")
                         .IsRequired()
@@ -1233,10 +1978,71 @@ namespace EcoChallenge.Services.Migrations
                     b.HasIndex("Email")
                         .IsUnique();
 
+                    b.HasIndex("UserTypeId");
+
                     b.HasIndex("Username")
                         .IsUnique();
 
                     b.ToTable("Users");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            City = "Mostar",
+                            Country = "BiH",
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Email = "alice@example.com",
+                            FirstName = "Alice",
+                            IsActive = true,
+                            LastName = "Anderson",
+                            PasswordHash = "HASH1",
+                            TotalCleanups = 0,
+                            TotalEventsOrganized = 0,
+                            TotalEventsParticipated = 0,
+                            TotalPoints = 0,
+                            UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            UserTypeId = 1,
+                            Username = "alice"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            City = "Sarajevo",
+                            Country = "BiH",
+                            CreatedAt = new DateTime(2025, 1, 2, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Email = "bob@example.com",
+                            FirstName = "Bob",
+                            IsActive = true,
+                            LastName = "Baker",
+                            PasswordHash = "HASH2",
+                            TotalCleanups = 0,
+                            TotalEventsOrganized = 0,
+                            TotalEventsParticipated = 0,
+                            TotalPoints = 0,
+                            UpdatedAt = new DateTime(2025, 1, 2, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            UserTypeId = 2,
+                            Username = "bob"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            City = "Mostar",
+                            Country = "BiH",
+                            CreatedAt = new DateTime(2025, 1, 3, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Email = "carol@example.com",
+                            FirstName = "Carol",
+                            IsActive = true,
+                            LastName = "Clark",
+                            PasswordHash = "HASH3",
+                            TotalCleanups = 0,
+                            TotalEventsOrganized = 0,
+                            TotalEventsParticipated = 0,
+                            TotalPoints = 0,
+                            UpdatedAt = new DateTime(2025, 1, 3, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            UserTypeId = 4,
+                            Username = "carol"
+                        });
                 });
 
             modelBuilder.Entity("EcoChallenge.Services.Database.Entities.UserBadge", b =>
@@ -1267,6 +2073,108 @@ namespace EcoChallenge.Services.Migrations
                         .IsUnique();
 
                     b.ToTable("UserBadges");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            BadgeId = 1,
+                            EarnedAt = new DateTime(2025, 6, 9, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            UserId = 2
+                        });
+                });
+
+            modelBuilder.Entity("EcoChallenge.Services.Database.Entities.UserType", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("UserTypes");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "Admin"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "User"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Name = "Moderator"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Name = "Finance"
+                        });
+                });
+
+            modelBuilder.Entity("EcoChallenge.Services.Database.Entities.WasteType", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("WasteTypes");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "Plastic"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "Glass"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Name = "Metal"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Name = "Organic"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Name = "Mixed"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Name = "Hazardous"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Name = "Other "
+                        });
                 });
 
             modelBuilder.Entity("EcoChallenge.Services.Database.Entities.ActivityHistory", b =>
@@ -1278,6 +2186,12 @@ namespace EcoChallenge.Services.Migrations
                     b.HasOne("EcoChallenge.Services.Database.Entities.Event", null)
                         .WithMany("ActivityLogs")
                         .HasForeignKey("EventId");
+
+                    b.HasOne("EcoChallenge.Services.Database.Entities.EntityType", "RelatedEntityType")
+                        .WithMany()
+                        .HasForeignKey("RelatedEntityTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("EcoChallenge.Services.Database.Entities.Request", null)
                         .WithMany("History")
@@ -1293,6 +2207,8 @@ namespace EcoChallenge.Services.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.Navigation("RelatedEntityType");
+
                     b.Navigation("User");
                 });
 
@@ -1304,7 +2220,34 @@ namespace EcoChallenge.Services.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("EcoChallenge.Services.Database.Entities.TargetEntityType", "TargetEntityType")
+                        .WithMany()
+                        .HasForeignKey("TargetEntityTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("AdminUser");
+
+                    b.Navigation("TargetEntityType");
+                });
+
+            modelBuilder.Entity("EcoChallenge.Services.Database.Entities.Badge", b =>
+                {
+                    b.HasOne("EcoChallenge.Services.Database.Entities.BadgeType", "BadgeType")
+                        .WithMany("Badges")
+                        .HasForeignKey("BadgeTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("EcoChallenge.Services.Database.Entities.CriteriaType", "CriteriaType")
+                        .WithMany("Badges")
+                        .HasForeignKey("CriteriaTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("BadgeType");
+
+                    b.Navigation("CriteriaType");
                 });
 
             modelBuilder.Entity("EcoChallenge.Services.Database.Entities.ChatMessage", b =>
@@ -1341,6 +2284,12 @@ namespace EcoChallenge.Services.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("EcoChallenge.Services.Database.Entities.DonationStatus", "Status")
+                        .WithMany("Donations")
+                        .HasForeignKey("StatusId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("EcoChallenge.Services.Database.Entities.User", "User")
                         .WithMany("Donations")
                         .HasForeignKey("UserId")
@@ -1348,6 +2297,8 @@ namespace EcoChallenge.Services.Migrations
                         .IsRequired();
 
                     b.Navigation("Organization");
+
+                    b.Navigation("Status");
 
                     b.Navigation("User");
                 });
@@ -1358,6 +2309,12 @@ namespace EcoChallenge.Services.Migrations
                         .WithMany("CreatedEvents")
                         .HasForeignKey("CreatorUserId")
                         .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("EcoChallenge.Services.Database.Entities.EventType", "EventType")
+                        .WithMany("Events")
+                        .HasForeignKey("EventTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("EcoChallenge.Services.Database.Entities.Location", "Location")
@@ -1375,11 +2332,21 @@ namespace EcoChallenge.Services.Migrations
                         .WithMany("Events")
                         .HasForeignKey("RequestId");
 
+                    b.HasOne("EcoChallenge.Services.Database.Entities.EventStatus", "Status")
+                        .WithMany("Events")
+                        .HasForeignKey("StatusId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Creator");
+
+                    b.Navigation("EventType");
 
                     b.Navigation("Location");
 
                     b.Navigation("RelatedRequest");
+
+                    b.Navigation("Status");
                 });
 
             modelBuilder.Entity("EcoChallenge.Services.Database.Entities.EventParticipant", b =>
@@ -1474,6 +2441,12 @@ namespace EcoChallenge.Services.Migrations
 
             modelBuilder.Entity("EcoChallenge.Services.Database.Entities.Report", b =>
                 {
+                    b.HasOne("EcoChallenge.Services.Database.Entities.TargetEntityType", "EntityType")
+                        .WithMany()
+                        .HasForeignKey("EntityTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("EcoChallenge.Services.Database.Entities.User", "Reporter")
                         .WithMany("Reports")
                         .HasForeignKey("ReporterUserId")
@@ -1484,6 +2457,8 @@ namespace EcoChallenge.Services.Migrations
                         .WithMany("ResolvedReports")
                         .HasForeignKey("ResolvedByAdminId")
                         .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("EntityType");
 
                     b.Navigation("Reporter");
 
@@ -1503,17 +2478,33 @@ namespace EcoChallenge.Services.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("EcoChallenge.Services.Database.Entities.RequestStatus", "Status")
+                        .WithMany("Requests")
+                        .HasForeignKey("StatusId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("EcoChallenge.Services.Database.Entities.User", "User")
                         .WithMany("Requests")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("EcoChallenge.Services.Database.Entities.WasteType", "WasteType")
+                        .WithMany()
+                        .HasForeignKey("WasteTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("AssignedAdmin");
 
                     b.Navigation("Location");
 
+                    b.Navigation("Status");
+
                     b.Navigation("User");
+
+                    b.Navigation("WasteType");
                 });
 
             modelBuilder.Entity("EcoChallenge.Services.Database.Entities.Reward", b =>
@@ -1543,6 +2534,12 @@ namespace EcoChallenge.Services.Migrations
                         .HasForeignKey("RequestId")
                         .OnDelete(DeleteBehavior.SetNull);
 
+                    b.HasOne("EcoChallenge.Services.Database.Entities.RewardType", "RewardType")
+                        .WithMany("Rewards")
+                        .HasForeignKey("RewardTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("EcoChallenge.Services.Database.Entities.User", "User")
                         .WithMany("Rewards")
                         .HasForeignKey("UserId")
@@ -1559,6 +2556,8 @@ namespace EcoChallenge.Services.Migrations
 
                     b.Navigation("Request");
 
+                    b.Navigation("RewardType");
+
                     b.Navigation("User");
                 });
 
@@ -1570,6 +2569,17 @@ namespace EcoChallenge.Services.Migrations
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("UpdatedBy");
+                });
+
+            modelBuilder.Entity("EcoChallenge.Services.Database.Entities.User", b =>
+                {
+                    b.HasOne("EcoChallenge.Services.Database.Entities.UserType", "UserType")
+                        .WithMany("Users")
+                        .HasForeignKey("UserTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("UserType");
                 });
 
             modelBuilder.Entity("EcoChallenge.Services.Database.Entities.UserBadge", b =>
@@ -1598,11 +2608,26 @@ namespace EcoChallenge.Services.Migrations
                     b.Navigation("UserBadges");
                 });
 
+            modelBuilder.Entity("EcoChallenge.Services.Database.Entities.BadgeType", b =>
+                {
+                    b.Navigation("Badges");
+                });
+
+            modelBuilder.Entity("EcoChallenge.Services.Database.Entities.CriteriaType", b =>
+                {
+                    b.Navigation("Badges");
+                });
+
             modelBuilder.Entity("EcoChallenge.Services.Database.Entities.Donation", b =>
                 {
                     b.Navigation("ActivityLogs");
 
                     b.Navigation("Rewards");
+                });
+
+            modelBuilder.Entity("EcoChallenge.Services.Database.Entities.DonationStatus", b =>
+                {
+                    b.Navigation("Donations");
                 });
 
             modelBuilder.Entity("EcoChallenge.Services.Database.Entities.Event", b =>
@@ -1616,6 +2641,16 @@ namespace EcoChallenge.Services.Migrations
                     b.Navigation("Participants");
 
                     b.Navigation("Rewards");
+                });
+
+            modelBuilder.Entity("EcoChallenge.Services.Database.Entities.EventStatus", b =>
+                {
+                    b.Navigation("Events");
+                });
+
+            modelBuilder.Entity("EcoChallenge.Services.Database.Entities.EventType", b =>
+                {
+                    b.Navigation("Events");
                 });
 
             modelBuilder.Entity("EcoChallenge.Services.Database.Entities.Gallery", b =>
@@ -1648,11 +2683,21 @@ namespace EcoChallenge.Services.Migrations
                     b.Navigation("Rewards");
                 });
 
+            modelBuilder.Entity("EcoChallenge.Services.Database.Entities.RequestStatus", b =>
+                {
+                    b.Navigation("Requests");
+                });
+
             modelBuilder.Entity("EcoChallenge.Services.Database.Entities.Reward", b =>
                 {
                     b.Navigation("ActivityLogs");
 
                     b.Navigation("Notifications");
+                });
+
+            modelBuilder.Entity("EcoChallenge.Services.Database.Entities.RewardType", b =>
+                {
+                    b.Navigation("Rewards");
                 });
 
             modelBuilder.Entity("EcoChallenge.Services.Database.Entities.User", b =>
@@ -1688,6 +2733,11 @@ namespace EcoChallenge.Services.Migrations
                     b.Navigation("UpdatedSettings");
 
                     b.Navigation("UserBadges");
+                });
+
+            modelBuilder.Entity("EcoChallenge.Services.Database.Entities.UserType", b =>
+                {
+                    b.Navigation("Users");
                 });
 #pragma warning restore 612, 618
         }

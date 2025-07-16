@@ -10,11 +10,14 @@ using System.Threading.Tasks;
 
 namespace EcoChallenge.Services.Mapping
 {
-    public class UserProfile: Profile
+    public class UserProfile : Profile
     {
         public UserProfile()
         {
-            CreateMap<User, UserResponse>();
+            CreateMap<User, UserResponse>()
+               .ForMember(dest => dest.UserTypeName,
+                    opt => opt.MapFrom(src => src.UserType != null ? src.UserType.Name : null));
+
 
             CreateMap<UserInsertRequest, User>()
                 .ForMember(u => u.PasswordHash, o => o.Ignore()); // keep PasswordHash out

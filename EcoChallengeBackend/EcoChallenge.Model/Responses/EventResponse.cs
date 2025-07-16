@@ -10,10 +10,12 @@ namespace EcoChallenge.Models.Responses
     public class EventResponse
     {
         public int Id { get; set; }
-        public string Title { get; set; } = string.Empty;
+        public int CreatorUserId { get; set; }
+        public int LocationId { get; set; }
+        public string? Title { get; set; }
         public string? Description { get; set; }
         public string? ImageUrl { get; set; }
-        public EventType EventType { get; set; }
+        public int EventTypeId { get; set; }
         public int MaxParticipants { get; set; }
         public int CurrentParticipants { get; set; }
         public DateTime EventDate { get; set; }
@@ -22,8 +24,11 @@ namespace EcoChallenge.Models.Responses
         public bool EquipmentProvided { get; set; }
         public string? EquipmentList { get; set; }
         public string? MeetingPoint { get; set; }
-        public EventStatus Status { get; set; }
+        public int StatusId { get; set; }
+        public bool IsPaidRequest { get; set; }
+        public int? RelatedRequestId { get; set; }
         public bool AdminApproved { get; set; }
         public DateTime CreatedAt { get; set; }
+        public DateTime UpdatedAt { get; set; }
     }
 }
