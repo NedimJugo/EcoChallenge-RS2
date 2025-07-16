@@ -35,6 +35,86 @@ namespace EcoChallenge.Services.Services
             _db = db;
         }
 
+        public override async Task<PagedResult<UserResponse>> GetAsync(UserSearchObject search, CancellationToken cancellationToken = default)
+        {
+            var query = _db.Users.Include(u => u.UserType).AsQueryable();
+
+            // Filter po Text (možeš proširiti kako želiš)
+            if (!string.IsNullOrWhiteSpace(search.Text))
+            {
+                string lowerText = search.Text.ToLower();
+                query = query.Where(u =>
+                    u.Username!.ToLower().Contains(lowerText) ||
+                    u.FirstName!.ToLower().Contains(lowerText) ||
+                    u.LastName!.ToLower().Contains(lowerText) ||
+                    u.Email!.ToLower().Contains(lowerText));
+            }
+
+            // Filter po UserTypeId
+            if (search.UserTypeId.HasValue)
+            {
+                query = query.Where(u => u.UserTypeId == search.UserTypeId.Value);
+            }
+
+            // Filter po IsActive
+            if (search.IsActive.HasValue)
+            {
+                query = query.Where(u => u.IsActive == search.IsActive.Value);
+            }
+
+            // Filter po Country
+            if (!string.IsNullOrWhiteSpace(search.Country))
+            {
+                string lowerCountry = search.Country.ToLower();
+                query = query.Where(u => u.Country != null && u.Country.ToLower() == lowerCountry);
+            }
+
+            // Filter po City
+            if (!string.IsNullOrWhiteSpace(search.City))
+            {
+                string lowerCity = search.City.ToLower();
+                query = query.Where(u => u.City != null && u.City.ToLower() == lowerCity);
+            }
+
+            // Ukupni broj zapisa prije paginacije
+            int totalCount = 0;
+            if (search.IncludeTotalCount)
+                totalCount = await query.CountAsync(cancellationToken);
+
+
+            // Ako se želi dohvatiti sve bez paginacije
+            if (!search.RetrieveAll)
+            {
+                int skip = (search.Page ?? 0) * (search.PageSize ?? 20);
+                int take = search.PageSize ?? 20;
+                query = query.Skip(skip).Take(take);
+            }
+
+            // Dohvati podatke
+            var list = await query.ToListAsync(cancellationToken);
+
+            // Mapiranje u response modele
+            var resultList = _mapper.Map<List<UserResponse>>(list);
+
+            // Vrati paginirani rezultat
+            return new PagedResult<UserResponse>
+            {
+                Items = resultList,
+                TotalCount = totalCount
+            };
+        }
+        public override async Task<UserResponse?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+        {
+            var userEntity = await _db.Users
+                .Include(u => u.UserType)  // OVDE je ključ
+                .FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
+
+            if (userEntity == null)
+                return null;
+
+            return _mapper.Map<UserResponse>(userEntity);
+        }
+
         public override async Task<UserResponse> CreateAsync(UserInsertRequest req, CancellationToken ct = default)
         {
             bool emailExists = await _db.Users.AnyAsync(u => u.Email == req.Email, ct);
@@ -70,29 +150,32 @@ namespace EcoChallenge.Services.Services
         {
             if (!string.IsNullOrWhiteSpace(s.Text))
             {
-                string t = s.Text.ToLower();
+                var t = s.Text.ToLower();
                 query = query.Where(u =>
                     u.Username!.ToLower().Contains(t) ||
+                    u.Email!.ToLower().Contains(t) ||
                     u.FirstName!.ToLower().Contains(t) ||
-                    u.LastName!.ToLower().Contains(t) ||
-                    u.Email!.ToLower().Contains(t));
+                    u.LastName!.ToLower().Contains(t));
             }
 
-            if (s.IsActive.HasValue)
-                query = query.Where(u => u.IsActive == s.IsActive);
+            if (s.UserTypeId.HasValue)
+                query = query.Where(u => u.UserTypeId == s.UserTypeId.Value);
 
-            if (!string.IsNullOrWhiteSpace(s.City))
-                query = query.Where(u => u.City == s.City);
+            if (s.IsActive.HasValue)
+                query = query.Where(u => u.IsActive == s.IsActive.Value);
 
             if (!string.IsNullOrWhiteSpace(s.Country))
-                query = query.Where(u => u.Country == s.Country);
+                query = query.Where(u => u.Country != null && u.Country.ToLower().Contains(s.Country.ToLower()));
+
+            if (!string.IsNullOrWhiteSpace(s.City))
+                query = query.Where(u => u.City != null && u.City.ToLower().Contains(s.City.ToLower()));
 
             return query;
         }
 
         public async Task<UserResponse?> AuthenticateUser(UserLoginRequest request, CancellationToken ct = default)
         {
-            var user = await _db.Users.FirstOrDefaultAsync(u => u.Username == request.Username, ct);
+            var user = await _db.Users.Include(u => u.UserType).FirstOrDefaultAsync(u => u.Username == request.Username, ct);
             if (user == null || string.IsNullOrEmpty(user.PasswordHash))
                 return null;
 

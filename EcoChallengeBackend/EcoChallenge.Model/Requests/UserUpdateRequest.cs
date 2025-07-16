@@ -54,7 +54,7 @@ namespace EcoChallenge.Models.Requests
         [Range(0, int.MaxValue, ErrorMessage = "Total events participated must be non-negative")]
         public int? TotalEventsParticipated { get; set; }
 
-        public UserType? UserType { get; set; }
+        public int? UserTypeId { get; set; }
 
         public bool? IsActive { get; set; }
 

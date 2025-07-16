@@ -59,7 +59,7 @@ namespace EcoChallenge.Models.Requests
         public int TotalEventsParticipated { get; set; } = 0;
 
         [Required]
-        public UserType UserType { get; set; } = UserType.User;
+        public int UserTypeId { get; set; }
 
         public bool IsActive { get; set; } = true;
 

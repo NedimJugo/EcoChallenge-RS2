@@ -9,10 +9,10 @@ namespace EcoChallenge.Services.Database.Entities
 {
     public class Donation
     {
-        [Key] 
+        [Key]
         public int Id { get; set; }
 
-        [ForeignKey(nameof(User)), Column("user_id")] 
+        [ForeignKey(nameof(User)), Column("user_id")]
         public int UserId { get; set; }
         public virtual User? User { get; set; }
 
@@ -20,7 +20,7 @@ namespace EcoChallenge.Services.Database.Entities
         public int OrganizationId { get; set; }
         public virtual Organization? Organization { get; set; }
 
-        [Column("amount"), Precision(10,2)]
+        [Column("amount"), Precision(10, 2)]
         public decimal Amount { get; set; }
         [Column("currency"), MaxLength(3)]
         public string Currency { get; set; } = "USD";
@@ -32,8 +32,9 @@ namespace EcoChallenge.Services.Database.Entities
         public string? DonationMessage { get; set; }
         [Column("is_anonymous")]
         public bool IsAnonymous { get; set; } = false;
-        [Required, Column("status")]
-        public DonationStatus Status { get; set; } = DonationStatus.Pending;
+        [Required, ForeignKey(nameof(Status)), Column("status_id")]
+        public int StatusId { get; set; }
+        public virtual DonationStatus? Status { get; set; }
         [Column("points_earned")]
         public int PointsEarned { get; set; }
         [Column("created_at")]

@@ -29,10 +29,17 @@ namespace EcoChallenge.Services.Services
 
         protected override IQueryable<Event> ApplyFilter(IQueryable<Event> query, EventSearchObject s)
         {
+
+            query = query
+               .Include(e => e.Creator)
+               .Include(e => e.Location)
+               .Include(e => e.EventType)
+               .Include(e => e.Status)
+               .Include(e => e.RelatedRequest);
             if (!string.IsNullOrWhiteSpace(s.Text))
             {
                 string t = s.Text.ToLower();
-                query = query.Where(e =>
+                query.Where(e =>
                     e.Title!.ToLower().Contains(t) ||
                     e.Description!.ToLower().Contains(t) ||
                     e.EquipmentList!.ToLower().Contains(t) ||
@@ -40,18 +47,30 @@ namespace EcoChallenge.Services.Services
             }
 
             if (s.Status.HasValue)
-                query = query.Where(e => e.Status == s.Status);
+                query = query.Where(e => e.StatusId == s.Status.Value);
 
             if (s.Type.HasValue)
-                query = query.Where(e => e.EventType == s.Type);
+                query = query.Where(e => e.EventTypeId == s.Type.Value);
 
             if (s.CreatorUserId.HasValue)
-                query = query.Where(e => e.CreatorUserId == s.CreatorUserId);
+                query = query.Where(e => e.CreatorUserId == s.CreatorUserId.Value);
 
             if (s.LocationId.HasValue)
-                query = query.Where(e => e.LocationId == s.LocationId);
+                query = query.Where(e => e.LocationId == s.LocationId.Value);
 
             return query;
+        }
+        public override async Task<EventResponse?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+        {
+            var entity = await _context.Events
+                .Include(e => e.Creator)
+                .Include(e => e.Location)
+                .Include(e => e.EventType)
+                .Include(e => e.Status)
+                .Include(e => e.RelatedRequest)
+                .FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
+
+            return entity == null ? null : MapToResponse(entity);
         }
     }
 }

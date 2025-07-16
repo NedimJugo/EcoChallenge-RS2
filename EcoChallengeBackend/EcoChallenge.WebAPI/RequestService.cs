@@ -28,16 +28,10 @@ namespace EcoChallenge.Services.Services
 
         protected override IQueryable<Request> ApplyFilter(IQueryable<Request> query, RequestSearchObject s)
         {
-            query = query
-               .Include(r => r.User)
-               .Include(r => r.Location)
-               .Include(r => r.WasteType)
-               .Include(r => r.Status)
-               .Include(r => r.AssignedAdmin);
             if (!string.IsNullOrWhiteSpace(s.Text))
             {
                 var t = s.Text.ToLower();
-                query.Where(r =>
+                query = query.Where(r =>
                     r.Title!.ToLower().Contains(t) ||
                     r.Description!.ToLower().Contains(t) ||
                     r.AdminNotes!.ToLower().Contains(t) ||
@@ -67,20 +61,5 @@ namespace EcoChallenge.Services.Services
 
             return query;
         }
-
-
-        public override async Task<RequestResponse?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
-        {
-            var entity = await _context.Requests
-                .Include(r => r.User)
-                .Include(r => r.Location)
-                .Include(r => r.WasteType)
-                .Include(r => r.Status)
-                .Include(r => r.AssignedAdmin)
-                .FirstOrDefaultAsync(r => r.Id == id, cancellationToken);
-
-            return entity == null ? null : MapToResponse(entity);
-        }
-
     }
 }

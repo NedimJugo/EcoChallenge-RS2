@@ -7,12 +7,12 @@ using System.Threading.Tasks;
 
 namespace EcoChallenge.Models.SearchObjects
 {
-    public class EventSearchObject: BaseSearchObject
+    public class EventSearchObject : BaseSearchObject
     {
-        public EventType? Type { get; set; }
-        public EventStatus? Status { get; set; }
+        public string? Text { get; set; }
+        public int? Status { get; set; }
+        public int? Type { get; set; }
         public int? CreatorUserId { get; set; }
         public int? LocationId { get; set; }
-        public string? Text { get; set; }
     }
 }

@@ -7,17 +7,16 @@ namespace EcoChallenge.Services.Database.Entities
 {
     public class Report
     {
-        [Key] 
+        [Key]
         public int Id { get; set; }
 
         [ForeignKey(nameof(Reporter)), Column("reporter_user_id")]
         public int ReporterUserId { get; set; }
         public virtual User? Reporter { get; set; }
 
-        [Required, Column("reported_entity_type")]
-        public TargetEntityType EntityType { get; set; }
-        [Required, Column("reported_entity_id")]
-        public int EntityId { get; set; }
+        [Required, ForeignKey(nameof(EntityType)), Column("reported_entity_type_id")]
+        public int EntityTypeId { get; set; }
+        public virtual TargetEntityType? EntityType { get; set; }
 
         [Required, Column("report_reason")]
         public ReportReason Reason { get; set; }

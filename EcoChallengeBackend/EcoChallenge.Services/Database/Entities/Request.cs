@@ -9,10 +9,10 @@ namespace EcoChallenge.Services.Database.Entities
 {
     public class Request
     {
-        [Key] 
+        [Key]
         public int Id { get; set; }
 
-        [ForeignKey(nameof(User)), Column("user_id")] 
+        [ForeignKey(nameof(User)), Column("user_id")]
         public int UserId { get; set; }
         public virtual User? User { get; set; }
 
@@ -31,29 +31,31 @@ namespace EcoChallenge.Services.Database.Entities
         public int? EstimatedCleanupTime { get; set; }
         [Required, Column("urgency_level")]
         public UrgencyLevel UrgencyLevel { get; set; } = UrgencyLevel.Medium;
-        [Required, Column("waste_type")] 
-        public WasteType WasteType { get; set; } = WasteType.Mixed;
-        [Required, Column("estimated_amount")] 
+        [Required, ForeignKey(nameof(WasteType)), Column("waste_type_id")]
+        public int WasteTypeId { get; set; }
+        public virtual WasteType? WasteType { get; set; }
+        [Required, Column("estimated_amount")]
         public EstimatedAmount EstimatedAmount { get; set; } = EstimatedAmount.Medium;
 
-        [Column("proposed_date"), DataType(DataType.Date)] 
+        [Column("proposed_date"), DataType(DataType.Date)]
         public DateTime? ProposedDate { get; set; }
-        [Column("proposed_time"), DataType(DataType.Time)] 
+        [Column("proposed_time"), DataType(DataType.Time)]
         public TimeSpan? ProposedTime { get; set; }
 
-        [Required, Column("status")] 
-        public RequestStatus Status { get; set; } = RequestStatus.Pending;
-        [Column("admin_notes")] 
+        [Required, ForeignKey(nameof(Status)), Column("status_id")]
+        public int StatusId { get; set; }
+        public virtual RequestStatus? Status { get; set; }
+        [Column("admin_notes")]
         public string? AdminNotes { get; set; }
         [Column("rejection_reason")]
         public string? RejectionReason { get; set; }
         [Column("suggested_reward_points")]
         public int SuggestedRewardPoints { get; set; }
-        [Column("suggested_reward_money"), Precision(10,2)]
+        [Column("suggested_reward_money"), Precision(10, 2)]
         public decimal SuggestedRewardMoney { get; set; }
         [Column("actual_reward_points")]
         public int ActualRewardPoints { get; set; }
-        [Column("actual_reward_money"), Precision(10,2)]
+        [Column("actual_reward_money"), Precision(10, 2)]
         public decimal ActualRewardMoney { get; set; }
         [Column("ai_analysis_result", TypeName = "nvarchar(max)")]
         public string? AiAnalysisResult { get; set; }

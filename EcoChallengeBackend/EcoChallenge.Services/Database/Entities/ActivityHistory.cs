@@ -8,26 +8,25 @@ namespace EcoChallenge.Services.Database.Entities
 {
     public class ActivityHistory
     {
-        [Key] 
+        [Key]
         public int Id { get; set; }
 
-        [ForeignKey(nameof(User)), Column("user_id")] 
+        [ForeignKey(nameof(User)), Column("user_id")]
         public int UserId { get; set; }
         public virtual User? User { get; set; }
 
-        [Required, Column("activity_type")] 
+        [Required, Column("activity_type")]
         public ActivityType ActivityType { get; set; }
-        [Required, Column("related_entity_type")] 
-        public EntityType RelatedEntityType { get; set; }
-        [Required, Column("related_entity_id")] 
-        public int RelatedEntityId { get; set; }
-        [Column("description")] 
+        [Required, ForeignKey(nameof(RelatedEntityType)), Column("related_entity_type_id")]
+        public int RelatedEntityTypeId { get; set; }
+        public virtual EntityType? RelatedEntityType { get; set; }
+        [Column("description")]
         public string? Description { get; set; }
-        [Column("points_earned")] 
+        [Column("points_earned")]
         public int? PointsEarned { get; set; }
-        [Column("money_earned"), Precision(10,2)] 
+        [Column("money_earned"), Precision(10, 2)]
         public decimal? MoneyEarned { get; set; }
-        [Column("created_at")] 
+        [Column("created_at")]
         public DateTime? CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }

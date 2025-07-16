@@ -8,9 +8,9 @@ namespace EcoChallenge.Services.Database.Entities
 {
     public class Event
     {
-        [Key] 
+        [Key]
         public int Id { get; set; }
-        [ForeignKey(nameof(Creator)), Column("creator_user_id")] 
+        [ForeignKey(nameof(Creator)), Column("creator_user_id")]
         public int CreatorUserId { get; set; }
         public virtual User? Creator { get; set; }
 
@@ -24,8 +24,9 @@ namespace EcoChallenge.Services.Database.Entities
         public string? Description { get; set; }
         [Column("image_url"), MaxLength(255)]
         public string? ImageUrl { get; set; }
-        [Required, Column("event_type")]
-        public EventType EventType { get; set; } = EventType.Cleanup;
+        [Required, ForeignKey(nameof(EventType)), Column("event_type_id")]
+        public int EventTypeId { get; set; }
+        public virtual EventType? EventType { get; set; }
         [Column("max_participants")]
         public int MaxParticipants { get; set; } = 0;
         [Column("current_participants")]
@@ -44,8 +45,9 @@ namespace EcoChallenge.Services.Database.Entities
         [Column("meeting_point")]
         public string? MeetingPoint { get; set; }
 
-        [Required, Column("status")]
-        public EventStatus Status { get; set; } = EventStatus.Draft;
+        [Required, ForeignKey(nameof(Status)), Column("status_id")]
+        public int StatusId { get; set; }
+        public virtual EventStatus? Status { get; set; }
         [Column("is_paid_request")]
         public bool IsPaidRequest { get; set; } = false;
 
