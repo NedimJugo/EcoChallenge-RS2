@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace EcoChallenge.WebAPI.BaseControllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     public class BaseCRUDController<T, TSearch, TInsert, TUpdate>
             : BaseController<T, TSearch> where T : class where TSearch : BaseSearchObject, new() where TInsert : class where TUpdate : class
     {

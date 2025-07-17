@@ -19,7 +19,7 @@ builder.Configuration
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? "Server=localhost;Database=EcoChallenge;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True";
 builder.Services.AddDatabaseServices(connectionString);
-builder.Services.AddAutoMapper(cfg => {}, typeof(UserProfile).Assembly, typeof(RequestProfile).Assembly, typeof(EventProfile).Assembly);
+builder.Services.AddAutoMapper(cfg => { }, typeof(UserProfile).Assembly, typeof(RequestProfile).Assembly, typeof(EventProfile).Assembly);
 builder.Services.AddAuthentication("BasicAuthentication")
     .AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>("BasicAuthentication", null);
 
@@ -28,6 +28,7 @@ builder.Services.AddSingleton<IPasswordHasher, Pbkdf2PasswordHasher>();
 builder.Services.AddScoped<IRequestService, RequestService>();
 builder.Services.AddScoped<IEventService, EventService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IAdminAuthService, AdminAuthService>();
 builder.Services.AddControllers();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -59,7 +60,7 @@ using (var scope = app.Services.CreateScope())
     var dbContext = scope.ServiceProvider.GetRequiredService<EcoChallengeDbContext>();
     dbContext.Database.EnsureCreated();
 }
- 
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

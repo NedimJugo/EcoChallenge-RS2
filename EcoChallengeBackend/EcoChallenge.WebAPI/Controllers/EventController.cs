@@ -8,10 +8,10 @@ using Microsoft.AspNetCore.Mvc;
 namespace EcoChallenge.WebAPI.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
-    public class EventController: BaseCRUDController<EventResponse, EventSearchObject, EventInsertRequest, EventUpdateRequest>  
+    [Route("api/[controller]")]
+    public class EventController : BaseCRUDController<EventResponse, EventSearchObject, EventInsertRequest, EventUpdateRequest>
     {
-        public EventController(IEventService service): base(service)
+        public EventController(IEventService service) : base(service)
         {
         }
     }

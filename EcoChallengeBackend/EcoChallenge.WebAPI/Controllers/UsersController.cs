@@ -11,7 +11,7 @@ using System.Security.Claims;
 namespace EcoChallenge.WebAPI.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     public class UsersController : BaseCRUDController<UserResponse, UserSearchObject, UserInsertRequest, UserUpdateRequest>
     {
         private readonly IUserService _userService;
@@ -19,13 +19,15 @@ namespace EcoChallenge.WebAPI.Controllers
         {
             _userService = service;
         }
+        [AllowAnonymous]
         [HttpPost("login")]
         public async Task<ActionResult<UserResponse>> Login(UserLoginRequest request, CancellationToken cancellationToken)
         {
             var user = await _userService.AuthenticateUser(request, cancellationToken);
             return Ok(user);
         }
-        [Authorize]
+
+
         [HttpGet("whoami")]
         public IActionResult WhoAmI()
         {
