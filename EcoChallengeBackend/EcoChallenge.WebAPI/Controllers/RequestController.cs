@@ -8,8 +8,8 @@ using Microsoft.AspNetCore.Mvc;
 namespace EcoChallenge.WebAPI.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
-    public class RequestController: BaseCRUDController<RequestResponse, RequestSearchObject, RequestInsertRequest, RequestUpdateRequest>
+    [Route("api/[controller]")]
+    public class RequestController : BaseCRUDController<RequestResponse, RequestSearchObject, RequestInsertRequest, RequestUpdateRequest>
     {
         public RequestController(IRequestService service) : base(service)
         {
