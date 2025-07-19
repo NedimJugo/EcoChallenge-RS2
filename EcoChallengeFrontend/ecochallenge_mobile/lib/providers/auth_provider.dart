@@ -36,10 +36,7 @@ class AuthProvider with ChangeNotifier {
 
   Future<void> _saveUserToPreferences(UserResponse user, String? token) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(
-      'userData',
-      json.encode(user.toJson()),
-    ); // Assuming UserResponse has a toJson() for saving
+    await prefs.setString('userData', json.encode(user.toJson()));
     if (token != null) {
       await prefs.setString('token', token);
     }
