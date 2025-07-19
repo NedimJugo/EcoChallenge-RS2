@@ -185,5 +185,24 @@ namespace EcoChallenge.Services.Services
             return MapToResponse(user);
         }
 
+        public async Task<UserResponse> RegisterAsync(UserInsertRequest request, CancellationToken ct)
+        {
+            bool usernameExists = await _db.Users.AnyAsync(u => u.Username == request.Username, ct);
+            if (usernameExists)
+                throw new ArgumentException("Username already exists.");
+
+            bool emailExists = await _db.Users.AnyAsync(u => u.Email == request.Email, ct);
+            if (emailExists)
+                throw new ArgumentException("Email already exists.");
+
+            var userEntity = _mapper.Map<User>(request);
+            userEntity.PasswordHash = _hasher.Hash(request.PasswordHash);
+
+            _db.Users.Add(userEntity);
+            await _db.SaveChangesAsync(ct);
+
+            return _mapper.Map<UserResponse>(userEntity);
+        }
+
     }
 }

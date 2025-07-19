@@ -1,5 +1,6 @@
 import 'package:ecochallenge_mobile/pages/home-page.dart';
 import 'package:ecochallenge_mobile/pages/login-page.dart';
+import 'package:ecochallenge_mobile/pages/register-page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart'; // Import for checking initial login state
@@ -45,6 +46,7 @@ class MyApp extends StatelessWidget {
         initialRoute: initialRoute,
         routes: {
           '/login': (context) => const LoginPage(),
+          '/register': (context) => const RegisterPage(),
           '/home': (context) => const HomePage(),
         },
       ),

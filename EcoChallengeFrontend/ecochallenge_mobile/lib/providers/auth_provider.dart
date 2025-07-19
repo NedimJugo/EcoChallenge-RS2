@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:ecochallenge_mobile/layouts/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -12,9 +13,6 @@ class AuthProvider with ChangeNotifier {
   String? get token => _token;
   bool get isAuthenticated => _currentUser != null;
 
-  // Replace with your actual backend API base URL
-  static const String _baseUrl =
-      'http://10.0.2.2:5087/api'; // Example: 'http://10.0.2.2:5000/api' for Android emulator
 
   AuthProvider() {
     _loadUserFromPreferences();
@@ -49,7 +47,7 @@ class AuthProvider with ChangeNotifier {
   }
 
   Future<UserResponse> login(String username, String password) async {
-    final url = Uri.parse('$_baseUrl/users/login'); // Adjust endpoint if needed
+    final url = Uri.parse('$baseUrl/users/login'); // Adjust endpoint if needed
 
     // Encode credentials for Basic Auth
     final String credentials = base64Encode(utf8.encode('$username:$password'));
@@ -98,5 +96,18 @@ class AuthProvider with ChangeNotifier {
     _token = null;
     await _removeUserFromPreferences();
     notifyListeners();
+  }
+  Future<void> register(UserRegisterRequest request) async {
+    final url = Uri.parse('$baseUrl/users/register');
+
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(request.toJson()),
+    );
+
+    if (response.statusCode >= 400) {
+      throw Exception('Registration failed: ${response.body}');
+    }
   }
 }

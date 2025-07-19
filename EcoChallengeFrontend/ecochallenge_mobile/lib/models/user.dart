@@ -116,3 +116,30 @@ class UserResponse {
     };
   }
 }
+
+class UserRegisterRequest {
+  final String username;
+  final String email;
+  final String passwordHash;
+  final String firstName;
+  final String lastName;
+  final int userTypeId;
+
+  UserRegisterRequest({
+    required this.username,
+    required this.email,
+    required this.passwordHash,
+    required this.firstName,
+    required this.lastName,
+    this.userTypeId = 2, // default user role id
+  });
+
+  Map<String, dynamic> toJson() => {
+        'username': username,
+        'email': email,
+        'passwordHash': passwordHash,
+        'firstName': firstName,
+        'lastName': lastName,
+        'userTypeId': userTypeId,
+      };
+}

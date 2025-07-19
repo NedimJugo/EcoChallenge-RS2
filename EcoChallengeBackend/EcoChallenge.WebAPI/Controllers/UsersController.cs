@@ -40,5 +40,23 @@ namespace EcoChallenge.WebAPI.Controllers
                 Role = role
             });
         }
+
+        [AllowAnonymous]
+        [HttpPost("register")]
+        public async Task<IActionResult> Register([FromBody] UserInsertRequest request, CancellationToken ct)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            try
+            {
+                var response = await _userService.RegisterAsync(request, ct);
+                return CreatedAtAction(nameof(GetById), new { id = response.Id }, response);
+            }
+            catch (ArgumentException ex) // for validation errors like username/email exists
+            {
+                return Conflict(ex.Message);
+            }
+        }
     }
 }
