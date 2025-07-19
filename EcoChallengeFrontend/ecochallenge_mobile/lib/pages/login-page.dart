@@ -1,3 +1,4 @@
+import 'package:ecochallenge_mobile/pages/register-page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
@@ -75,7 +76,26 @@ class _LoginPageState extends State<LoginPage> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
-                  const Icon(Icons.eco, size: 64, color: Color(0xFF4CAF50)),
+                  Builder(
+                    builder: (context) {
+                      double imageSize =
+                          MediaQuery.of(context).size.width * 0.30;
+                      // imageSize = imageSize.clamp(
+                      //   48.0,
+                      //   120.0,
+                      // ); // optional limit
+
+                      return ClipRRect(
+                        borderRadius: BorderRadius.circular(100),
+                        child: Image.asset(
+                          'assets/images/Eco-Logo.png',
+                          width: imageSize,
+                          height: imageSize,
+                          fit: BoxFit.cover,
+                        ),
+                      );
+                    },
+                  ),
                   const SizedBox(height: 16),
                   Text(
                     'Welcome Back',
@@ -158,6 +178,17 @@ class _LoginPageState extends State<LoginPage> {
                       child: _isLoading
                           ? const CircularProgressIndicator(color: Colors.white)
                           : const Text('Login', style: TextStyle(fontSize: 18)),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const RegisterPage()),
+                      );
+                    },
+                    child: const Text(
+                      'Register',
+                      style: TextStyle(color: Color(0xFF4CAF50)),
                     ),
                   ),
                   const SizedBox(height: 12),
