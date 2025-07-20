@@ -1,19 +1,29 @@
-import 'package:ecochallenge_mobile/pages/home-page.dart';
-import 'package:ecochallenge_mobile/pages/login-page.dart';
-import 'package:ecochallenge_mobile/pages/register-page.dart';
+import 'package:ecochallenge_mobile/pages/home_page.dart';
+import 'package:ecochallenge_mobile/pages/login_page.dart';
+import 'package:ecochallenge_mobile/pages/register_page.dart';
+import 'package:ecochallenge_mobile/providers/event_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart'; // Import for checking initial login state
+import 'package:shared_preferences/shared_preferences.dart';
+
 import 'providers/auth_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // Determine initial route based on stored user data
   final prefs = await SharedPreferences.getInstance();
   final userData = prefs.getString('userData');
   final initialRoute = userData != null ? '/home' : '/login';
 
-  runApp(MyApp(initialRoute: initialRoute));
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => EventProvider()),
+        // Add more providers here if needed
+      ],
+      child: MyApp(initialRoute: initialRoute),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -23,33 +33,26 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => AuthProvider(),
-      child: MaterialApp(
-        title: 'EcoChallenge App',
-        theme: ThemeData(
-          primarySwatch: Colors.green,
-          visualDensity: VisualDensity.adaptivePlatformDensity,
-          inputDecorationTheme: InputDecorationTheme(
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-          ),
-          elevatedButtonTheme: ElevatedButtonThemeData(
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              textStyle: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+    return MaterialApp(
+      title: 'EcoChallenge App',
+      theme: ThemeData(
+        primarySwatch: Colors.green,
+        inputDecorationTheme: InputDecorationTheme(
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
         ),
-        initialRoute: initialRoute,
-        routes: {
-          '/login': (context) => const LoginPage(),
-          '/register': (context) => const RegisterPage(),
-          '/home': (context) => const HomePage(),
-        },
       ),
+      initialRoute: initialRoute,
+      routes: {
+        '/login': (context) => const LoginPage(),
+        '/register': (context) => const RegisterPage(),
+        '/home': (context) => const HomePage(),
+      },
     );
   }
 }
