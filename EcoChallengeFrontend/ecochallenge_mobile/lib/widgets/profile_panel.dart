@@ -16,10 +16,9 @@ class ProfilePanel extends StatelessWidget {
       width: MediaQuery.of(context).size.width * 0.85,
       height: double.infinity,
       decoration: const BoxDecoration(
-        color: Color(0xFFF5E6D3),
+        color: Color.fromARGB(255, 255, 255, 255),
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(20),
-          bottomLeft: Radius.circular(20),
         ),
       ),
       child: SafeArea(

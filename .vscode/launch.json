@@ -18,11 +18,14 @@
             "flutterMode": "profile"
         },
         {
-            "name": "ecochallenge_desktop (release mode)",
-            "cwd": "EcoChallengeFrontend\\ecochallenge_desktop",
-            "request": "launch",
-            "type": "dart",
-            "flutterMode": "release"
-        }
+  "name": "ecochallenge_mobile (Android)",
+  "cwd": "EcoChallengeFrontend/ecochallenge_mobile",
+  "request": "launch",
+  "type": "dart",
+  "program": "lib/main.dart",
+  "deviceId": "emulator-5554"
+}
+
+
     ]
 }

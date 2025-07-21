@@ -1,3 +1,4 @@
+import 'package:ecochallenge_mobile/layouts/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:ecochallenge_mobile/models/organization.dart';
@@ -39,13 +40,13 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       vsync: this,
     );
     
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(1.0, 0.0),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    ));
+    _slideAnimation =
+        Tween<Offset>(begin: const Offset(1.0, 0.0), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: _animationController,
+            curve: Curves.easeInOut,
+          ),
+        );
   }
 
   @override
@@ -80,20 +81,24 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         errorMessage = null;
       });
 
-      final orgProvider = Provider.of<OrganizationProvider>(context, listen: false);
-      final requestProvider = Provider.of<RequestProvider>(context, listen: false);
+      final orgProvider = Provider.of<OrganizationProvider>(
+        context,
+        listen: false,
+      );
+      final requestProvider = Provider.of<RequestProvider>(
+        context,
+        listen: false,
+      );
       final eventProvider = Provider.of<EventProvider>(context, listen: false);
 
       // Load organizations for donations
       final orgResult = await orgProvider.get();
-      
+
       // Load last 3 paid cleanup requests
-      final requestResult = await requestProvider.get(filter: {
-        'isPaidRequest': true,
-        'take': 3,
-        'orderBy': 'createdAt desc'
-      });
-      
+      final requestResult = await requestProvider.get(
+        filter: {'isPaidRequest': true, 'take': 3, 'orderBy': 'createdAt desc'},
+      );
+
       // Load events
       final eventResult = await eventProvider.get();
 
@@ -115,7 +120,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5E6D3),
+      backgroundColor: const Color.fromARGB(
+        255,
+        255,
+        255,
+        255,
+      ), // Updated background color to match images better
       body: Stack(
         children: [
           // Main content
@@ -123,19 +133,36 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             child: isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : errorMessage != null
-                    ? _buildErrorWidget()
-                    : RefreshIndicator(
-                        onRefresh: _loadData,
-                        child: SingleChildScrollView(
-                          physics: const AlwaysScrollableScrollPhysics(),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
+                ? _buildErrorWidget()
+                : RefreshIndicator(
+                    onRefresh: _loadData,
+                    child: SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Stack(
+                             clipBehavior: Clip.none,
+                             children: [
+                              _buildHeader(),
+                              Positioned(
+                                left: 20,
+                                right: 20,
+                                bottom: -28, // Half of button height to overlap
+                                child: _buildAddRequestButton(),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(
+                            height: 40,
+                          ), // More space to adjust for the button's overlap
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 20.0,
+                            ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                _buildHeader(),
-                                const SizedBox(height: 24),
-                                _buildAddRequestButton(),
                                 const SizedBox(height: 32),
                                 _buildDonateSection(),
                                 const SizedBox(height: 32),
@@ -146,8 +173,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                               ],
                             ),
                           ),
-                        ),
+                        ],
                       ),
+                    ),
+                  ),
           ),
           
           // Overlay when profile panel is visible
@@ -183,11 +212,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(
-            Icons.error_outline,
-            size: 64,
-            color: Colors.red,
-          ),
+          const Icon(Icons.error_outline, size: 64, color: Colors.red),
           const SizedBox(height: 16),
           Text(
             errorMessage!,
@@ -195,75 +220,84 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: _loadData,
-            child: const Text('Retry'),
-          ),
+          ElevatedButton(onPressed: _loadData, child: const Text('Retry')),
         ],
       ),
     );
   }
 
   Widget _buildHeader() {
-  final user = AuthProvider.userData;
-  final displayName = user?.firstName ?? AuthProvider.username ?? 'User';
-  
-  return Row(
-    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-    children: [
-      Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    final user = AuthProvider.userData;
+    final displayName = user?.firstName ?? AuthProvider.username ?? 'User';
+    
+    return Container(
+      width: double.infinity,
+      decoration: const BoxDecoration(
+        color: darkBackground,
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(24),
+          bottomRight: Radius.circular(24),
+        ),
+      ),
+      padding: const EdgeInsets.fromLTRB(20, 35, 20, 45),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            'Hi $displayName,',
-            style: const TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
-            ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Hi $displayName,',
+                style: const TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 4),
+              const Text(
+                'Be active take the challenge',
+                style: TextStyle(fontSize: 16, color: Colors.white70),
+              ),
+            ],
           ),
-          const SizedBox(height: 4),
-          const Text(
-            'Be active take the challenge',
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.black54,
+          GestureDetector(
+            onTap: _toggleProfilePanel,
+            child: Container(
+              width: 45,
+              height: 45,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: user?.profileImageUrl != null
+                  ? ClipOval(
+                      child: Image.network(
+                        user!.profileImageUrl!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return const Icon(
+                            Icons.person,
+                            color: Colors.grey,
+                            size: 24,
+                          );
+                        },
+                      ),
+                    )
+                  : const Icon(Icons.person, color: Colors.grey, size: 24),
             ),
           ),
         ],
       ),
-      GestureDetector(
-        onTap: _toggleProfilePanel,
-        child: Container(
-          width: 45,
-          height: 45,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 4,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: user?.profileImageUrl != null
-              ? ClipOval(
-                  child: Image.network(
-                    user!.profileImageUrl!,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return const Icon(Icons.person, color: Colors.grey, size: 24);
-                    },
-                  ),
-                )
-              : const Icon(Icons.person, color: Colors.grey, size: 24),
-        ),
-      ),
-    ],
-  );
-}
+    );
+  }
 
   Widget _buildAddRequestButton() {
     return Container(
@@ -272,7 +306,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       child: ElevatedButton(
         onPressed: () {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Add request/event feature coming soon!')),
+            const SnackBar(
+              content: Text('Add request/event feature coming soon!'),
+            ),
           );
         },
         style: ElevatedButton.styleFrom(
@@ -285,12 +321,69 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         ),
         child: const Text(
           'Add request or event',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-          ),
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
         ),
       ),
+    );
+  }
+
+  // Helper method to build section title with decorative line and dots
+  Widget _buildSectionTitle(String title) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            // Decorative line
+            Container(
+              width: 60,
+              height: 2,
+              color: Colors.black87,
+            ),
+            const SizedBox(width: 8),
+            // Three dots
+            Row(
+              children: [
+                Container(
+                  width: 4,
+                  height: 4,
+                  decoration: const BoxDecoration(
+                    color: Colors.black87,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Container(
+                  width: 4,
+                  height: 4,
+                  decoration: const BoxDecoration(
+                    color: Colors.black87,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Container(
+                  width: 4,
+                  height: 4,
+                  decoration: const BoxDecoration(
+                    color: Colors.black87,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ],
     );
   }
 
@@ -298,14 +391,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Donate',
-          style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-            color: Colors.black87,
-          ),
-        ),
+        _buildSectionTitle('Donate'),
         const SizedBox(height: 16),
         organizations.isEmpty
             ? const Center(
@@ -323,12 +409,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     final org = organizations[index];
                     return Container(
                       width: 130,
-                      margin: EdgeInsets.only(right: index < organizations.length - 1 ? 12 : 0),
+                      margin: EdgeInsets.only(
+                        right: index < organizations.length - 1 ? 12 : 0,
+                      ),
                       child: Card(
-                        elevation: 3,
+                        elevation: 2,
                         color: Colors.white,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(12),
                         ),
                         child: Padding(
                           padding: const EdgeInsets.all(16),
@@ -362,7 +450,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                 child: ElevatedButton(
                                   onPressed: () {
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(content: Text('Donate to ${org.name}')),
+                                      SnackBar(
+                                        content: Text('Donate to ${org.name}'),
+                                      ),
                                     );
                                   },
                                   style: ElevatedButton.styleFrom(
@@ -398,14 +488,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Paid cleanup requests',
-          style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-            color: Colors.black87,
-          ),
-        ),
+        _buildSectionTitle('Paid cleanup requests'),
         const SizedBox(height: 16),
         paidRequests.isEmpty
             ? const Center(
@@ -415,7 +498,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 ),
               )
             : Column(
-                children: paidRequests.map((request) => _buildRequestCard(request)).toList(),
+                children: paidRequests
+                    .map((request) => _buildRequestCard(request))
+                    .toList(),
               ),
       ],
     );
@@ -427,9 +512,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       child: Card(
         elevation: 2,
         color: Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Row(
@@ -438,21 +521,29 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 width: 70,
                 height: 70,
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(8),
                   color: Colors.grey[200],
                 ),
                 child: request.imageUrl != null
                     ? ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(8),
                         child: Image.network(
                           request.imageUrl!,
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) {
-                            return Icon(Icons.delete_outline, color: Colors.grey[400], size: 32);
+                            return Icon(
+                              Icons.delete_outline,
+                              color: Colors.grey[400],
+                              size: 32,
+                            );
                           },
                         ),
                       )
-                    : Icon(Icons.delete_outline, color: Colors.grey[400], size: 32),
+                    : Icon(
+                        Icons.delete_outline,
+                        color: Colors.grey[400],
+                        size: 32,
+                      ),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -460,7 +551,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      request.title ?? 'Trash at Park',
+                      request.title ?? 'Small junk',
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
@@ -470,10 +561,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     const SizedBox(height: 4),
                     Text(
                       request.description ?? 'Environmental cleanup needed',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[600],
-                      ),
+                      style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -494,7 +582,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 child: ElevatedButton(
                   onPressed: () {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Request details for: ${request.title}')),
+                      SnackBar(
+                        content: Text('Request details for: ${request.title}'),
+                      ),
                     );
                   },
                   style: ElevatedButton.styleFrom(
@@ -508,10 +598,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   ),
                   child: const Text(
                     'Details',
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
                   ),
                 ),
               ),
@@ -526,14 +613,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Events/Community',
-          style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-            color: Colors.black87,
-          ),
-        ),
+        _buildSectionTitle('Events/Community'),
         const SizedBox(height: 16),
         events.isEmpty
             ? const Center(
@@ -543,7 +623,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 ),
               )
             : Column(
-                children: events.map((event) => _buildEventCard(event)).toList(),
+                children: events
+                    .map((event) => _buildEventCard(event))
+                    .toList(),
               ),
       ],
     );
@@ -555,9 +637,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       child: Card(
         elevation: 2,
         color: Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Row(
@@ -566,17 +646,21 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 width: 70,
                 height: 70,
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(8),
                   color: Colors.grey[200],
                 ),
                 child: event.imageUrl != null
                     ? ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(8),
                         child: Image.network(
                           event.imageUrl!,
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) {
-                            return Icon(Icons.event, color: Colors.grey[400], size: 32);
+                            return Icon(
+                              Icons.event,
+                              color: Colors.grey[400],
+                              size: 32,
+                            );
                           },
                         ),
                       )
@@ -598,20 +682,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     const SizedBox(height: 4),
                     Text(
                       event.description ?? 'Join our community event',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[600],
-                      ),
+                      style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 8),
                     Text(
                       '${event.currentParticipants}/${event.maxParticipants} participants',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey[500],
-                      ),
+                      style: TextStyle(fontSize: 12, color: Colors.grey[500]),
                     ),
                   ],
                 ),
@@ -635,10 +713,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   ),
                   child: const Text(
                     'Join',
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
                   ),
                 ),
               ),
@@ -650,76 +725,82 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   Widget _buildBottomNavigation() {
+    const int currentIndex = 2; // Home is at index 2
+    
     return Container(
+      margin: const EdgeInsets.all(16),
+      height: 70,
       decoration: BoxDecoration(
         color: Colors.white,
+        borderRadius: BorderRadius.circular(35),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.2),
-            spreadRadius: 1,
-            blurRadius: 8,
-            offset: const Offset(0, -2),
+            color: Colors.black.withOpacity(0.1),
+            spreadRadius: 0,
+            blurRadius: 10,
+            offset: const Offset(0, 5),
           ),
         ],
       ),
-      child: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: Colors.white,
-        selectedItemColor: const Color(0xFF2D5016),
-        unselectedItemColor: Colors.grey[400],
-        currentIndex: 2,
-        showSelectedLabels: false,
-        showUnselectedLabels: false,
-        elevation: 0,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.language, size: 26),
-            label: '',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.image, size: 26),
-            label: '',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home, size: 26),
-            label: '',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person, size: 26),
-            label: '',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.chat, size: 26),
-            label: '',
-          ),
-        ],
-        onTap: (index) {
-          switch (index) {
-            case 0:
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Global section coming soon!')),
-              );
-              break;
-            case 1:
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Gallery coming soon!')),
-              );
-              break;
-            case 2:
-              // Already on home
-              break;
-            case 3:
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Profile coming soon!')),
-              );
-              break;
-            case 4:
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Chat coming soon!')),
-              );
-              break;
-          }
-        },
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(35),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            _buildNavItem(Icons.language, 0, currentIndex),
+            _buildNavItem(Icons.image, 1, currentIndex),
+            _buildNavItem(Icons.home, 2, currentIndex),
+            _buildNavItem(Icons.person, 3, currentIndex),
+            _buildNavItem(Icons.chat, 4, currentIndex),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNavItem(IconData icon, int index, int currentIndex) {
+    final bool isSelected = index == currentIndex;
+    
+    return GestureDetector(
+      onTap: () {
+        switch (index) {
+          case 0:
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Global section coming soon!')),
+            );
+            break;
+          case 1:
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Gallery coming soon!')),
+            );
+            break;
+          case 2:
+            // Already on home
+            break;
+          case 3:
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Profile coming soon!')),
+            );
+            break;
+          case 4:
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Chat coming soon!')),
+            );
+            break;
+        }
+      },
+      child: Container(
+        width: 50,
+        height: 50,
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFF8B4513) : Colors.transparent, // Brown background for active tab
+          shape: BoxShape.circle,
+        ),
+        child: Icon(
+          icon,
+          size: 28,
+          color: isSelected ? Colors.white : Colors.grey[400],
+        ),
       ),
     );
   }
