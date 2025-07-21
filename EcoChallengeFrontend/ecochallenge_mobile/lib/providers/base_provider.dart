@@ -11,30 +11,36 @@ abstract class BaseProvider<T> with ChangeNotifier {
 
   BaseProvider(String endpoint) {
     _endpoint = endpoint;
-    _baseUrl = const String.fromEnvironment("baseUrl",
-        defaultValue: "http://10.0.2.2:5087/api/");
+    _baseUrl = const String.fromEnvironment(
+      "baseUrl",
+      defaultValue: "http://10.0.2.2:5087/api/",
+    );
   }
 
   Future<SearchResult<T>> get({dynamic filter}) async {
- // Ensure proper URL formatting
-  var baseUrl = _baseUrl!.endsWith('/') ? _baseUrl!.substring(0, _baseUrl!.length - 1) : _baseUrl;
-  var endpoint = _endpoint.startsWith('/') ? _endpoint.substring(1) : _endpoint;
-  var url = "$baseUrl/$endpoint";
+    // Ensure proper URL formatting
+    var baseUrl = _baseUrl!.endsWith('/')
+        ? _baseUrl!.substring(0, _baseUrl!.length - 1)
+        : _baseUrl;
+    var endpoint = _endpoint.startsWith('/')
+        ? _endpoint.substring(1)
+        : _endpoint;
+    var url = "$baseUrl/$endpoint";
 
-  if (filter != null) {
-    var queryString = getQueryString(filter);
-    url = "$url?$queryString";
-  }
+    if (filter != null) {
+      var queryString = getQueryString(filter);
+      url = "$url?$queryString";
+    }
 
-  print("Full URL being called: $url");
-  
-  var uri = Uri.parse(url);
-  var headers = createHeaders();
-  
-  var response = await http.get(uri, headers: headers);
-  
-  print("Response status: ${response.statusCode}");
-  print("Response headers: ${response.headers}");
+    print("Full URL being called: $url");
+
+    var uri = Uri.parse(url);
+    var headers = createHeaders();
+
+    var response = await http.get(uri, headers: headers);
+
+    print("Response status: ${response.statusCode}");
+    print("Response headers: ${response.headers}");
 
     if (isValidResponse(response)) {
       var data = jsonDecode(response.body);
@@ -43,7 +49,6 @@ abstract class BaseProvider<T> with ChangeNotifier {
 
       result.totalCount = data['totalCount'];
       result.items = List<T>.from(data["items"].map((e) => fromJson(e)));
-
 
       return result;
     } else {
@@ -89,38 +94,45 @@ abstract class BaseProvider<T> with ChangeNotifier {
   }
 
   bool isValidResponse(Response response) {
-  print("Status code: ${response.statusCode}");
-  print("Response body: ${response.body}");
-  if (response.statusCode < 299) {
-    return true;
-  } else if (response.statusCode == 401) {
-    throw Exception("Unauthorized");
-  } else {
-    print("Error response body: ${response.body}");
-    throw Exception("Something bad happened please try again");
+    print("Status code: ${response.statusCode}");
+    print("Response body: ${response.body}");
+    if (response.statusCode < 299) {
+      return true;
+    } else if (response.statusCode == 401) {
+      throw Exception("Unauthorized");
+    } else {
+      print("Error response body: ${response.body}");
+      throw Exception("Something bad happened please try again");
+    }
   }
-}
-
 
   Map<String, String> createHeaders() {
-    String username = AuthProvider.username ?? "";
-    String password = AuthProvider.password ?? "";
+     String username = AuthProvider.username ?? "";
+  String password = AuthProvider.password ?? "";
 
-    print("passed creds: $username, $password");
+  print("passed creds: $username, $password");
+
+    // String username = AuthModel.username ?? "";
+    // String password = AuthModel.password ?? "";
+
+    // print("passed creds: $username, $password");
 
     String basicAuth =
         "Basic ${base64Encode(utf8.encode('$username:$password'))}";
 
     var headers = {
       "Content-Type": "application/json",
-      "Authorization": basicAuth
+      "Authorization": basicAuth,
     };
 
     return headers;
   }
 
-  String getQueryString(Map params,
-      {String prefix = '&', bool inRecursion = false}) {
+  String getQueryString(
+    Map params, {
+    String prefix = '&',
+    bool inRecursion = false,
+  }) {
     String query = '';
     params.forEach((key, value) {
       if (inRecursion) {
@@ -143,8 +155,11 @@ abstract class BaseProvider<T> with ChangeNotifier {
       } else if (value is List || value is Map) {
         if (value is List) value = value.asMap();
         value.forEach((k, v) {
-          query +=
-              getQueryString({k: v}, prefix: '$prefix$key', inRecursion: true);
+          query += getQueryString(
+            {k: v},
+            prefix: '$prefix$key',
+            inRecursion: true,
+          );
         });
       }
     });

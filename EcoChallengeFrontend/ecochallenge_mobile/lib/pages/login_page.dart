@@ -1,3 +1,4 @@
+import 'package:ecochallenge_mobile/models/auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
@@ -83,6 +84,8 @@ class LoginPage extends StatelessWidget {
                     onPressed: () async {
                       final username = _usernameController.text;
                       final password = _passwordController.text;
+                      AuthModel.username = _usernameController.text;
+                      AuthModel.password = _passwordController.text;
 
                       if (username.isEmpty || password.isEmpty) {
                         showDialog(
