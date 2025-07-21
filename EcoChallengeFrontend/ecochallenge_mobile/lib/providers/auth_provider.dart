@@ -8,9 +8,30 @@ import 'package:shared_preferences/shared_preferences.dart';
 class AuthProvider with ChangeNotifier {
   static String? username;
   static String? password;
+  static UserResponse? userData;
   bool _isLoggedIn = false;
 
   bool get isLoggedIn => _isLoggedIn;
+  Future<void> loadCredentials() async {
+    final prefs = await SharedPreferences.getInstance();
+    username = prefs.getString('username');
+    password = prefs.getString('password');
+
+     // Load user data if exists
+    final userDataString = prefs.getString('userData');
+    if (userDataString != null) {
+      try {
+        userData = UserResponse.fromJson(jsonDecode(userDataString));
+      } catch (e) {
+        print('Error loading user data: $e');
+      }
+    }
+
+    if (username != null && password != null) {
+      _isLoggedIn = true;
+      notifyListeners();
+    }
+  }
 
   Future<void> login(String user, String pass) async {
     final url = Uri.parse('http://10.0.2.2:5087/api/Users/login');
@@ -22,9 +43,12 @@ class AuthProvider with ChangeNotifier {
     );
 
     if (response.statusCode == 200) {
-      // optionally parse user info if returned
+      final userJson = jsonDecode(response.body);
+      userData = UserResponse.fromJson(userJson);
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('userData', jsonEncode({'username': user}));
+      await prefs.setString('username', user);
+      await prefs.setString('password', pass);
+      await prefs.setString('userData', response.body);
       _isLoggedIn = true;
       username = user;
       password = pass;
@@ -36,7 +60,11 @@ class AuthProvider with ChangeNotifier {
 
   Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('username');
+    await prefs.remove('password');
     await prefs.remove('userData');
+    username = null;
+    password = null;
     _isLoggedIn = false;
     notifyListeners();
   }
