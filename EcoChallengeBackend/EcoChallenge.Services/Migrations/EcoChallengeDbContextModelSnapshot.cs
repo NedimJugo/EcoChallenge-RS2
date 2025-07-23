@@ -279,85 +279,6 @@ namespace EcoChallenge.Services.Migrations
                         });
                 });
 
-            modelBuilder.Entity("EcoChallenge.Services.Database.Entities.ChatMessage", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("EventId")
-                        .HasColumnType("int")
-                        .HasColumnName("event_id");
-
-                    b.Property<string>("ImageUrl")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)")
-                        .HasColumnName("image_url");
-
-                    b.Property<bool>("IsAdminMessage")
-                        .HasColumnType("bit")
-                        .HasColumnName("is_admin_message");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit")
-                        .HasColumnName("is_deleted");
-
-                    b.Property<bool>("IsReported")
-                        .HasColumnType("bit")
-                        .HasColumnName("is_reported");
-
-                    b.Property<string>("MessageText")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnName("message_text");
-
-                    b.Property<int>("MessageType")
-                        .HasColumnType("int")
-                        .HasColumnName("message_type");
-
-                    b.Property<string>("ReportReason")
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnName("report_reason");
-
-                    b.Property<int?>("ReportedByUserId")
-                        .HasColumnType("int")
-                        .HasColumnName("reported_by_user_id");
-
-                    b.Property<int>("SenderUserId")
-                        .HasColumnType("int")
-                        .HasColumnName("sender_user_id");
-
-                    b.Property<DateTime>("SentAt")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("sent_at");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("EventId");
-
-                    b.HasIndex("ReportedByUserId");
-
-                    b.HasIndex("SenderUserId");
-
-                    b.ToTable("ChatMessages");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            EventId = 1,
-                            IsAdminMessage = false,
-                            IsDeleted = false,
-                            IsReported = false,
-                            MessageText = "Looking forward to helping!",
-                            MessageType = 0,
-                            SenderUserId = 2,
-                            SentAt = new DateTime(2025, 6, 20, 0, 0, 0, 0, DateTimeKind.Unspecified)
-                        });
-                });
-
             modelBuilder.Entity("EcoChallenge.Services.Database.Entities.CriteriaType", b =>
                 {
                     b.Property<int>("Id")
@@ -634,11 +555,6 @@ namespace EcoChallenge.Services.Migrations
                         .HasColumnType("int")
                         .HasColumnName("event_type_id");
 
-                    b.Property<string>("ImageUrl")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)")
-                        .HasColumnName("image_url");
-
                     b.Property<bool>("IsPaidRequest")
                         .HasColumnType("bit")
                         .HasColumnName("is_paid_request");
@@ -872,7 +788,7 @@ namespace EcoChallenge.Services.Migrations
                         });
                 });
 
-            modelBuilder.Entity("EcoChallenge.Services.Database.Entities.Gallery", b =>
+            modelBuilder.Entity("EcoChallenge.Services.Database.Entities.GalleryReaction", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -880,9 +796,161 @@ namespace EcoChallenge.Services.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Caption")
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("created_at");
+
+                    b.Property<int>("GalleryShowcaseId")
+                        .HasColumnType("int")
+                        .HasColumnName("gallery_showcase_id");
+
+                    b.Property<int>("ReactionType")
+                        .HasColumnType("int")
+                        .HasColumnName("reaction_type");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("GalleryShowcaseId", "UserId")
+                        .IsUnique();
+
+                    b.ToTable("GalleryReactions");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedAt = new DateTime(2025, 6, 11, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            GalleryShowcaseId = 1,
+                            ReactionType = 0,
+                            UserId = 2
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CreatedAt = new DateTime(2025, 6, 12, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            GalleryShowcaseId = 1,
+                            ReactionType = 0,
+                            UserId = 3
+                        },
+                        new
+                        {
+                            Id = 3,
+                            CreatedAt = new DateTime(2025, 6, 13, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            GalleryShowcaseId = 1,
+                            ReactionType = 0,
+                            UserId = 4
+                        },
+                        new
+                        {
+                            Id = 4,
+                            CreatedAt = new DateTime(2025, 6, 14, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            GalleryShowcaseId = 1,
+                            ReactionType = 1,
+                            UserId = 5
+                        },
+                        new
+                        {
+                            Id = 5,
+                            CreatedAt = new DateTime(2025, 6, 21, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            GalleryShowcaseId = 2,
+                            ReactionType = 0,
+                            UserId = 1
+                        },
+                        new
+                        {
+                            Id = 6,
+                            CreatedAt = new DateTime(2025, 6, 22, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            GalleryShowcaseId = 2,
+                            ReactionType = 0,
+                            UserId = 4
+                        },
+                        new
+                        {
+                            Id = 7,
+                            CreatedAt = new DateTime(2025, 6, 23, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            GalleryShowcaseId = 2,
+                            ReactionType = 0,
+                            UserId = 5
+                        },
+                        new
+                        {
+                            Id = 8,
+                            CreatedAt = new DateTime(2025, 6, 24, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            GalleryShowcaseId = 2,
+                            ReactionType = 1,
+                            UserId = 6
+                        },
+                        new
+                        {
+                            Id = 9,
+                            CreatedAt = new DateTime(2025, 6, 26, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            GalleryShowcaseId = 3,
+                            ReactionType = 0,
+                            UserId = 2
+                        },
+                        new
+                        {
+                            Id = 10,
+                            CreatedAt = new DateTime(2025, 6, 27, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            GalleryShowcaseId = 3,
+                            ReactionType = 0,
+                            UserId = 5
+                        },
+                        new
+                        {
+                            Id = 11,
+                            CreatedAt = new DateTime(2025, 7, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            GalleryShowcaseId = 4,
+                            ReactionType = 0,
+                            UserId = 1
+                        },
+                        new
+                        {
+                            Id = 12,
+                            CreatedAt = new DateTime(2025, 7, 2, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            GalleryShowcaseId = 4,
+                            ReactionType = 1,
+                            UserId = 3
+                        });
+                });
+
+            modelBuilder.Entity("EcoChallenge.Services.Database.Entities.GalleryShowcase", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AfterImageUrl")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)")
+                        .HasColumnName("after_image_url");
+
+                    b.Property<string>("BeforeImageUrl")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)")
+                        .HasColumnName("before_image_url");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("created_at");
+
+                    b.Property<int>("CreatedByAdminId")
+                        .HasColumnType("int")
+                        .HasColumnName("created_by_admin_id");
+
+                    b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)")
-                        .HasColumnName("caption");
+                        .HasColumnName("description");
 
                     b.Property<int>("DislikesCount")
                         .HasColumnType("int")
@@ -891,16 +959,6 @@ namespace EcoChallenge.Services.Migrations
                     b.Property<int?>("EventId")
                         .HasColumnType("int")
                         .HasColumnName("event_id");
-
-                    b.Property<int>("ImageType")
-                        .HasColumnType("int")
-                        .HasColumnName("image_type");
-
-                    b.Property<string>("ImageUrl")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)")
-                        .HasColumnName("image_url");
 
                     b.Property<bool>("IsApproved")
                         .HasColumnType("bit")
@@ -930,114 +988,98 @@ namespace EcoChallenge.Services.Migrations
                         .HasColumnType("int")
                         .HasColumnName("request_id");
 
-                    b.Property<DateTime>("UploadedAt")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("uploaded_at");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int")
-                        .HasColumnName("uploader_user_id");
+                    b.Property<string>("Title")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)")
+                        .HasColumnName("title");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("EventId");
+                    b.HasIndex("CreatedByAdminId");
 
-                    b.HasIndex("IsFeatured");
+                    b.HasIndex("EventId");
 
                     b.HasIndex("LocationId");
 
                     b.HasIndex("RequestId");
 
-                    b.HasIndex("UploadedAt");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Galleries", t =>
+                    b.ToTable("GalleryShowcases", t =>
                         {
-                            t.HasCheckConstraint("CK_Gallery_RelatedEntity", "request_id IS NOT NULL OR event_id IS NOT NULL");
+                            t.HasCheckConstraint("CK_GalleryShowcase_RelatedEntity", "request_id IS NOT NULL OR event_id IS NOT NULL");
                         });
 
                     b.HasData(
                         new
                         {
                             Id = 1,
-                            DislikesCount = 0,
-                            ImageType = 0,
-                            ImageUrl = "/images/before1.jpg",
+                            AfterImageUrl = "https://example.com/images/after/riverbank-park-1.jpg",
+                            BeforeImageUrl = "https://example.com/images/before/riverbank-park-1.jpg",
+                            CreatedAt = new DateTime(2025, 6, 10, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            CreatedByAdminId = 1,
+                            Description = "Amazing transformation of Riverbank Park after our community cleanup event. Removed over 30 bags of litter and restored the natural beauty.",
+                            DislikesCount = 2,
                             IsApproved = true,
-                            IsFeatured = false,
+                            IsFeatured = true,
                             IsReported = false,
-                            LikesCount = 0,
+                            LikesCount = 45,
                             LocationId = 1,
                             ReportCount = 0,
                             RequestId = 1,
-                            UploadedAt = new DateTime(2025, 6, 2, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            UserId = 2
+                            Title = "Riverbank Park Cleanup Success"
                         },
                         new
                         {
                             Id = 2,
+                            AfterImageUrl = "https://example.com/images/after/city-beach-2.jpg",
+                            BeforeImageUrl = "https://example.com/images/before/city-beach-2.jpg",
+                            CreatedAt = new DateTime(2025, 6, 20, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            CreatedByAdminId = 1,
+                            Description = "Volunteers worked together to clean City Beach, removing large amounts of plastic waste and debris from the coastline.",
+                            DislikesCount = 1,
+                            IsApproved = true,
+                            IsFeatured = true,
+                            IsReported = false,
+                            LikesCount = 78,
+                            LocationId = 2,
+                            ReportCount = 0,
+                            RequestId = 2,
+                            Title = "City Beach Plastic Cleanup"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            AfterImageUrl = "https://example.com/images/after/downtown-square-3.jpg",
+                            BeforeImageUrl = "https://example.com/images/before/downtown-square-3.jpg",
+                            CreatedAt = new DateTime(2025, 6, 25, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            CreatedByAdminId = 1,
+                            Description = "Local business district cleanup and beautification project completed by community volunteers in Sarajevo's downtown area.",
                             DislikesCount = 0,
-                            EventId = 1,
-                            ImageType = 2,
-                            ImageUrl = "/images/during1.jpg",
                             IsApproved = true,
                             IsFeatured = false,
                             IsReported = false,
-                            LikesCount = 0,
-                            LocationId = 1,
+                            LikesCount = 32,
+                            LocationId = 3,
                             ReportCount = 0,
-                            UploadedAt = new DateTime(2025, 7, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            UserId = 3
-                        });
-                });
-
-            modelBuilder.Entity("EcoChallenge.Services.Database.Entities.GalleryReaction", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("created_at");
-
-                    b.Property<int>("GalleryId")
-                        .HasColumnType("int")
-                        .HasColumnName("gallery_id");
-
-                    b.Property<int?>("GalleryId1")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ReactionType")
-                        .HasColumnType("int")
-                        .HasColumnName("reaction_type");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int")
-                        .HasColumnName("user_id");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("GalleryId1");
-
-                    b.HasIndex("UserId");
-
-                    b.HasIndex("GalleryId", "UserId")
-                        .IsUnique();
-
-                    b.ToTable("GalleryReactions");
-
-                    b.HasData(
+                            RequestId = 3,
+                            Title = "Downtown Square Revitalization"
+                        },
                         new
                         {
-                            Id = 1,
-                            CreatedAt = new DateTime(2025, 6, 3, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            GalleryId = 1,
-                            ReactionType = 0,
-                            UserId = 3
+                            Id = 4,
+                            AfterImageUrl = "https://example.com/images/after/forest-trail-4.jpg",
+                            BeforeImageUrl = "https://example.com/images/before/forest-trail-4.jpg",
+                            CreatedAt = new DateTime(2025, 6, 30, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            CreatedByAdminId = 1,
+                            Description = "Hiking trail cleared of fallen branches and litter, new trail markers installed for better navigation.",
+                            DislikesCount = 3,
+                            IsApproved = true,
+                            IsFeatured = false,
+                            IsReported = false,
+                            LikesCount = 28,
+                            LocationId = 4,
+                            ReportCount = 0,
+                            RequestId = 4,
+                            Title = "Forest Trail Maintenance Project"
                         });
                 });
 
@@ -1123,6 +1165,28 @@ namespace EcoChallenge.Services.Migrations
                             LocationType = 2,
                             Longitude = 18.6413m,
                             Name = "City Beach"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            City = "Sarajevo",
+                            Country = "BiH",
+                            CreatedAt = new DateTime(2025, 3, 3, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Latitude = 43.8564m,
+                            LocationType = 0,
+                            Longitude = 18.4131m,
+                            Name = "Downtown Square"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            City = "Sarajevo",
+                            Country = "BiH",
+                            CreatedAt = new DateTime(2025, 3, 4, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Latitude = 43.7000m,
+                            LocationType = 3,
+                            Longitude = 18.0000m,
+                            Name = "Forest Trail"
                         });
                 });
 
@@ -1295,7 +1359,7 @@ namespace EcoChallenge.Services.Migrations
                         });
                 });
 
-            modelBuilder.Entity("EcoChallenge.Services.Database.Entities.Report", b =>
+            modelBuilder.Entity("EcoChallenge.Services.Database.Entities.Photo", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -1303,61 +1367,162 @@ namespace EcoChallenge.Services.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("AdminNotes")
+                    b.Property<string>("Caption")
                         .HasColumnType("nvarchar(max)")
-                        .HasColumnName("admin_notes");
+                        .HasColumnName("caption");
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<int?>("EventId")
+                        .HasColumnType("int")
+                        .HasColumnName("event_id");
+
+                    b.Property<string>("ImageUrl")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)")
+                        .HasColumnName("image_url");
+
+                    b.Property<bool>("IsPrimary")
+                        .HasColumnType("bit")
+                        .HasColumnName("is_primary");
+
+                    b.Property<int>("OrderIndex")
+                        .HasColumnType("int")
+                        .HasColumnName("order_index");
+
+                    b.Property<int>("PhotoType")
+                        .HasColumnType("int")
+                        .HasColumnName("photo_type");
+
+                    b.Property<int?>("RequestId")
+                        .HasColumnType("int")
+                        .HasColumnName("request_id");
+
+                    b.Property<DateTime>("UploadedAt")
                         .HasColumnType("datetime2")
-                        .HasColumnName("created_at");
+                        .HasColumnName("uploaded_at");
 
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnName("report_description");
-
-                    b.Property<int>("EntityTypeId")
+                    b.Property<int>("UserId")
                         .HasColumnType("int")
-                        .HasColumnName("reported_entity_type_id");
-
-                    b.Property<int>("Reason")
-                        .HasColumnType("int")
-                        .HasColumnName("report_reason");
-
-                    b.Property<int>("ReporterUserId")
-                        .HasColumnType("int")
-                        .HasColumnName("reporter_user_id");
-
-                    b.Property<DateTime?>("ResolvedAt")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("resolved_at");
-
-                    b.Property<int?>("ResolvedByAdminId")
-                        .HasColumnType("int")
-                        .HasColumnName("resolved_by_admin_id");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int")
-                        .HasColumnName("status");
+                        .HasColumnName("uploader_user_id");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("EntityTypeId");
+                    b.HasIndex("EventId");
 
-                    b.HasIndex("ReporterUserId");
+                    b.HasIndex("RequestId");
 
-                    b.HasIndex("ResolvedByAdminId");
+                    b.HasIndex("UserId");
 
-                    b.ToTable("Reports");
+                    b.ToTable("Photos");
 
                     b.HasData(
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2025, 6, 15, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            EntityTypeId = 2,
-                            Reason = 0,
-                            ReporterUserId = 3,
-                            Status = 0
+                            Caption = "Initial state of Riverbank Park with scattered litter",
+                            ImageUrl = "https://example.com/photos/riverbank-before-1.jpg",
+                            IsPrimary = true,
+                            OrderIndex = 1,
+                            PhotoType = 1,
+                            RequestId = 1,
+                            UploadedAt = new DateTime(2025, 6, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            UserId = 2
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Caption = "Clean Riverbank Park after community cleanup",
+                            ImageUrl = "https://example.com/photos/riverbank-after-1.jpg",
+                            IsPrimary = false,
+                            OrderIndex = 2,
+                            PhotoType = 2,
+                            RequestId = 1,
+                            UploadedAt = new DateTime(2025, 6, 10, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            UserId = 2
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Caption = "City Beach covered with plastic waste",
+                            ImageUrl = "https://example.com/photos/beach-before-1.jpg",
+                            IsPrimary = true,
+                            OrderIndex = 1,
+                            PhotoType = 1,
+                            RequestId = 2,
+                            UploadedAt = new DateTime(2025, 6, 2, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            UserId = 3
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Caption = "Pristine City Beach after plastic removal",
+                            ImageUrl = "https://example.com/photos/beach-after-1.jpg",
+                            IsPrimary = false,
+                            OrderIndex = 2,
+                            PhotoType = 2,
+                            RequestId = 2,
+                            UploadedAt = new DateTime(2025, 6, 20, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            UserId = 3
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Caption = "Downtown Square before cleanup",
+                            ImageUrl = "https://example.com/photos/downtown-before-1.jpg",
+                            IsPrimary = true,
+                            OrderIndex = 1,
+                            PhotoType = 1,
+                            RequestId = 3,
+                            UploadedAt = new DateTime(2025, 6, 3, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            UserId = 4
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Caption = "Revitalized Downtown Square",
+                            ImageUrl = "https://example.com/photos/downtown-after-1.jpg",
+                            IsPrimary = false,
+                            OrderIndex = 2,
+                            PhotoType = 2,
+                            RequestId = 3,
+                            UploadedAt = new DateTime(2025, 6, 25, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            UserId = 4
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Caption = "Forest trail blocked by debris",
+                            ImageUrl = "https://example.com/photos/forest-before-1.jpg",
+                            IsPrimary = true,
+                            OrderIndex = 1,
+                            PhotoType = 1,
+                            RequestId = 4,
+                            UploadedAt = new DateTime(2025, 6, 4, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            UserId = 5
+                        },
+                        new
+                        {
+                            Id = 8,
+                            Caption = "Clear forest trail with new markers",
+                            ImageUrl = "https://example.com/photos/forest-after-1.jpg",
+                            IsPrimary = false,
+                            OrderIndex = 2,
+                            PhotoType = 2,
+                            RequestId = 4,
+                            UploadedAt = new DateTime(2025, 6, 30, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            UserId = 5
+                        },
+                        new
+                        {
+                            Id = 9,
+                            Caption = "Volunteers installing trail markers",
+                            ImageUrl = "https://example.com/photos/forest-progress-1.jpg",
+                            IsPrimary = false,
+                            OrderIndex = 3,
+                            PhotoType = 3,
+                            RequestId = 4,
+                            UploadedAt = new DateTime(2025, 6, 28, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            UserId = 6
                         });
                 });
 
@@ -1398,11 +1563,6 @@ namespace EcoChallenge.Services.Migrations
                         .HasColumnType("datetime2")
                         .HasColumnName("completed_at");
 
-                    b.Property<string>("CompletionImageUrl")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)")
-                        .HasColumnName("completion_image_url");
-
                     b.Property<string>("CompletionNotes")
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("completion_notes");
@@ -1422,11 +1582,6 @@ namespace EcoChallenge.Services.Migrations
                     b.Property<int?>("EstimatedCleanupTime")
                         .HasColumnType("int")
                         .HasColumnName("estimated_cleanup_time");
-
-                    b.Property<string>("ImageUrl")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)")
-                        .HasColumnName("image_url");
 
                     b.Property<int>("LocationId")
                         .HasColumnType("int")
@@ -1530,6 +1685,42 @@ namespace EcoChallenge.Services.Migrations
                             UrgencyLevel = 2,
                             UserId = 3,
                             WasteTypeId = 1
+                        },
+                        new
+                        {
+                            Id = 3,
+                            ActualRewardMoney = 0m,
+                            ActualRewardPoints = 0,
+                            AssignedAdminId = 1,
+                            CreatedAt = new DateTime(2025, 6, 3, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            EstimatedAmount = 1,
+                            LocationId = 3,
+                            StatusId = 6,
+                            SuggestedRewardMoney = 0m,
+                            SuggestedRewardPoints = 0,
+                            Title = "Downtown Street Cleanup",
+                            UpdatedAt = new DateTime(2025, 6, 15, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            UrgencyLevel = 1,
+                            UserId = 4,
+                            WasteTypeId = 5
+                        },
+                        new
+                        {
+                            Id = 4,
+                            ActualRewardMoney = 0m,
+                            ActualRewardPoints = 0,
+                            AssignedAdminId = 1,
+                            CreatedAt = new DateTime(2025, 6, 4, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            EstimatedAmount = 0,
+                            LocationId = 4,
+                            StatusId = 6,
+                            SuggestedRewardMoney = 0m,
+                            SuggestedRewardPoints = 0,
+                            Title = "Forest Trail Maintenance",
+                            UpdatedAt = new DateTime(2025, 6, 20, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            UrgencyLevel = 0,
+                            UserId = 5,
+                            WasteTypeId = 7
                         });
                 });
 
@@ -2039,6 +2230,63 @@ namespace EcoChallenge.Services.Migrations
                             UpdatedAt = new DateTime(2025, 1, 3, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             UserTypeId = 4,
                             Username = "carol"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            City = "Sarajevo",
+                            Country = "BiH",
+                            CreatedAt = new DateTime(2025, 1, 4, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Email = "david@example.com",
+                            FirstName = "David",
+                            IsActive = true,
+                            LastName = "Davis",
+                            PasswordHash = "HASH4",
+                            TotalCleanups = 0,
+                            TotalEventsOrganized = 0,
+                            TotalEventsParticipated = 0,
+                            TotalPoints = 0,
+                            UpdatedAt = new DateTime(2025, 1, 4, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            UserTypeId = 2,
+                            Username = "david"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            City = "Mostar",
+                            Country = "BiH",
+                            CreatedAt = new DateTime(2025, 1, 5, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Email = "eve@example.com",
+                            FirstName = "Eve",
+                            IsActive = true,
+                            LastName = "Evans",
+                            PasswordHash = "HASH5",
+                            TotalCleanups = 0,
+                            TotalEventsOrganized = 0,
+                            TotalEventsParticipated = 0,
+                            TotalPoints = 0,
+                            UpdatedAt = new DateTime(2025, 1, 5, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            UserTypeId = 2,
+                            Username = "eve"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            City = "Sarajevo",
+                            Country = "BiH",
+                            CreatedAt = new DateTime(2025, 1, 6, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Email = "frank@example.com",
+                            FirstName = "Frank",
+                            IsActive = true,
+                            LastName = "Foster",
+                            PasswordHash = "HASH6",
+                            TotalCleanups = 0,
+                            TotalEventsOrganized = 0,
+                            TotalEventsParticipated = 0,
+                            TotalPoints = 0,
+                            UpdatedAt = new DateTime(2025, 1, 6, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            UserTypeId = 2,
+                            Username = "frank"
                         });
                 });
 
@@ -2247,32 +2495,6 @@ namespace EcoChallenge.Services.Migrations
                     b.Navigation("CriteriaType");
                 });
 
-            modelBuilder.Entity("EcoChallenge.Services.Database.Entities.ChatMessage", b =>
-                {
-                    b.HasOne("EcoChallenge.Services.Database.Entities.Event", "Event")
-                        .WithMany("ChatMessages")
-                        .HasForeignKey("EventId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("EcoChallenge.Services.Database.Entities.User", "ReportedBy")
-                        .WithMany()
-                        .HasForeignKey("ReportedByUserId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("EcoChallenge.Services.Database.Entities.User", "Sender")
-                        .WithMany("ChatMessages")
-                        .HasForeignKey("SenderUserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Event");
-
-                    b.Navigation("ReportedBy");
-
-                    b.Navigation("Sender");
-                });
-
             modelBuilder.Entity("EcoChallenge.Services.Database.Entities.Donation", b =>
                 {
                     b.HasOne("EcoChallenge.Services.Database.Entities.Organization", "Organization")
@@ -2365,60 +2587,56 @@ namespace EcoChallenge.Services.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("EcoChallenge.Services.Database.Entities.Gallery", b =>
+            modelBuilder.Entity("EcoChallenge.Services.Database.Entities.GalleryReaction", b =>
                 {
+                    b.HasOne("EcoChallenge.Services.Database.Entities.GalleryShowcase", "GalleryShowcase")
+                        .WithMany("Reactions")
+                        .HasForeignKey("GalleryShowcaseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("EcoChallenge.Services.Database.Entities.User", "User")
+                        .WithMany("GalleryReactions")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("GalleryShowcase");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("EcoChallenge.Services.Database.Entities.GalleryShowcase", b =>
+                {
+                    b.HasOne("EcoChallenge.Services.Database.Entities.User", "CreatedByAdmin")
+                        .WithMany("CreatedGalleryShowcases")
+                        .HasForeignKey("CreatedByAdminId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("EcoChallenge.Services.Database.Entities.Event", "Event")
-                        .WithMany("Galleries")
+                        .WithMany("GalleryShowcases")
                         .HasForeignKey("EventId")
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("EcoChallenge.Services.Database.Entities.Location", "Location")
-                        .WithMany("Galleries")
+                        .WithMany("GalleryShowcases")
                         .HasForeignKey("LocationId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("EcoChallenge.Services.Database.Entities.Request", "Request")
-                        .WithMany("Galleries")
+                        .WithMany("GalleryShowcases")
                         .HasForeignKey("RequestId")
                         .OnDelete(DeleteBehavior.SetNull);
 
-                    b.HasOne("EcoChallenge.Services.Database.Entities.User", "User")
-                        .WithMany("Galleries")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                    b.Navigation("CreatedByAdmin");
 
                     b.Navigation("Event");
 
                     b.Navigation("Location");
 
                     b.Navigation("Request");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("EcoChallenge.Services.Database.Entities.GalleryReaction", b =>
-                {
-                    b.HasOne("EcoChallenge.Services.Database.Entities.Gallery", "Gallery")
-                        .WithMany()
-                        .HasForeignKey("GalleryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("EcoChallenge.Services.Database.Entities.Gallery", null)
-                        .WithMany("GalleryReactions")
-                        .HasForeignKey("GalleryId1");
-
-                    b.HasOne("EcoChallenge.Services.Database.Entities.User", "User")
-                        .WithMany("GalleryReactions")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Gallery");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("EcoChallenge.Services.Database.Entities.Notification", b =>
@@ -2436,30 +2654,29 @@ namespace EcoChallenge.Services.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("EcoChallenge.Services.Database.Entities.Report", b =>
+            modelBuilder.Entity("EcoChallenge.Services.Database.Entities.Photo", b =>
                 {
-                    b.HasOne("EcoChallenge.Services.Database.Entities.TargetEntityType", "EntityType")
-                        .WithMany()
-                        .HasForeignKey("EntityTypeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.HasOne("EcoChallenge.Services.Database.Entities.Event", "Event")
+                        .WithMany("Photos")
+                        .HasForeignKey("EventId")
+                        .OnDelete(DeleteBehavior.SetNull);
 
-                    b.HasOne("EcoChallenge.Services.Database.Entities.User", "Reporter")
-                        .WithMany("Reports")
-                        .HasForeignKey("ReporterUserId")
+                    b.HasOne("EcoChallenge.Services.Database.Entities.Request", "Request")
+                        .WithMany("Photos")
+                        .HasForeignKey("RequestId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("EcoChallenge.Services.Database.Entities.User", "User")
+                        .WithMany("Photos")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("EcoChallenge.Services.Database.Entities.User", "ResolvedBy")
-                        .WithMany("ResolvedReports")
-                        .HasForeignKey("ResolvedByAdminId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                    b.Navigation("Event");
 
-                    b.Navigation("EntityType");
+                    b.Navigation("Request");
 
-                    b.Navigation("Reporter");
-
-                    b.Navigation("ResolvedBy");
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("EcoChallenge.Services.Database.Entities.Request", b =>
@@ -2631,11 +2848,11 @@ namespace EcoChallenge.Services.Migrations
                 {
                     b.Navigation("ActivityLogs");
 
-                    b.Navigation("ChatMessages");
-
-                    b.Navigation("Galleries");
+                    b.Navigation("GalleryShowcases");
 
                     b.Navigation("Participants");
+
+                    b.Navigation("Photos");
 
                     b.Navigation("Rewards");
                 });
@@ -2650,16 +2867,16 @@ namespace EcoChallenge.Services.Migrations
                     b.Navigation("Events");
                 });
 
-            modelBuilder.Entity("EcoChallenge.Services.Database.Entities.Gallery", b =>
+            modelBuilder.Entity("EcoChallenge.Services.Database.Entities.GalleryShowcase", b =>
                 {
-                    b.Navigation("GalleryReactions");
+                    b.Navigation("Reactions");
                 });
 
             modelBuilder.Entity("EcoChallenge.Services.Database.Entities.Location", b =>
                 {
                     b.Navigation("Events");
 
-                    b.Navigation("Galleries");
+                    b.Navigation("GalleryShowcases");
 
                     b.Navigation("Requests");
                 });
@@ -2673,9 +2890,11 @@ namespace EcoChallenge.Services.Migrations
                 {
                     b.Navigation("Events");
 
-                    b.Navigation("Galleries");
+                    b.Navigation("GalleryShowcases");
 
                     b.Navigation("History");
+
+                    b.Navigation("Photos");
 
                     b.Navigation("Rewards");
                 });
@@ -2705,25 +2924,21 @@ namespace EcoChallenge.Services.Migrations
 
                     b.Navigation("AssignedRequests");
 
-                    b.Navigation("ChatMessages");
-
                     b.Navigation("CreatedEvents");
+
+                    b.Navigation("CreatedGalleryShowcases");
 
                     b.Navigation("Donations");
 
                     b.Navigation("EventParticipants");
 
-                    b.Navigation("Galleries");
-
                     b.Navigation("GalleryReactions");
 
                     b.Navigation("Notifications");
 
-                    b.Navigation("Reports");
+                    b.Navigation("Photos");
 
                     b.Navigation("Requests");
-
-                    b.Navigation("ResolvedReports");
 
                     b.Navigation("Rewards");
 

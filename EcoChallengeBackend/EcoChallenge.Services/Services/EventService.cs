@@ -35,7 +35,8 @@ namespace EcoChallenge.Services.Services
                .Include(e => e.Location)
                .Include(e => e.EventType)
                .Include(e => e.Status)
-               .Include(e => e.RelatedRequest);
+               .Include(e => e.RelatedRequest)
+               .Include(r => r.Photos);
             if (!string.IsNullOrWhiteSpace(s.Text))
             {
                 string t = s.Text.ToLower();
@@ -68,6 +69,7 @@ namespace EcoChallenge.Services.Services
                 .Include(e => e.EventType)
                 .Include(e => e.Status)
                 .Include(e => e.RelatedRequest)
+                .Include(r => r.Photos)
                 .FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
 
             return entity == null ? null : MapToResponse(entity);

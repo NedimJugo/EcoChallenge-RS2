@@ -1,333 +1,381 @@
+import 'package:ecochallenge_desktop/pages/management_page.dart';
+import 'package:ecochallenge_desktop/pages/overview_page.dart';
+import 'package:ecochallenge_desktop/pages/requests_page.dart';
+import 'package:ecochallenge_desktop/pages/reward_and_donations_page.dart';
 import 'package:flutter/material.dart';
-import '../models/admin_login_response.dart';
-import '../providers/admin_auth_provider.dart';
-import 'admin_login_page.dart';
+import 'package:provider/provider.dart';
+import 'package:ecochallenge_desktop/pages/admin_login_page.dart';
+import 'package:ecochallenge_desktop/providers/admin_auth_provider.dart';
 
 class AdminDashboardPage extends StatefulWidget {
-  const AdminDashboardPage({super.key});
-
   @override
-  State<AdminDashboardPage> createState() => _AdminDashboardPageState();
+  _AdminDashboardPageState createState() => _AdminDashboardPageState();
 }
 
 class _AdminDashboardPageState extends State<AdminDashboardPage> {
-  final _adminAuthService = AdminAuthService();
-  AdminProfileResponse? _adminProfile;
-  bool _isLoading = true;
+  int selectedIndex = 0;
+  bool isNavCollapsed = false;
+  
+  final List<Widget> _pages = [
+    OverviewPage(),
+    ManagementPage(),
+    RewardsPage(),
+    RequestsPage(),
+  ];
+  
+  final List<String> _titles = [
+    'Overview',
+    'Management',
+    'Rewards & Donations',
+    'Requests',
+  ];
 
-  @override
-  void initState() {
-    super.initState();
-    _loadAdminProfile();
-  }
-
-  Future<void> _loadAdminProfile() async {
-    try {
-      final profile = await _adminAuthService.getProfile();
-      if (profile != null) {
-        setState(() {
-          _adminProfile = profile;
-          _isLoading = false;
-        });
-      } else {
-        // Profile not found, redirect to login
-        _redirectToLogin();
-      }
-    } catch (e) {
-      _redirectToLogin();
-    }
-  }
-
-  Future<void> _logout() async {
-    final shouldLogout = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Confirm Logout'),
-        content: const Text('Are you sure you want to logout?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('Logout'),
-          ),
-        ],
-      ),
-    );
-
-    if (shouldLogout == true) {
-      await _adminAuthService.logout();
-      _redirectToLogin();
-    }
-  }
-
-  void _redirectToLogin() {
-    if (mounted) {
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (context) => const AdminLoginPage()),
-        (route) => false,
-      );
-    }
-  }
+  final List<IconData> _icons = [
+    Icons.dashboard_outlined,
+    Icons.settings_outlined,
+    Icons.card_giftcard_outlined,
+    Icons.assignment_outlined,
+  ];
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
-
+    final auth = Provider.of<AdminAuthProvider>(context);
+    
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Admin Dashboard'),
-        backgroundColor: Theme.of(context).primaryColor,
-        foregroundColor: Colors.white,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _loadAdminProfile,
-            tooltip: 'Refresh Profile',
-          ),
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: _logout,
-            tooltip: 'Logout',
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Welcome Card
-            Card(
-              elevation: 4,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 30,
-                      backgroundColor: Theme.of(context).primaryColor,
-                      child: Text(
-                        _adminProfile?.firstName.isNotEmpty == true
-                            ? _adminProfile!.firstName[0].toUpperCase()
-                            : 'A',
-                        style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Welcome back!',
-                            style: Theme.of(context).textTheme.titleMedium
-                                ?.copyWith(color: Colors.grey[600]),
-                          ),
-                          Text(
-                            _adminProfile?.fullName ?? 'Admin User',
-                            style: Theme.of(context).textTheme.headlineSmall
-                                ?.copyWith(fontWeight: FontWeight.bold),
-                          ),
-                          Text(
-                            '@${_adminProfile?.username ?? 'admin'}',
-                            style: Theme.of(context).textTheme.bodyMedium
-                                ?.copyWith(
-                                  color: Theme.of(context).primaryColor,
-                                ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-
-            // Profile Information Card
-            Card(
-              elevation: 4,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Profile Information',
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    _buildInfoRow(
-                      Icons.person,
-                      'Username',
-                      _adminProfile?.username ?? 'N/A',
-                    ),
-                    _buildInfoRow(
-                      Icons.email,
-                      'Email',
-                      _adminProfile?.email ?? 'N/A',
-                    ),
-                    _buildInfoRow(
-                      Icons.admin_panel_settings,
-                      'Role',
-                      _adminProfile?.userTypeName ?? 'N/A',
-                    ),
-                    _buildInfoRow(
-                      Icons.badge,
-                      'User ID',
-                      _adminProfile?.id.toString() ?? 'N/A',
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-
-            // Quick Actions Grid
-            Text(
-              'Quick Actions',
-              style: Theme.of(
-                context,
-              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 12),
-            GridView.count(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisCount: 2,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-              children: [
-                _buildActionCard(
-                  icon: Icons.people,
-                  title: 'Manage Users',
-                  subtitle: 'View and manage users',
-                  onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('User management coming soon!'),
-                      ),
-                    );
-                  },
-                ),
-                _buildActionCard(
-                  icon: Icons.settings,
-                  title: 'System Settings',
-                  subtitle: 'Configure system',
-                  onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Settings coming soon!')),
-                    );
-                  },
-                ),
-                _buildActionCard(
-                  icon: Icons.analytics,
-                  title: 'Analytics',
-                  subtitle: 'View system analytics',
-                  onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Analytics coming soon!')),
-                    );
-                  },
-                ),
-                _buildActionCard(
-                  icon: Icons.report,
-                  title: 'Reports',
-                  subtitle: 'Generate reports',
-                  onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Reports coming soon!')),
-                    );
-                  },
+      backgroundColor: Colors.grey[50],
+      body: Row(
+        children: [
+          // 🟩 LEFT SIDEBAR - Updated Design
+          AnimatedContainer(
+            duration: Duration(milliseconds: 300),
+            width: isNavCollapsed ? 80 : 280,
+            decoration: BoxDecoration(
+              color: const Color(0xFF606C38),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 10,
+                  offset: Offset(2, 0),
                 ),
               ],
             ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildInfoRow(IconData icon, String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
-        children: [
-          Icon(icon, size: 20, color: Theme.of(context).primaryColor),
-          const SizedBox(width: 12),
-          Text(
-            '$label:',
-            style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // Toggle Button and Logo Section
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      // Toggle Button
+                      Align(
+                        alignment: isNavCollapsed ? Alignment.center : Alignment.centerRight,
+                        child: IconButton(
+                          onPressed: () {
+                            setState(() {
+                              isNavCollapsed = !isNavCollapsed;
+                            });
+                          },
+                          icon: Icon(
+                            isNavCollapsed ? Icons.menu : Icons.menu_open,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                          tooltip: isNavCollapsed ? 'Expand Menu' : 'Collapse Menu',
+                        ),
+                      ),
+                      
+                      SizedBox(height: 8),
+                      
+                      // Logo Section - Bigger size
+                      Container(
+                        width: 100, // Increased from 32
+                        height: 100, // Increased from 32
+                        child: Center(
+                          child: Image.asset(
+                            'assets/images/Eco-Light.png', // Your logo path
+                            width: 100, // Increased from 24
+                            height: 100, // Increased from 24
+                            fit: BoxFit.contain,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                
+                // Navigation Menu - Only the 4 main items
+                Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: isNavCollapsed ? 8 : 16,
+                    ),
+                    child: Column(
+                      children: [
+                        for (int i = 0; i < _titles.length; i++)
+                          Container(
+                            margin: const EdgeInsets.only(bottom: 4),
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(8),
+                                onTap: () {
+                                  setState(() {
+                                    selectedIndex = i;
+                                  });
+                                },
+                                child: Container(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: isNavCollapsed ? 8 : 16,
+                                    vertical: 12,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: selectedIndex == i
+                                        ? Colors.white.withOpacity(0.1)
+                                        : Colors.transparent,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: isNavCollapsed
+                                      ? Center(
+                                          child: Icon(
+                                            _icons[i],
+                                            color: selectedIndex == i
+                                                ? Colors.white
+                                                : Colors.white70,
+                                            size: 20,
+                                          ),
+                                        )
+                                      : Row(
+                                          children: [
+                                            Icon(
+                                              _icons[i],
+                                              color: selectedIndex == i
+                                                  ? Colors.white
+                                                  : Colors.white70,
+                                              size: 20,
+                                            ),
+                                            SizedBox(width: 12),
+                                            Text(
+                                              _titles[i],
+                                              style: TextStyle(
+                                                color: selectedIndex == i
+                                                    ? Colors.white
+                                                    : Colors.white70,
+                                                fontWeight: selectedIndex == i
+                                                    ? FontWeight.w600
+                                                    : FontWeight.normal,
+                                                fontSize: 14,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+                
+                // Balance Section - Centered with thicker progress bar
+                if (!isNavCollapsed)
+                  Container(
+                    margin: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Column(
+                      children: [
+                        Text(
+                          'Balance',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          '100000KM/200000KM',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontSize: 12,
+                          ),
+                        ),
+                        SizedBox(height: 12),
+                        // Thicker progress bar
+                        Container(
+                          height: 8, // Made thicker (was default ~4px)
+                          child: LinearProgressIndicator(
+                            value: 100000 / 200000,
+                            backgroundColor: Colors.white.withOpacity(0.2),
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Color(0xFFFEFAE0),
+                            ),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                
+                // Logout Button
+                Container(
+                  margin: EdgeInsets.all(isNavCollapsed ? 8 : 16),
+                  width: double.infinity,
+                  child: isNavCollapsed
+                      ? IconButton(
+                          onPressed: () async {
+                            await auth.logout();
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(builder: (_) => AdminLoginPage()),
+                            );
+                          },
+                          icon: Icon(
+                            Icons.logout,
+                            color: Colors.red[400],
+                            size: 20,
+                          ),
+                          tooltip: 'Log out',
+                        )
+                      : ElevatedButton.icon(
+                          onPressed: () async {
+                            await auth.logout();
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(builder: (_) => AdminLoginPage()),
+                            );
+                          },
+                          icon: Icon(Icons.logout, size: 18),
+                          label: Text('Log out'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Color(0xFFFEFAE0),
+                            foregroundColor: Color(0xFF606C38),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            elevation: 0,
+                          ),
+                        ),
+                ),
+              ],
+            ),
           ),
-          const SizedBox(width: 8),
+          
+          // 🟦 MAIN CONTENT
           Expanded(
-            child: Text(
-              value,
-              style: TextStyle(color: Colors.grey[700], fontSize: 14),
+            child: Column(
+              children: [
+                // Top Header Bar
+                Container(
+                  height: 70,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 10,
+                        offset: Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Dashboard',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey[800],
+                        ),
+                      ),
+                      Row(
+                        children: [
+                          // Search Icon
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[100],
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Icon(
+                              Icons.search,
+                              size: 20,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                          SizedBox(width: 16),
+                          
+                          // User Avatar with Dropdown
+                          PopupMenuButton<String>(
+                            offset: Offset(0, 50),
+                            onSelected: (value) async {
+                              if (value == 'logout') {
+                                await auth.logout();
+                                Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => AdminLoginPage(),
+                                  ),
+                                );
+                              }
+                            },
+                            itemBuilder: (BuildContext context) => [
+                              PopupMenuItem(
+                                value: 'logout',
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.logout, size: 18),
+                                    SizedBox(width: 8),
+                                    Text('Log out'),
+                                  ],
+                                ),
+                              ),
+                            ],
+                            child: Container(
+                              padding: const EdgeInsets.all(2),
+                              decoration: BoxDecoration(
+                                color: Colors.grey[100],
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: CircleAvatar(
+                                radius: 18,
+                                backgroundColor: Colors.grey[300],
+                                child: Icon(
+                                  Icons.person,
+                                  color: Colors.grey[600],
+                                  size: 18,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                
+                // Page Content
+                Expanded(
+                  child: Container(
+                    color: Colors.grey[50],
+                    padding: const EdgeInsets.all(24),
+                    child: _pages[selectedIndex],
+                  ),
+                ),
+              ],
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildActionCard({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required VoidCallback onTap,
-  }) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, size: 32, color: Theme.of(context).primaryColor),
-              const SizedBox(height: 8),
-              Text(
-                title,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 4),
-              Text(
-                subtitle,
-                style: TextStyle(color: Colors.grey[600], fontSize: 12),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }

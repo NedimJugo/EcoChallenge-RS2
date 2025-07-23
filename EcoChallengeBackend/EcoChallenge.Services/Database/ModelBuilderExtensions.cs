@@ -144,7 +144,49 @@ namespace EcoChallenge.Services.Database
            UserTypeId = 4,
            CreatedAt = new DateTime(2025, 1, 3),
            UpdatedAt = new DateTime(2025, 1, 3)
-       }
+       },
+        new User
+        {
+            Id = 4,
+            Username = "david",
+            Email = "david@example.com",
+            PasswordHash = "HASH4",
+            FirstName = "David",
+            LastName = "Davis",
+            City = "Sarajevo",
+            Country = "BiH",
+            UserTypeId = 2,
+            CreatedAt = new DateTime(2025, 1, 4),
+            UpdatedAt = new DateTime(2025, 1, 4)
+        },
+    new User
+    {
+        Id = 5,
+        Username = "eve",
+        Email = "eve@example.com",
+        PasswordHash = "HASH5",
+        FirstName = "Eve",
+        LastName = "Evans",
+        City = "Mostar",
+        Country = "BiH",
+        UserTypeId = 2,
+        CreatedAt = new DateTime(2025, 1, 5),
+        UpdatedAt = new DateTime(2025, 1, 5)
+    },
+    new User
+    {
+        Id = 6,
+        Username = "frank",
+        Email = "frank@example.com",
+        PasswordHash = "HASH6",
+        FirstName = "Frank",
+        LastName = "Foster",
+        City = "Sarajevo",
+        Country = "BiH",
+        UserTypeId = 2,
+        CreatedAt = new DateTime(2025, 1, 6),
+        UpdatedAt = new DateTime(2025, 1, 6)
+    }
    );
 
             builder.Entity<Organization>().HasData(
@@ -193,7 +235,29 @@ namespace EcoChallenge.Services.Database
                     Country = "BiH",
                     LocationType = LocationType.Coastal,
                     CreatedAt = new DateTime(2025, 3, 2)
-                }
+                },
+                 new Location
+                 {
+                     Id = 3,
+                     Name = "Downtown Square",
+                     Latitude = 43.8564m,
+                     Longitude = 18.4131m,
+                     City = "Sarajevo",
+                     Country = "BiH",
+                     LocationType = LocationType.Urban,
+                     CreatedAt = new DateTime(2025, 3, 3)
+                 },
+    new Location
+    {
+        Id = 4,
+        Name = "Forest Trail",
+        Latitude = 43.7000m,
+        Longitude = 18.0000m,
+        City = "Sarajevo",
+        Country = "BiH",
+        LocationType = LocationType.Forest,
+        CreatedAt = new DateTime(2025, 3, 4)
+    }
             );
 
             // 4) Badges
@@ -270,7 +334,35 @@ namespace EcoChallenge.Services.Database
                     CreatedAt = new DateTime(2025, 6, 2),
                     UpdatedAt = new DateTime(2025, 6, 2),
                     AssignedAdminId = 1    // alice
-                }
+                },
+                 new Request
+                 {
+                     Id = 3,
+                     UserId = 4,
+                     LocationId = 3,
+                     Title = "Downtown Street Cleanup",
+                     UrgencyLevel = UrgencyLevel.Medium,
+                     WasteTypeId = 5,
+                     EstimatedAmount = EstimatedAmount.Medium,
+                     StatusId = 6, // Completed
+                     CreatedAt = new DateTime(2025, 6, 3),
+                     UpdatedAt = new DateTime(2025, 6, 15),
+                     AssignedAdminId = 1
+                 },
+    new Request
+    {
+        Id = 4,
+        UserId = 5,
+        LocationId = 4,
+        Title = "Forest Trail Maintenance",
+        UrgencyLevel = UrgencyLevel.Low,
+        WasteTypeId = 7,
+        EstimatedAmount = EstimatedAmount.Small,
+        StatusId = 6, // Completed
+        CreatedAt = new DateTime(2025, 6, 4),
+        UpdatedAt = new DateTime(2025, 6, 20),
+        AssignedAdminId = 1
+    }
             );
 
             builder.Entity<Event>().HasData(
@@ -303,40 +395,253 @@ namespace EcoChallenge.Services.Database
                 }
             );
 
-            // 8) EventParticipants
-            builder.Entity<EventParticipant>().HasData(
-                new EventParticipant
-                {
-                    Id = 1,
-                    EventId = 1,
-                    UserId = 2,
-                    JoinedAt = new DateTime(2025, 6, 15),
-                    Status = AttendanceStatus.Registered,
-                    PointsEarned = 0
-                },
-                new EventParticipant
-                {
-                    Id = 2,
-                    EventId = 1,
-                    UserId = 3,
-                    JoinedAt = new DateTime(2025, 6, 16),
-                    Status = AttendanceStatus.Registered,
-                    PointsEarned = 0
-                }
-            );
 
-            // 9) ChatMessages
-            builder.Entity<ChatMessage>().HasData(
-                new ChatMessage
-                {
-                    Id = 1,
-                    EventId = 1,
-                    SenderUserId = 2,
-                    MessageText = "Looking forward to helping!",
-                    MessageType = MessageType.Text,
-                    SentAt = new DateTime(2025, 6, 20)
-                }
-            );
+            builder.Entity<GalleryShowcase>().HasData(
+    new GalleryShowcase
+    {
+        Id = 1,
+        RequestId = 1,
+        EventId = null,
+        LocationId = 1, // Riverbank Park
+        CreatedByAdminId = 1, // alice
+        BeforeImageUrl = "https://example.com/images/before/riverbank-park-1.jpg",
+        AfterImageUrl = "https://example.com/images/after/riverbank-park-1.jpg",
+        Title = "Riverbank Park Cleanup Success",
+        Description = "Amazing transformation of Riverbank Park after our community cleanup event. Removed over 30 bags of litter and restored the natural beauty.",
+        LikesCount = 45,
+        DislikesCount = 2,
+        IsFeatured = true,
+        IsApproved = true,
+        IsReported = false,
+        ReportCount = 0,
+        CreatedAt = new DateTime(2025, 6, 10)
+    },
+    new GalleryShowcase
+    {
+        Id = 2,
+        RequestId = 2,
+        EventId = null,
+        LocationId = 2, // City Beach
+        CreatedByAdminId = 1, // alice
+        BeforeImageUrl = "https://example.com/images/before/city-beach-2.jpg",
+        AfterImageUrl = "https://example.com/images/after/city-beach-2.jpg",
+        Title = "City Beach Plastic Cleanup",
+        Description = "Volunteers worked together to clean City Beach, removing large amounts of plastic waste and debris from the coastline.",
+        LikesCount = 78,
+        DislikesCount = 1,
+        IsFeatured = true,
+        IsApproved = true,
+        IsReported = false,
+        ReportCount = 0,
+        CreatedAt = new DateTime(2025, 6, 20)
+    },
+    new GalleryShowcase
+    {
+        Id = 3,
+        RequestId = 3,
+        EventId = null,
+        LocationId = 3, // Downtown Square
+        CreatedByAdminId = 1, // alice
+        BeforeImageUrl = "https://example.com/images/before/downtown-square-3.jpg",
+        AfterImageUrl = "https://example.com/images/after/downtown-square-3.jpg",
+        Title = "Downtown Square Revitalization",
+        Description = "Local business district cleanup and beautification project completed by community volunteers in Sarajevo's downtown area.",
+        LikesCount = 32,
+        DislikesCount = 0,
+        IsFeatured = false,
+        IsApproved = true,
+        IsReported = false,
+        ReportCount = 0,
+        CreatedAt = new DateTime(2025, 6, 25)
+    },
+    new GalleryShowcase
+    {
+        Id = 4,
+        RequestId = 4,
+        EventId = null,
+        LocationId = 4, // Forest Trail
+        CreatedByAdminId = 1, // alice
+        BeforeImageUrl = "https://example.com/images/before/forest-trail-4.jpg",
+        AfterImageUrl = "https://example.com/images/after/forest-trail-4.jpg",
+        Title = "Forest Trail Maintenance Project",
+        Description = "Hiking trail cleared of fallen branches and litter, new trail markers installed for better navigation.",
+        LikesCount = 28,
+        DislikesCount = 3,
+        IsFeatured = false,
+        IsApproved = true,
+        IsReported = false,
+        ReportCount = 0,
+        CreatedAt = new DateTime(2025, 6, 30)
+    }
+    );
+
+            builder.Entity<GalleryReaction>().HasData(
+    // Reactions for Gallery Showcase 1 (Riverbank Park)
+    new GalleryReaction { Id = 1, GalleryShowcaseId = 1, UserId = 2, ReactionType = ReactionType.Like, CreatedAt = new DateTime(2025, 6, 11) },
+    new GalleryReaction { Id = 2, GalleryShowcaseId = 1, UserId = 3, ReactionType = ReactionType.Like, CreatedAt = new DateTime(2025, 6, 12) },
+    new GalleryReaction { Id = 3, GalleryShowcaseId = 1, UserId = 4, ReactionType = ReactionType.Like, CreatedAt = new DateTime(2025, 6, 13) },
+    new GalleryReaction { Id = 4, GalleryShowcaseId = 1, UserId = 5, ReactionType = ReactionType.Dislike, CreatedAt = new DateTime(2025, 6, 14) },
+
+    // Reactions for Gallery Showcase 2 (City Beach)
+    new GalleryReaction { Id = 5, GalleryShowcaseId = 2, UserId = 1, ReactionType = ReactionType.Like, CreatedAt = new DateTime(2025, 6, 21) },
+    new GalleryReaction { Id = 6, GalleryShowcaseId = 2, UserId = 4, ReactionType = ReactionType.Like, CreatedAt = new DateTime(2025, 6, 22) },
+    new GalleryReaction { Id = 7, GalleryShowcaseId = 2, UserId = 5, ReactionType = ReactionType.Like, CreatedAt = new DateTime(2025, 6, 23) },
+    new GalleryReaction { Id = 8, GalleryShowcaseId = 2, UserId = 6, ReactionType = ReactionType.Dislike, CreatedAt = new DateTime(2025, 6, 24) },
+
+    // Reactions for Gallery Showcase 3 (Downtown Square)
+    new GalleryReaction { Id = 9, GalleryShowcaseId = 3, UserId = 2, ReactionType = ReactionType.Like, CreatedAt = new DateTime(2025, 6, 26) },
+    new GalleryReaction { Id = 10, GalleryShowcaseId = 3, UserId = 5, ReactionType = ReactionType.Like, CreatedAt = new DateTime(2025, 6, 27) },
+
+    // Reactions for Gallery Showcase 4 (Forest Trail)
+    new GalleryReaction { Id = 11, GalleryShowcaseId = 4, UserId = 1, ReactionType = ReactionType.Like, CreatedAt = new DateTime(2025, 7, 1) },
+    new GalleryReaction { Id = 12, GalleryShowcaseId = 4, UserId = 3, ReactionType = ReactionType.Dislike, CreatedAt = new DateTime(2025, 7, 2) }
+);
+            builder.Entity<Photo>().HasData(
+    // Photos for Request 1 (Riverbank Park)
+    new Photo
+    {
+        Id = 1,
+        RequestId = 1,
+        EventId = null,
+        UserId = 2, // bob
+        ImageUrl = "https://example.com/photos/riverbank-before-1.jpg",
+        Caption = "Initial state of Riverbank Park with scattered litter",
+        PhotoType = PhotoType.Before,
+        IsPrimary = true,
+        UploadedAt = new DateTime(2025, 6, 1),
+        OrderIndex = 1
+    },
+    new Photo
+    {
+        Id = 2,
+        RequestId = 1,
+        EventId = null,
+        UserId = 2, // bob
+        ImageUrl = "https://example.com/photos/riverbank-after-1.jpg",
+        Caption = "Clean Riverbank Park after community cleanup",
+        PhotoType = PhotoType.After,
+        IsPrimary = false,
+        UploadedAt = new DateTime(2025, 6, 10),
+        OrderIndex = 2
+    },
+
+    // Photos for Request 2 (City Beach)
+    new Photo
+    {
+        Id = 3,
+        RequestId = 2,
+        EventId = null,
+        UserId = 3, // carol
+        ImageUrl = "https://example.com/photos/beach-before-1.jpg",
+        Caption = "City Beach covered with plastic waste",
+        PhotoType = PhotoType.Before,
+        IsPrimary = true,
+        UploadedAt = new DateTime(2025, 6, 2),
+        OrderIndex = 1
+    },
+    new Photo
+    {
+        Id = 4,
+        RequestId = 2,
+        EventId = null,
+        UserId = 3, // carol
+        ImageUrl = "https://example.com/photos/beach-after-1.jpg",
+        Caption = "Pristine City Beach after plastic removal",
+        PhotoType = PhotoType.After,
+        IsPrimary = false,
+        UploadedAt = new DateTime(2025, 6, 20),
+        OrderIndex = 2
+    },
+
+    // Photos for Request 3 (Downtown Square)
+    new Photo
+    {
+        Id = 5,
+        RequestId = 3,
+        EventId = null,
+        UserId = 4, // david
+        ImageUrl = "https://example.com/photos/downtown-before-1.jpg",
+        Caption = "Downtown Square before cleanup",
+        PhotoType = PhotoType.Before,
+        IsPrimary = true,
+        UploadedAt = new DateTime(2025, 6, 3),
+        OrderIndex = 1
+    },
+    new Photo
+    {
+        Id = 6,
+        RequestId = 3,
+        EventId = null,
+        UserId = 4, // david
+        ImageUrl = "https://example.com/photos/downtown-after-1.jpg",
+        Caption = "Revitalized Downtown Square",
+        PhotoType = PhotoType.After,
+        IsPrimary = false,
+        UploadedAt = new DateTime(2025, 6, 25),
+        OrderIndex = 2
+    },
+
+    // Photos for Request 4 (Forest Trail)
+    new Photo
+    {
+        Id = 7,
+        RequestId = 4,
+        EventId = null,
+        UserId = 5, // eve
+        ImageUrl = "https://example.com/photos/forest-before-1.jpg",
+        Caption = "Forest trail blocked by debris",
+        PhotoType = PhotoType.Before,
+        IsPrimary = true,
+        UploadedAt = new DateTime(2025, 6, 4),
+        OrderIndex = 1
+    },
+    new Photo
+    {
+        Id = 8,
+        RequestId = 4,
+        EventId = null,
+        UserId = 5, // eve
+        ImageUrl = "https://example.com/photos/forest-after-1.jpg",
+        Caption = "Clear forest trail with new markers",
+        PhotoType = PhotoType.After,
+        IsPrimary = false,
+        UploadedAt = new DateTime(2025, 6, 30),
+        OrderIndex = 2
+    },
+    new Photo
+    {
+        Id = 9,
+        RequestId = 4,
+        EventId = null,
+        UserId = 6, // frank
+        ImageUrl = "https://example.com/photos/forest-progress-1.jpg",
+        Caption = "Volunteers installing trail markers",
+        PhotoType = PhotoType.Progress,
+        IsPrimary = false,
+        UploadedAt = new DateTime(2025, 6, 28),
+        OrderIndex = 3
+    }
+);// 8) EventParticipants
+            builder.Entity<EventParticipant>().HasData(
+                            new EventParticipant
+                            {
+                                Id = 1,
+                                EventId = 1,
+                                UserId = 2,
+                                JoinedAt = new DateTime(2025, 6, 15),
+                                Status = AttendanceStatus.Registered,
+                                PointsEarned = 0
+                            },
+                            new EventParticipant
+                            {
+                                Id = 2,
+                                EventId = 1,
+                                UserId = 3,
+                                JoinedAt = new DateTime(2025, 6, 16),
+                                Status = AttendanceStatus.Registered,
+                                PointsEarned = 0
+                            }
+                        );
 
             // 10) Donations
             builder.Entity<Donation>().HasData(
@@ -390,41 +695,7 @@ namespace EcoChallenge.Services.Database
                 }
             );
 
-            // 13) Gallery
-            builder.Entity<Gallery>().HasData(
-                new Gallery
-                {
-                    Id = 1,
-                    RequestId = 1,
-                    LocationId = 1,
-                    UserId = 2,
-                    ImageUrl = "/images/before1.jpg",
-                    ImageType = ImageType.Before,
-                    UploadedAt = new DateTime(2025, 6, 2)
-                },
-                new Gallery
-                {
-                    Id = 2,
-                    EventId = 1,
-                    LocationId = 1,
-                    UserId = 3,
-                    ImageUrl = "/images/during1.jpg",
-                    ImageType = ImageType.During,
-                    UploadedAt = new DateTime(2025, 7, 1)
-                }
-            );
 
-            // 14) GalleryReactions
-            builder.Entity<GalleryReaction>().HasData(
-                new GalleryReaction
-                {
-                    Id = 1,
-                    GalleryId = 1,
-                    UserId = 3,
-                    ReactionType = ReactionType.Like,
-                    CreatedAt = new DateTime(2025, 6, 3)
-                }
-            );
 
             // 15) ActivityHistory
             builder.Entity<ActivityHistory>().HasData(
@@ -449,19 +720,6 @@ namespace EcoChallenge.Services.Database
                     TargetEntityTypeId = 2,
                     CreatedAt = new DateTime(2025, 6, 2),
                     ActionDescription = "Approved request #2"
-                }
-            );
-
-            // 17) Reports
-            builder.Entity<Report>().HasData(
-                new Report
-                {
-                    Id = 1,
-                    ReporterUserId = 3,
-                    EntityTypeId = 2,
-                    Reason = ReportReason.Spam,
-                    Status = ReportStatus.Pending,
-                    CreatedAt = new DateTime(2025, 6, 15)
                 }
             );
 

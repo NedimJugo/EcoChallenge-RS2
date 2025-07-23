@@ -26,18 +26,15 @@ namespace EcoChallenge.Services.Database
         public DbSet<EventStatus> EventStatuses { get; set; }
         public DbSet<Event> Events { get; set; }
         public DbSet<EventParticipant> EventParticipants { get; set; }
-        public DbSet<ChatMessage> ChatMessages { get; set; }
         public DbSet<DonationStatus> DonationStatuses { get; set; }
         public DbSet<Donation> Donations { get; set; }
         public DbSet<Reward> Rewards { get; set; }
         public DbSet<Badge> Badges { get; set; }
         public DbSet<UserBadge> UserBadges { get; set; }
-        public DbSet<Gallery> Galleries { get; set; }
         public DbSet<GalleryReaction> GalleryReactions { get; set; }
         public DbSet<ActivityHistory> ActivityHistories { get; set; }
         public DbSet<AdminLog> AdminLogs { get; set; }
         public DbSet<SystemSetting> SystemSettings { get; set; }
-        public DbSet<Report> Reports { get; set; }
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<BadgeType> BadgeTypes { get; set; }
         public DbSet<EventType> EventTypes { get; set; }
@@ -46,6 +43,8 @@ namespace EcoChallenge.Services.Database
         public DbSet<UserType> UserTypes { get; set; }
         public DbSet<WasteType> WasteTypes { get; set; }
         public DbSet<EntityType> EntityTypes { get; set; }
+        public DbSet<GalleryShowcase> GalleryShowcases { get; set; }
+        public DbSet<Photo> Photos { get; set; }
 
 
 
@@ -62,9 +61,6 @@ namespace EcoChallenge.Services.Database
             // Configure Event relationships
             ConfigureEventRelationships(modelBuilder);
 
-            // Configure Chat relationships
-            ConfigureChatRelationships(modelBuilder);
-
             // Configure Donation relationships
             ConfigureDonationRelationships(modelBuilder);
 
@@ -75,13 +71,10 @@ namespace EcoChallenge.Services.Database
             ConfigureBadgeRelationships(modelBuilder);
 
             // Configure Gallery relationships
-            ConfigureGalleryRelationships(modelBuilder);
+            ConfigureMediaRelationships(modelBuilder);
 
             // Configure Activity and Admin relationships
             ConfigureActivityAndAdminRelationships(modelBuilder);
-
-            // Configure Report relationships
-            ConfigureReportRelationships(modelBuilder);
 
             // Configure Notification relationships
             ConfigureNotificationRelationships(modelBuilder);
@@ -163,30 +156,6 @@ namespace EcoChallenge.Services.Database
             modelBuilder.Entity<EventParticipant>()
                 .HasIndex(ep => new { ep.EventId, ep.UserId })
                 .IsUnique();
-        }
-
-        private void ConfigureChatRelationships(ModelBuilder modelBuilder)
-        {
-            // ChatMessage -> Event
-            modelBuilder.Entity<ChatMessage>()
-                .HasOne(cm => cm.Event)
-                .WithMany(e => e.ChatMessages)
-                .HasForeignKey(cm => cm.EventId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            // ChatMessage -> User (Sender)
-            modelBuilder.Entity<ChatMessage>()
-                .HasOne(cm => cm.Sender)
-                .WithMany(u => u.ChatMessages)
-                .HasForeignKey(cm => cm.SenderUserId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            // ChatMessage -> User (Reported By)
-            modelBuilder.Entity<ChatMessage>()
-                .HasOne(cm => cm.ReportedBy)
-                .WithMany()
-                .HasForeignKey(cm => cm.ReportedByUserId)
-                .OnDelete(DeleteBehavior.SetNull);
         }
 
         private void ConfigureDonationRelationships(ModelBuilder modelBuilder)
@@ -272,41 +241,36 @@ namespace EcoChallenge.Services.Database
                 .IsUnique();
         }
 
-        private void ConfigureGalleryRelationships(ModelBuilder modelBuilder)
+        private void ConfigureMediaRelationships(ModelBuilder modelBuilder)
         {
-            // Gallery -> Request
-            modelBuilder.Entity<Gallery>()
-                .HasOne(g => g.Request)
-                .WithMany(r => r.Galleries)
-                .HasForeignKey(g => g.RequestId)
+            modelBuilder.Entity<GalleryShowcase>()
+                .HasOne(gs => gs.Request)
+                .WithMany(r => r.GalleryShowcases)
+                .HasForeignKey(gs => gs.RequestId)
                 .OnDelete(DeleteBehavior.SetNull);
 
-            // Gallery -> Event
-            modelBuilder.Entity<Gallery>()
-                .HasOne(g => g.Event)
-                .WithMany(e => e.Galleries)
-                .HasForeignKey(g => g.EventId)
+            modelBuilder.Entity<GalleryShowcase>()
+                .HasOne(gs => gs.Event)
+                .WithMany(e => e.GalleryShowcases)
+                .HasForeignKey(gs => gs.EventId)
                 .OnDelete(DeleteBehavior.SetNull);
 
-            // Gallery -> Location
-            modelBuilder.Entity<Gallery>()
-                .HasOne(g => g.Location)
-                .WithMany(l => l.Galleries)
-                .HasForeignKey(g => g.LocationId)
+            modelBuilder.Entity<GalleryShowcase>()
+                .HasOne(gs => gs.Location)
+                .WithMany(l => l.GalleryShowcases)
+                .HasForeignKey(gs => gs.LocationId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Gallery -> User (Uploader)
-            modelBuilder.Entity<Gallery>()
-                .HasOne(g => g.User)
-                .WithMany(u => u.Galleries)
-                .HasForeignKey(g => g.UserId)
+            modelBuilder.Entity<GalleryShowcase>()
+                .HasOne(gs => gs.CreatedByAdmin)
+                .WithMany(u => u.CreatedGalleryShowcases)
+                .HasForeignKey(gs => gs.CreatedByAdminId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // GalleryReaction relationships
             modelBuilder.Entity<GalleryReaction>()
-                .HasOne(gr => gr.Gallery)
-                .WithMany()
-                .HasForeignKey(gr => gr.GalleryId)
+                .HasOne(gr => gr.GalleryShowcase)
+                .WithMany(gs => gs.Reactions)
+                .HasForeignKey(gr => gr.GalleryShowcaseId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<GalleryReaction>()
@@ -315,10 +279,25 @@ namespace EcoChallenge.Services.Database
                 .HasForeignKey(gr => gr.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Unique constraint for GalleryReaction
-            modelBuilder.Entity<GalleryReaction>()
-                .HasIndex(gr => new { gr.GalleryId, gr.UserId })
-                .IsUnique();
+            modelBuilder.Entity<Photo>()
+                .HasOne(p => p.Event)
+                .WithMany(e => e.Photos)
+                .HasForeignKey(p => p.EventId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            modelBuilder.Entity<Photo>()
+                .HasOne(p => p.Request)
+                .WithMany(r => r.Photos)
+                .HasForeignKey(p => p.RequestId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            modelBuilder.Entity<Photo>()
+                .HasOne(p => p.User)
+                .WithMany(u => u.Photos)
+                .HasForeignKey(p => p.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+
         }
 
         private void ConfigureActivityAndAdminRelationships(ModelBuilder modelBuilder)
@@ -342,23 +321,6 @@ namespace EcoChallenge.Services.Database
                 .HasOne(ss => ss.UpdatedBy)
                 .WithMany(u => u.UpdatedSettings)
                 .HasForeignKey(ss => ss.UpdatedByAdminId)
-                .OnDelete(DeleteBehavior.SetNull);
-        }
-
-        private void ConfigureReportRelationships(ModelBuilder modelBuilder)
-        {
-            // Report -> User (Reporter)
-            modelBuilder.Entity<Report>()
-                .HasOne(r => r.Reporter)
-                .WithMany(u => u.Reports)
-                .HasForeignKey(r => r.ReporterUserId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            // Report -> User (Resolved By)
-            modelBuilder.Entity<Report>()
-                .HasOne(r => r.ResolvedBy)
-                .WithMany(u => u.ResolvedReports)
-                .HasForeignKey(r => r.ResolvedByAdminId)
                 .OnDelete(DeleteBehavior.SetNull);
         }
 
@@ -408,11 +370,9 @@ namespace EcoChallenge.Services.Database
                 .HasIndex(l => new { l.Latitude, l.Longitude });
 
             // Gallery indexes
-            modelBuilder.Entity<Gallery>()
-                .HasIndex(g => g.UploadedAt);
-
-            modelBuilder.Entity<Gallery>()
-                .HasIndex(g => g.IsFeatured);
+            modelBuilder.Entity<GalleryReaction>()
+                .HasIndex(gr => new { gr.GalleryShowcaseId, gr.UserId })
+                .IsUnique();
 
             // ActivityHistory indexes
             modelBuilder.Entity<ActivityHistory>()
@@ -437,9 +397,10 @@ namespace EcoChallenge.Services.Database
             // For example, ensuring positive values for amounts, etc.
 
             // Gallery constraint - must be related to either Request or Event
-            modelBuilder.Entity<Gallery>()
-                .ToTable(t => t.HasCheckConstraint("CK_Gallery_RelatedEntity",
+            modelBuilder.Entity<GalleryShowcase>()
+                .ToTable(t => t.HasCheckConstraint("CK_GalleryShowcase_RelatedEntity",
                     "request_id IS NOT NULL OR event_id IS NOT NULL"));
+
         }
 
         // Override SaveChanges to handle UpdatedAt timestamps

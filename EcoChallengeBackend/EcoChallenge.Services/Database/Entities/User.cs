@@ -63,17 +63,15 @@ namespace EcoChallenge.Services.Database.Entities
         public ICollection<Request>? AssignedRequests { get; set; }
         public ICollection<Event>? CreatedEvents { get; set; }
         public ICollection<EventParticipant>? EventParticipants { get; set; }
-        public ICollection<ChatMessage>? ChatMessages { get; set; }
         public ICollection<Donation>? Donations { get; set; }
         public ICollection<Reward>? Rewards { get; set; }
         public ICollection<UserBadge>? UserBadges { get; set; }
-        public ICollection<Gallery>? Galleries { get; set; }
+        public ICollection<Photo>? Photos { get; set; }
+        public ICollection<GalleryShowcase>? CreatedGalleryShowcases { get; set; }
         public ICollection<GalleryReaction>? GalleryReactions { get; set; }
         public ICollection<ActivityHistory>? ActivityHistories { get; set; }
         public ICollection<AdminLog>? AdminLogs { get; set; }
         public ICollection<SystemSetting>? UpdatedSettings { get; set; }
-        public ICollection<Report>? Reports { get; set; }
-        public ICollection<Report>? ResolvedReports { get; set; }
         public ICollection<Notification>? Notifications { get; set; }
     }
 

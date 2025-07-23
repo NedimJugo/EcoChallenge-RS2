@@ -24,9 +24,6 @@ namespace EcoChallenge.Services.Database.Entities
         public string? Title { get; set; }
         [Column("description")]
         public string? Description { get; set; }
-        [Column("image_url"), MaxLength(255)]
-        public string? ImageUrl { get; set; }
-
         [Column("estimated_cleanup_time")]
         public int? EstimatedCleanupTime { get; set; }
         [Required, Column("urgency_level")]
@@ -59,8 +56,6 @@ namespace EcoChallenge.Services.Database.Entities
         public decimal ActualRewardMoney { get; set; }
         [Column("ai_analysis_result", TypeName = "nvarchar(max)")]
         public string? AiAnalysisResult { get; set; }
-        [Column("completion_image_url"), MaxLength(255)]
-        public string? CompletionImageUrl { get; set; }
         [Column("completion_notes")]
         public string? CompletionNotes { get; set; }
 
@@ -79,7 +74,8 @@ namespace EcoChallenge.Services.Database.Entities
 
         // Navigation properties
         public virtual ICollection<Reward>? Rewards { get; set; }
-        public virtual ICollection<Gallery>? Galleries { get; set; }
+        public virtual ICollection<Photo>? Photos { get; set; } // NEW: Replace ImageUrl/CompletionImageUrl
+        public virtual ICollection<GalleryShowcase>? GalleryShowcases { get; set; }
         public virtual ICollection<ActivityHistory>? History { get; set; }
         public ICollection<Event>? Events { get; set; }
     }
