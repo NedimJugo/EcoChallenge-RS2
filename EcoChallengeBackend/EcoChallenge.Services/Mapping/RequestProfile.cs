@@ -10,11 +10,16 @@ using System.Threading.Tasks;
 
 namespace EcoChallenge.Services.Mapping
 {
-    public class RequestProfile: Profile
+    public class RequestProfile : Profile
     {
         public RequestProfile()
         {
-            CreateMap<Request, RequestResponse>();
+            CreateMap<Request, RequestResponse>()
+                .ForMember(dest => dest.PhotoUrls,
+                       opt => opt.MapFrom(src => src.Photos != null
+                           ? src.Photos.Select(p => p.ImageUrl).ToList()
+                           : new List<string>()));
+
             CreateMap<RequestInsertRequest, Request>()
                 .ForMember(r => r.Id, o => o.Ignore())
                 .ForMember(r => r.CreatedAt, o => o.Ignore())

@@ -15,9 +15,9 @@ namespace EcoChallenge.Services.Database.Entities
         public string? Name { get; set; }
         [Column("description")]
         public string? Description { get; set; }
-        [Column("latitude"), Precision(10,8)]
+        [Column("latitude"), Precision(10, 8)]
         public decimal Latitude { get; set; }
-        [Column("longitude"), Precision(11,8)]
+        [Column("longitude"), Precision(11, 8)]
         public decimal Longitude { get; set; }
         [Column("address")]
         public string? Address { get; set; }
@@ -35,6 +35,7 @@ namespace EcoChallenge.Services.Database.Entities
         // Navigation properties
         public virtual ICollection<Request>? Requests { get; set; }
         public virtual ICollection<Event>? Events { get; set; }
-        public virtual ICollection<Gallery>? Galleries { get; set; }
+        // Add this navigation property
+        public virtual ICollection<GalleryShowcase>? GalleryShowcases { get; set; }
     }
 }

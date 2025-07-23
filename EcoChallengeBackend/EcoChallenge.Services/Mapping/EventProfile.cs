@@ -10,11 +10,16 @@ using System.Threading.Tasks;
 
 namespace EcoChallenge.Services.Mapping
 {
-    public class EventProfile: Profile
+    public class EventProfile : Profile
     {
         public EventProfile()
         {
-            CreateMap<Event, EventResponse>();
+            CreateMap<Event, EventResponse>()
+                 .ForMember(dest => dest.PhotoUrls,
+                       opt => opt.MapFrom(src => src.Photos != null
+                           ? src.Photos.Select(p => p.ImageUrl).ToList()
+                           : new List<string>()));
+
             CreateMap<EventInsertRequest, Event>()
                 .ForMember(e => e.Id, o => o.Ignore())
                 .ForMember(e => e.CreatedAt, o => o.Ignore())

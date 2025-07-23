@@ -13,17 +13,13 @@ namespace EcoChallenge.Services.Database.Entities
         [ForeignKey(nameof(Creator)), Column("creator_user_id")]
         public int CreatorUserId { get; set; }
         public virtual User? Creator { get; set; }
-
         [ForeignKey(nameof(Location)), Column("location_id")]
         public int LocationId { get; set; }
         public virtual Location? Location { get; set; }
-
         [Required, Column("title"), MaxLength(200)]
         public string? Title { get; set; }
         [Column("description")]
         public string? Description { get; set; }
-        [Column("image_url"), MaxLength(255)]
-        public string? ImageUrl { get; set; }
         [Required, ForeignKey(nameof(EventType)), Column("event_type_id")]
         public int EventTypeId { get; set; }
         public virtual EventType? EventType { get; set; }
@@ -63,9 +59,9 @@ namespace EcoChallenge.Services.Database.Entities
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
         // Navigation properties
+        public virtual ICollection<Photo>? Photos { get; set; }
         public virtual ICollection<EventParticipant>? Participants { get; set; }
-        public virtual ICollection<ChatMessage>? ChatMessages { get; set; }
-        public virtual ICollection<Gallery>? Galleries { get; set; }
+        public virtual ICollection<GalleryShowcase>? GalleryShowcases { get; set; }
         public virtual ICollection<Reward>? Rewards { get; set; }
         public virtual ICollection<ActivityHistory>? ActivityLogs { get; set; }
     }

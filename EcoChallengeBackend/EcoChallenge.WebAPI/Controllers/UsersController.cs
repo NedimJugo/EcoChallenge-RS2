@@ -58,5 +58,13 @@ namespace EcoChallenge.WebAPI.Controllers
                 return Conflict(ex.Message);
             }
         }
+        [AllowAnonymous]
+        [HttpPost("admin-login")]
+        public async Task<ActionResult<UserResponse>> AdminLogin(UserLoginRequest request, CancellationToken cancellationToken)
+        {
+            var user = await _userService.AuthenticateAdmin(request, cancellationToken);
+            return Ok(user);
+        }
+
     }
 }

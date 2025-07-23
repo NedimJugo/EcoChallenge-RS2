@@ -175,7 +175,9 @@ namespace EcoChallenge.Services.Services
 
         public async Task<UserResponse?> AuthenticateUser(UserLoginRequest request, CancellationToken ct = default)
         {
-            var user = await _db.Users.Include(u => u.UserType).FirstOrDefaultAsync(u => u.Username == request.Username, ct);
+            var user = await _db.Users
+                .Include(u => u.UserType)
+                .FirstOrDefaultAsync(u => u.Username == request.Username, ct);
             if (user == null || string.IsNullOrEmpty(user.PasswordHash))
                 return null;
 
@@ -184,6 +186,29 @@ namespace EcoChallenge.Services.Services
 
             return MapToResponse(user);
         }
+
+        public async Task<UserResponse> AuthenticateAdmin(UserLoginRequest request, CancellationToken ct)
+        {
+            var user = await _context.Users
+                .Include(u => u.UserType)
+                .FirstOrDefaultAsync(u =>
+                    u.Username.ToLower() == request.Username.ToLower(), ct);
+
+            if (user == null)
+                throw new Exception("User not found");
+
+            if (!_hasher.Verify(request.Password, user.PasswordHash))
+                return null;
+
+            if (user.UserType?.Name?.ToLower() != "admin")
+                throw new Exception("Access denied. Not an admin user.");
+
+            user.LastLogin = DateTime.UtcNow;
+            await _context.SaveChangesAsync(ct);
+
+            return MapToResponse(user);
+        }
+
 
         public async Task<UserResponse> RegisterAsync(UserInsertRequest request, CancellationToken ct)
         {

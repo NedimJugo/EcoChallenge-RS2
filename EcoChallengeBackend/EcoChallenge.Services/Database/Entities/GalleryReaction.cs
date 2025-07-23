@@ -7,12 +7,12 @@ namespace EcoChallenge.Services.Database.Entities
 {
     public class GalleryReaction
     {
-        [Key] 
+        [Key]
         public int Id { get; set; }
 
-        [ForeignKey(nameof(Gallery)), Column("gallery_id")] 
-        public int GalleryId { get; set; }
-        public virtual Gallery? Gallery { get; set; }
+        [ForeignKey(nameof(GalleryShowcase)), Column("gallery_showcase_id")]
+        public int GalleryShowcaseId { get; set; }
+        public virtual GalleryShowcase? GalleryShowcase { get; set; }
 
         [ForeignKey(nameof(User)), Column("user_id")]
         public int UserId { get; set; }
@@ -20,7 +20,9 @@ namespace EcoChallenge.Services.Database.Entities
 
         [Required, Column("reaction_type")]
         public ReactionType ReactionType { get; set; }
+
         [Column("created_at")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
+
 }

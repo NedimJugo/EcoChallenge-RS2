@@ -33,7 +33,8 @@ namespace EcoChallenge.Services.Services
                .Include(r => r.Location)
                .Include(r => r.WasteType)
                .Include(r => r.Status)
-               .Include(r => r.AssignedAdmin);
+               .Include(r => r.AssignedAdmin)
+               .Include(r => r.Photos);
             if (!string.IsNullOrWhiteSpace(s.Text))
             {
                 var t = s.Text.ToLower();
@@ -77,6 +78,7 @@ namespace EcoChallenge.Services.Services
                 .Include(r => r.WasteType)
                 .Include(r => r.Status)
                 .Include(r => r.AssignedAdmin)
+                .Include(r => r.Photos)
                 .FirstOrDefaultAsync(r => r.Id == id, cancellationToken);
 
             return entity == null ? null : MapToResponse(entity);

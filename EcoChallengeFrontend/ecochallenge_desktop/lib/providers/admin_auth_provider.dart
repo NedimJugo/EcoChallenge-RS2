@@ -1,163 +1,72 @@
 import 'dart:convert';
+import 'package:ecochallenge_desktop/layouts/constants.dart';
+import 'package:ecochallenge_desktop/models/user.dart';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import '../layouts/constants.dart';
-import '../models/admin_login_request.dart';
-import '../models/admin_login_response.dart';
 
-class AdminAuthService {
-  static const String _credentialsKey = 'admin_basic_auth_credentials';
-  static const String _adminDataKey = 'admin_data';
+class AdminAuthProvider with ChangeNotifier {
+  static String? username;
+  static String? password;
+  UserResponse? userData;
+  bool _isLoggedIn = false;
 
-  Future<AdminLoginResponse?> login(AdminLoginRequest request) async {
-    try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/adminauth/login'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode(request.toJson()),
-      );
+  bool get isLoggedIn => _isLoggedIn;
+  Future<void> loadCredentials() async {
+    final prefs = await SharedPreferences.getInstance();
+    username = prefs.getString('username');
+    password = prefs.getString('password');
 
-      if (response.statusCode == 200) {
-        final responseData = jsonDecode(response.body);
-        final adminResponse = AdminLoginResponse.fromJson(responseData);
-
-        // Store credentials and admin data locally
-        await _storeCredentials(adminResponse.basicAuthCredentials);
-        await _storeAdminData(adminResponse);
-
-        return adminResponse;
-      } else {
-        return null;
+     // Load user data if exists
+    final userDataString = prefs.getString('userData');
+    if (userDataString != null) {
+      try {
+        userData = UserResponse.fromJson(jsonDecode(userDataString));
+      } catch (e) {
+        print('Error loading user data: $e');
       }
-    } catch (e) {
-      return null;
+    }
+
+    if (username != null && password != null) {
+      _isLoggedIn = true;
+      notifyListeners();
     }
   }
 
-  Future<AdminProfileResponse?> getProfile() async {
-    try {
-      final credentials = await _getStoredCredentials();
-      if (credentials == null) return null;
+  Future<void> login(String user, String pass) async {
+    final url = Uri.parse('$baseUrl/Users/admin-login');
 
-      final response = await http.get(
-        Uri.parse('$baseUrl/adminauth/profile'),
-        headers: {
-          'Authorization': 'Basic $credentials',
-          'Content-Type': 'application/json',
-        },
-      );
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json', 'accept': 'text/plain'},
+      body: jsonEncode({'username': user, 'password': pass}),
+    );
 
-      if (response.statusCode == 200) {
-        final responseData = jsonDecode(response.body);
-        return AdminProfileResponse.fromJson(responseData);
-      } else {
-        return null;
-      }
-    } catch (e) {
-      return null;
-    }
-  }
-
-  Future<bool> validateAdmin() async {
-    try {
-      final credentials = await _getStoredCredentials();
-      if (credentials == null) return false;
-
-      final response = await http.post(
-        Uri.parse('$baseUrl/adminauth/validate'),
-        headers: {
-          'Authorization': 'Basic $credentials',
-          'Content-Type': 'application/json',
-        },
-      );
-
-      return response.statusCode == 200;
-    } catch (e) {
-      return false;
-    }
-  }
-
-  Future<bool> logout() async {
-    try {
-      final credentials = await _getStoredCredentials();
-
-      if (credentials != null) {
-        // Call logout endpoint
-        await http.post(
-          Uri.parse('$baseUrl/adminauth/logout'),
-          headers: {
-            'Authorization': 'Basic $credentials',
-            'Content-Type': 'application/json',
-          },
-        );
-      }
-      await _clearStoredData();
-      return true;
-    } catch (e) {
-      await _clearStoredData();
-      return false;
-    }
-  }
-
-  Future<bool> isLoggedIn() async {
-    final credentials = await _getStoredCredentials();
-    if (credentials == null) return false;
-
-    return await validateAdmin();
-  }
-
-  Future<AdminLoginResponse?> getStoredAdminData() async {
-    try {
+    if (response.statusCode == 200) {
+      final userJson = jsonDecode(response.body);
+      userData = UserResponse.fromJson(userJson);
       final prefs = await SharedPreferences.getInstance();
-      final adminDataJson = prefs.getString(_adminDataKey);
-
-      if (adminDataJson != null) {
-        final adminData = jsonDecode(adminDataJson);
-        return AdminLoginResponse(
-          id: adminData['id'],
-          username: adminData['username'],
-          firstName: adminData['firstName'],
-          lastName: adminData['lastName'],
-          email: adminData['email'],
-          userTypeName: adminData['userTypeName'],
-          loginTime: DateTime.parse(adminData['loginTime']),
-          basicAuthCredentials: adminData['basicAuthCredentials'],
-        );
-      }
-      return null;
-    } catch (e) {
-      return null;
+      await prefs.setString('username', user);
+      await prefs.setString('password', pass);
+      await prefs.setString('userData', response.body);
+      _isLoggedIn = true;
+      username = user;
+      password = pass;
+      notifyListeners();
+    } else {
+      throw Exception('Invalid credentials');
     }
   }
 
-  Future<void> _storeCredentials(String credentials) async {
+  Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_credentialsKey, credentials);
+    await prefs.remove('username');
+    await prefs.remove('password');
+    await prefs.remove('userData');
+    username = null;
+    password = null;
+    _isLoggedIn = false;
+    notifyListeners();
   }
 
-  Future<void> _storeAdminData(AdminLoginResponse adminData) async {
-    final prefs = await SharedPreferences.getInstance();
-    final adminDataJson = jsonEncode({
-      'id': adminData.id,
-      'username': adminData.username,
-      'firstName': adminData.firstName,
-      'lastName': adminData.lastName,
-      'email': adminData.email,
-      'userTypeName': adminData.userTypeName,
-      'loginTime': adminData.loginTime.toIso8601String(),
-      'basicAuthCredentials': adminData.basicAuthCredentials,
-    });
-    await prefs.setString(_adminDataKey, adminDataJson);
-  }
-
-  Future<String?> _getStoredCredentials() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(_credentialsKey);
-  }
-
-  Future<void> _clearStoredData() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_credentialsKey);
-    await prefs.remove(_adminDataKey);
-  }
 }

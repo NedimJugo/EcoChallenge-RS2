@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace EcoChallenge.Services.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class DbChanges : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -347,45 +347,6 @@ namespace EcoChallenge.Services.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Reports",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    reporter_user_id = table.Column<int>(type: "int", nullable: false),
-                    reported_entity_type_id = table.Column<int>(type: "int", nullable: false),
-                    report_reason = table.Column<int>(type: "int", nullable: false),
-                    report_description = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    status = table.Column<int>(type: "int", nullable: false),
-                    admin_notes = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    resolved_by_admin_id = table.Column<int>(type: "int", nullable: true),
-                    created_at = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    resolved_at = table.Column<DateTime>(type: "datetime2", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Reports", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Reports_TargetEntityTypes_reported_entity_type_id",
-                        column: x => x.reported_entity_type_id,
-                        principalTable: "TargetEntityTypes",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Reports_Users_reporter_user_id",
-                        column: x => x.reporter_user_id,
-                        principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Reports_Users_resolved_by_admin_id",
-                        column: x => x.resolved_by_admin_id,
-                        principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.SetNull);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Requests",
                 columns: table => new
                 {
@@ -395,7 +356,6 @@ namespace EcoChallenge.Services.Migrations
                     location_id = table.Column<int>(type: "int", nullable: false),
                     title = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
                     description = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    image_url = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
                     estimated_cleanup_time = table.Column<int>(type: "int", nullable: true),
                     urgency_level = table.Column<int>(type: "int", nullable: false),
                     waste_type_id = table.Column<int>(type: "int", nullable: false),
@@ -410,7 +370,6 @@ namespace EcoChallenge.Services.Migrations
                     actual_reward_points = table.Column<int>(type: "int", nullable: false),
                     actual_reward_money = table.Column<decimal>(type: "decimal(10,2)", precision: 10, scale: 2, nullable: false),
                     ai_analysis_result = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    completion_image_url = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
                     completion_notes = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     assigned_admin_id = table.Column<int>(type: "int", nullable: true),
                     created_at = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -516,7 +475,6 @@ namespace EcoChallenge.Services.Migrations
                     location_id = table.Column<int>(type: "int", nullable: false),
                     title = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
                     description = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    image_url = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
                     event_type_id = table.Column<int>(type: "int", nullable: false),
                     max_participants = table.Column<int>(type: "int", nullable: false),
                     current_participants = table.Column<int>(type: "int", nullable: false),
@@ -575,47 +533,6 @@ namespace EcoChallenge.Services.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "ChatMessages",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    event_id = table.Column<int>(type: "int", nullable: false),
-                    sender_user_id = table.Column<int>(type: "int", nullable: false),
-                    message_text = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    message_type = table.Column<int>(type: "int", nullable: false),
-                    image_url = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
-                    is_admin_message = table.Column<bool>(type: "bit", nullable: false),
-                    is_reported = table.Column<bool>(type: "bit", nullable: false),
-                    reported_by_user_id = table.Column<int>(type: "int", nullable: true),
-                    report_reason = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    is_deleted = table.Column<bool>(type: "bit", nullable: false),
-                    sent_at = table.Column<DateTime>(type: "datetime2", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ChatMessages", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_ChatMessages_Events_event_id",
-                        column: x => x.event_id,
-                        principalTable: "Events",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_ChatMessages_Users_reported_by_user_id",
-                        column: x => x.reported_by_user_id,
-                        principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.SetNull);
-                    table.ForeignKey(
-                        name: "FK_ChatMessages_Users_sender_user_id",
-                        column: x => x.sender_user_id,
-                        principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "EventParticipants",
                 columns: table => new
                 {
@@ -645,7 +562,7 @@ namespace EcoChallenge.Services.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Galleries",
+                name: "GalleryShowcases",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -653,42 +570,82 @@ namespace EcoChallenge.Services.Migrations
                     request_id = table.Column<int>(type: "int", nullable: true),
                     event_id = table.Column<int>(type: "int", nullable: true),
                     location_id = table.Column<int>(type: "int", nullable: false),
-                    uploader_user_id = table.Column<int>(type: "int", nullable: false),
-                    image_url = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
-                    image_type = table.Column<int>(type: "int", nullable: false),
-                    caption = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    created_by_admin_id = table.Column<int>(type: "int", nullable: false),
+                    before_image_url = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    after_image_url = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    title = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
+                    description = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     likes_count = table.Column<int>(type: "int", nullable: false),
                     dislikes_count = table.Column<int>(type: "int", nullable: false),
                     is_featured = table.Column<bool>(type: "bit", nullable: false),
                     is_approved = table.Column<bool>(type: "bit", nullable: false),
                     is_reported = table.Column<bool>(type: "bit", nullable: false),
                     report_count = table.Column<int>(type: "int", nullable: false),
-                    uploaded_at = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    created_at = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Galleries", x => x.Id);
-                    table.CheckConstraint("CK_Gallery_RelatedEntity", "request_id IS NOT NULL OR event_id IS NOT NULL");
+                    table.PrimaryKey("PK_GalleryShowcases", x => x.Id);
+                    table.CheckConstraint("CK_GalleryShowcase_RelatedEntity", "request_id IS NOT NULL OR event_id IS NOT NULL");
                     table.ForeignKey(
-                        name: "FK_Galleries_Events_event_id",
+                        name: "FK_GalleryShowcases_Events_event_id",
                         column: x => x.event_id,
                         principalTable: "Events",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.SetNull);
                     table.ForeignKey(
-                        name: "FK_Galleries_Locations_location_id",
+                        name: "FK_GalleryShowcases_Locations_location_id",
                         column: x => x.location_id,
                         principalTable: "Locations",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_Galleries_Requests_request_id",
+                        name: "FK_GalleryShowcases_Requests_request_id",
                         column: x => x.request_id,
                         principalTable: "Requests",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.SetNull);
                     table.ForeignKey(
-                        name: "FK_Galleries_Users_uploader_user_id",
+                        name: "FK_GalleryShowcases_Users_created_by_admin_id",
+                        column: x => x.created_by_admin_id,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Photos",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    request_id = table.Column<int>(type: "int", nullable: true),
+                    event_id = table.Column<int>(type: "int", nullable: true),
+                    uploader_user_id = table.Column<int>(type: "int", nullable: false),
+                    image_url = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    caption = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    photo_type = table.Column<int>(type: "int", nullable: false),
+                    is_primary = table.Column<bool>(type: "bit", nullable: false),
+                    uploaded_at = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    order_index = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Photos", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Photos_Events_event_id",
+                        column: x => x.event_id,
+                        principalTable: "Events",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
+                    table.ForeignKey(
+                        name: "FK_Photos_Requests_request_id",
+                        column: x => x.request_id,
+                        principalTable: "Requests",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
+                    table.ForeignKey(
+                        name: "FK_Photos_Users_uploader_user_id",
                         column: x => x.uploader_user_id,
                         principalTable: "Users",
                         principalColumn: "Id",
@@ -770,24 +727,18 @@ namespace EcoChallenge.Services.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    gallery_id = table.Column<int>(type: "int", nullable: false),
+                    gallery_showcase_id = table.Column<int>(type: "int", nullable: false),
                     user_id = table.Column<int>(type: "int", nullable: false),
                     reaction_type = table.Column<int>(type: "int", nullable: false),
-                    created_at = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    GalleryId1 = table.Column<int>(type: "int", nullable: true)
+                    created_at = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_GalleryReactions", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_GalleryReactions_Galleries_GalleryId1",
-                        column: x => x.GalleryId1,
-                        principalTable: "Galleries",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_GalleryReactions_Galleries_gallery_id",
-                        column: x => x.gallery_id,
-                        principalTable: "Galleries",
+                        name: "FK_GalleryReactions_GalleryShowcases_gallery_showcase_id",
+                        column: x => x.gallery_showcase_id,
+                        principalTable: "GalleryShowcases",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
@@ -961,7 +912,9 @@ namespace EcoChallenge.Services.Migrations
                 values: new object[,]
                 {
                     { 1, null, "Mostar", "BiH", new DateTime(2025, 3, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, 43.3436m, 4, 17.8083m, "Riverbank Park", null },
-                    { 2, null, "Neum", "BiH", new DateTime(2025, 3, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), null, 42.4300m, 2, 18.6413m, "City Beach", null }
+                    { 2, null, "Neum", "BiH", new DateTime(2025, 3, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), null, 42.4300m, 2, 18.6413m, "City Beach", null },
+                    { 3, null, "Sarajevo", "BiH", new DateTime(2025, 3, 3, 0, 0, 0, 0, DateTimeKind.Unspecified), null, 43.8564m, 0, 18.4131m, "Downtown Square", null },
+                    { 4, null, "Sarajevo", "BiH", new DateTime(2025, 3, 4, 0, 0, 0, 0, DateTimeKind.Unspecified), null, 43.7000m, 3, 18.0000m, "Forest Trail", null }
                 });
 
             migrationBuilder.InsertData(
@@ -1061,7 +1014,10 @@ namespace EcoChallenge.Services.Migrations
                 {
                     { 1, "Mostar", "BiH", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, null, "alice@example.com", "Alice", true, null, "Anderson", "HASH1", null, null, 0, 0, 0, 0, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), 1, "alice" },
                     { 2, "Sarajevo", "BiH", new DateTime(2025, 1, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), null, null, "bob@example.com", "Bob", true, null, "Baker", "HASH2", null, null, 0, 0, 0, 0, new DateTime(2025, 1, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), 2, "bob" },
-                    { 3, "Mostar", "BiH", new DateTime(2025, 1, 3, 0, 0, 0, 0, DateTimeKind.Unspecified), null, null, "carol@example.com", "Carol", true, null, "Clark", "HASH3", null, null, 0, 0, 0, 0, new DateTime(2025, 1, 3, 0, 0, 0, 0, DateTimeKind.Unspecified), 4, "carol" }
+                    { 3, "Mostar", "BiH", new DateTime(2025, 1, 3, 0, 0, 0, 0, DateTimeKind.Unspecified), null, null, "carol@example.com", "Carol", true, null, "Clark", "HASH3", null, null, 0, 0, 0, 0, new DateTime(2025, 1, 3, 0, 0, 0, 0, DateTimeKind.Unspecified), 4, "carol" },
+                    { 4, "Sarajevo", "BiH", new DateTime(2025, 1, 4, 0, 0, 0, 0, DateTimeKind.Unspecified), null, null, "david@example.com", "David", true, null, "Davis", "HASH4", null, null, 0, 0, 0, 0, new DateTime(2025, 1, 4, 0, 0, 0, 0, DateTimeKind.Unspecified), 2, "david" },
+                    { 5, "Mostar", "BiH", new DateTime(2025, 1, 5, 0, 0, 0, 0, DateTimeKind.Unspecified), null, null, "eve@example.com", "Eve", true, null, "Evans", "HASH5", null, null, 0, 0, 0, 0, new DateTime(2025, 1, 5, 0, 0, 0, 0, DateTimeKind.Unspecified), 2, "eve" },
+                    { 6, "Sarajevo", "BiH", new DateTime(2025, 1, 6, 0, 0, 0, 0, DateTimeKind.Unspecified), null, null, "frank@example.com", "Frank", true, null, "Foster", "HASH6", null, null, 0, 0, 0, 0, new DateTime(2025, 1, 6, 0, 0, 0, 0, DateTimeKind.Unspecified), 2, "frank" }
                 });
 
             migrationBuilder.InsertData(
@@ -1081,8 +1037,8 @@ namespace EcoChallenge.Services.Migrations
 
             migrationBuilder.InsertData(
                 table: "Events",
-                columns: new[] { "Id", "admin_approved", "created_at", "creator_user_id", "current_participants", "description", "duration_minutes", "equipment_list", "equipment_provided", "event_date", "event_time", "event_type_id", "image_url", "is_paid_request", "location_id", "max_participants", "meeting_point", "related_request_id", "RequestId", "status_id", "title", "updated_at" },
-                values: new object[] { 2, false, new DateTime(2025, 6, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), 3, 0, null, 120, null, false, new DateTime(2025, 7, 5, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 14, 0, 0, 0), 2, null, false, 2, 0, null, null, null, 1, "Beach Education", new DateTime(2025, 6, 11, 0, 0, 0, 0, DateTimeKind.Unspecified) });
+                columns: new[] { "Id", "admin_approved", "created_at", "creator_user_id", "current_participants", "description", "duration_minutes", "equipment_list", "equipment_provided", "event_date", "event_time", "event_type_id", "is_paid_request", "location_id", "max_participants", "meeting_point", "related_request_id", "RequestId", "status_id", "title", "updated_at" },
+                values: new object[] { 2, false, new DateTime(2025, 6, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), 3, 0, null, 120, null, false, new DateTime(2025, 7, 5, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 14, 0, 0, 0), 2, false, 2, 0, null, null, null, 1, "Beach Education", new DateTime(2025, 6, 11, 0, 0, 0, 0, DateTimeKind.Unspecified) });
 
             migrationBuilder.InsertData(
                 table: "Notifications",
@@ -1094,17 +1050,14 @@ namespace EcoChallenge.Services.Migrations
                 });
 
             migrationBuilder.InsertData(
-                table: "Reports",
-                columns: new[] { "Id", "admin_notes", "created_at", "report_description", "reported_entity_type_id", "report_reason", "reporter_user_id", "resolved_at", "resolved_by_admin_id", "status" },
-                values: new object[] { 1, null, new DateTime(2025, 6, 15, 0, 0, 0, 0, DateTimeKind.Unspecified), null, 2, 0, 3, null, null, 0 });
-
-            migrationBuilder.InsertData(
                 table: "Requests",
-                columns: new[] { "Id", "actual_reward_money", "actual_reward_points", "admin_notes", "ai_analysis_result", "approved_at", "assigned_admin_id", "completed_at", "completion_image_url", "completion_notes", "created_at", "description", "estimated_amount", "estimated_cleanup_time", "image_url", "location_id", "proposed_date", "proposed_time", "rejection_reason", "status_id", "suggested_reward_money", "suggested_reward_points", "title", "updated_at", "urgency_level", "user_id", "waste_type_id" },
+                columns: new[] { "Id", "actual_reward_money", "actual_reward_points", "admin_notes", "ai_analysis_result", "approved_at", "assigned_admin_id", "completed_at", "completion_notes", "created_at", "description", "estimated_amount", "estimated_cleanup_time", "location_id", "proposed_date", "proposed_time", "rejection_reason", "status_id", "suggested_reward_money", "suggested_reward_points", "title", "updated_at", "urgency_level", "user_id", "waste_type_id" },
                 values: new object[,]
                 {
-                    { 1, 0m, 0, null, null, null, null, null, null, null, new DateTime(2025, 6, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, 0, null, null, 1, null, null, null, 1, 0m, 0, "Trash at Park", new DateTime(2025, 6, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), 1, 2, 5 },
-                    { 2, 0m, 0, null, null, null, 1, null, null, null, new DateTime(2025, 6, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), null, 2, null, null, 2, null, null, null, 2, 0m, 0, "Plastic on Beach", new DateTime(2025, 6, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), 2, 3, 1 }
+                    { 1, 0m, 0, null, null, null, null, null, null, new DateTime(2025, 6, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, 0, null, 1, null, null, null, 1, 0m, 0, "Trash at Park", new DateTime(2025, 6, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), 1, 2, 5 },
+                    { 2, 0m, 0, null, null, null, 1, null, null, new DateTime(2025, 6, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), null, 2, null, 2, null, null, null, 2, 0m, 0, "Plastic on Beach", new DateTime(2025, 6, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), 2, 3, 1 },
+                    { 3, 0m, 0, null, null, null, 1, null, null, new DateTime(2025, 6, 3, 0, 0, 0, 0, DateTimeKind.Unspecified), null, 1, null, 3, null, null, null, 6, 0m, 0, "Downtown Street Cleanup", new DateTime(2025, 6, 15, 0, 0, 0, 0, DateTimeKind.Unspecified), 1, 4, 5 },
+                    { 4, 0m, 0, null, null, null, 1, null, null, new DateTime(2025, 6, 4, 0, 0, 0, 0, DateTimeKind.Unspecified), null, 0, null, 4, null, null, null, 6, 0m, 0, "Forest Trail Maintenance", new DateTime(2025, 6, 20, 0, 0, 0, 0, DateTimeKind.Unspecified), 0, 5, 7 }
                 });
 
             migrationBuilder.InsertData(
@@ -1114,13 +1067,35 @@ namespace EcoChallenge.Services.Migrations
 
             migrationBuilder.InsertData(
                 table: "Events",
-                columns: new[] { "Id", "admin_approved", "created_at", "creator_user_id", "current_participants", "description", "duration_minutes", "equipment_list", "equipment_provided", "event_date", "event_time", "event_type_id", "image_url", "is_paid_request", "location_id", "max_participants", "meeting_point", "related_request_id", "RequestId", "status_id", "title", "updated_at" },
-                values: new object[] { 1, false, new DateTime(2025, 6, 10, 0, 0, 0, 0, DateTimeKind.Unspecified), 1, 0, null, 120, null, false, new DateTime(2025, 7, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 9, 0, 0, 0), 1, null, false, 1, 0, null, 1, null, 2, "Park Cleanup", new DateTime(2025, 6, 10, 0, 0, 0, 0, DateTimeKind.Unspecified) });
+                columns: new[] { "Id", "admin_approved", "created_at", "creator_user_id", "current_participants", "description", "duration_minutes", "equipment_list", "equipment_provided", "event_date", "event_time", "event_type_id", "is_paid_request", "location_id", "max_participants", "meeting_point", "related_request_id", "RequestId", "status_id", "title", "updated_at" },
+                values: new object[] { 1, false, new DateTime(2025, 6, 10, 0, 0, 0, 0, DateTimeKind.Unspecified), 1, 0, null, 120, null, false, new DateTime(2025, 7, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 9, 0, 0, 0), 1, false, 1, 0, null, 1, null, 2, "Park Cleanup", new DateTime(2025, 6, 10, 0, 0, 0, 0, DateTimeKind.Unspecified) });
 
             migrationBuilder.InsertData(
-                table: "Galleries",
-                columns: new[] { "Id", "caption", "dislikes_count", "event_id", "image_type", "image_url", "is_approved", "is_featured", "is_reported", "likes_count", "location_id", "report_count", "request_id", "uploaded_at", "uploader_user_id" },
-                values: new object[] { 1, null, 0, null, 0, "/images/before1.jpg", true, false, false, 0, 1, 0, 1, new DateTime(2025, 6, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), 2 });
+                table: "GalleryShowcases",
+                columns: new[] { "Id", "after_image_url", "before_image_url", "created_at", "created_by_admin_id", "description", "dislikes_count", "event_id", "is_approved", "is_featured", "is_reported", "likes_count", "location_id", "report_count", "request_id", "title" },
+                values: new object[,]
+                {
+                    { 1, "https://example.com/images/after/riverbank-park-1.jpg", "https://example.com/images/before/riverbank-park-1.jpg", new DateTime(2025, 6, 10, 0, 0, 0, 0, DateTimeKind.Unspecified), 1, "Amazing transformation of Riverbank Park after our community cleanup event. Removed over 30 bags of litter and restored the natural beauty.", 2, null, true, true, false, 45, 1, 0, 1, "Riverbank Park Cleanup Success" },
+                    { 2, "https://example.com/images/after/city-beach-2.jpg", "https://example.com/images/before/city-beach-2.jpg", new DateTime(2025, 6, 20, 0, 0, 0, 0, DateTimeKind.Unspecified), 1, "Volunteers worked together to clean City Beach, removing large amounts of plastic waste and debris from the coastline.", 1, null, true, true, false, 78, 2, 0, 2, "City Beach Plastic Cleanup" },
+                    { 3, "https://example.com/images/after/downtown-square-3.jpg", "https://example.com/images/before/downtown-square-3.jpg", new DateTime(2025, 6, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), 1, "Local business district cleanup and beautification project completed by community volunteers in Sarajevo's downtown area.", 0, null, true, false, false, 32, 3, 0, 3, "Downtown Square Revitalization" },
+                    { 4, "https://example.com/images/after/forest-trail-4.jpg", "https://example.com/images/before/forest-trail-4.jpg", new DateTime(2025, 6, 30, 0, 0, 0, 0, DateTimeKind.Unspecified), 1, "Hiking trail cleared of fallen branches and litter, new trail markers installed for better navigation.", 3, null, true, false, false, 28, 4, 0, 4, "Forest Trail Maintenance Project" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "Photos",
+                columns: new[] { "Id", "caption", "event_id", "image_url", "is_primary", "order_index", "photo_type", "request_id", "uploaded_at", "uploader_user_id" },
+                values: new object[,]
+                {
+                    { 1, "Initial state of Riverbank Park with scattered litter", null, "https://example.com/photos/riverbank-before-1.jpg", true, 1, 1, 1, new DateTime(2025, 6, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), 2 },
+                    { 2, "Clean Riverbank Park after community cleanup", null, "https://example.com/photos/riverbank-after-1.jpg", false, 2, 2, 1, new DateTime(2025, 6, 10, 0, 0, 0, 0, DateTimeKind.Unspecified), 2 },
+                    { 3, "City Beach covered with plastic waste", null, "https://example.com/photos/beach-before-1.jpg", true, 1, 1, 2, new DateTime(2025, 6, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), 3 },
+                    { 4, "Pristine City Beach after plastic removal", null, "https://example.com/photos/beach-after-1.jpg", false, 2, 2, 2, new DateTime(2025, 6, 20, 0, 0, 0, 0, DateTimeKind.Unspecified), 3 },
+                    { 5, "Downtown Square before cleanup", null, "https://example.com/photos/downtown-before-1.jpg", true, 1, 1, 3, new DateTime(2025, 6, 3, 0, 0, 0, 0, DateTimeKind.Unspecified), 4 },
+                    { 6, "Revitalized Downtown Square", null, "https://example.com/photos/downtown-after-1.jpg", false, 2, 2, 3, new DateTime(2025, 6, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), 4 },
+                    { 7, "Forest trail blocked by debris", null, "https://example.com/photos/forest-before-1.jpg", true, 1, 1, 4, new DateTime(2025, 6, 4, 0, 0, 0, 0, DateTimeKind.Unspecified), 5 },
+                    { 8, "Clear forest trail with new markers", null, "https://example.com/photos/forest-after-1.jpg", false, 2, 2, 4, new DateTime(2025, 6, 30, 0, 0, 0, 0, DateTimeKind.Unspecified), 5 },
+                    { 9, "Volunteers installing trail markers", null, "https://example.com/photos/forest-progress-1.jpg", false, 3, 3, 4, new DateTime(2025, 6, 28, 0, 0, 0, 0, DateTimeKind.Unspecified), 6 }
+                });
 
             migrationBuilder.InsertData(
                 table: "Rewards",
@@ -1132,11 +1107,6 @@ namespace EcoChallenge.Services.Migrations
                 });
 
             migrationBuilder.InsertData(
-                table: "ChatMessages",
-                columns: new[] { "Id", "event_id", "image_url", "is_admin_message", "is_deleted", "is_reported", "message_text", "message_type", "report_reason", "reported_by_user_id", "sender_user_id", "sent_at" },
-                values: new object[] { 1, 1, null, false, false, false, "Looking forward to helping!", 0, null, null, 2, new DateTime(2025, 6, 20, 0, 0, 0, 0, DateTimeKind.Unspecified) });
-
-            migrationBuilder.InsertData(
                 table: "EventParticipants",
                 columns: new[] { "Id", "event_id", "joined_at", "points_earned", "attendance_status", "user_id" },
                 values: new object[,]
@@ -1146,14 +1116,23 @@ namespace EcoChallenge.Services.Migrations
                 });
 
             migrationBuilder.InsertData(
-                table: "Galleries",
-                columns: new[] { "Id", "caption", "dislikes_count", "event_id", "image_type", "image_url", "is_approved", "is_featured", "is_reported", "likes_count", "location_id", "report_count", "request_id", "uploaded_at", "uploader_user_id" },
-                values: new object[] { 2, null, 0, 1, 2, "/images/during1.jpg", true, false, false, 0, 1, 0, null, new DateTime(2025, 7, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), 3 });
-
-            migrationBuilder.InsertData(
                 table: "GalleryReactions",
-                columns: new[] { "Id", "created_at", "gallery_id", "GalleryId1", "reaction_type", "user_id" },
-                values: new object[] { 1, new DateTime(2025, 6, 3, 0, 0, 0, 0, DateTimeKind.Unspecified), 1, null, 0, 3 });
+                columns: new[] { "Id", "created_at", "gallery_showcase_id", "reaction_type", "user_id" },
+                values: new object[,]
+                {
+                    { 1, new DateTime(2025, 6, 11, 0, 0, 0, 0, DateTimeKind.Unspecified), 1, 0, 2 },
+                    { 2, new DateTime(2025, 6, 12, 0, 0, 0, 0, DateTimeKind.Unspecified), 1, 0, 3 },
+                    { 3, new DateTime(2025, 6, 13, 0, 0, 0, 0, DateTimeKind.Unspecified), 1, 0, 4 },
+                    { 4, new DateTime(2025, 6, 14, 0, 0, 0, 0, DateTimeKind.Unspecified), 1, 1, 5 },
+                    { 5, new DateTime(2025, 6, 21, 0, 0, 0, 0, DateTimeKind.Unspecified), 2, 0, 1 },
+                    { 6, new DateTime(2025, 6, 22, 0, 0, 0, 0, DateTimeKind.Unspecified), 2, 0, 4 },
+                    { 7, new DateTime(2025, 6, 23, 0, 0, 0, 0, DateTimeKind.Unspecified), 2, 0, 5 },
+                    { 8, new DateTime(2025, 6, 24, 0, 0, 0, 0, DateTimeKind.Unspecified), 2, 1, 6 },
+                    { 9, new DateTime(2025, 6, 26, 0, 0, 0, 0, DateTimeKind.Unspecified), 3, 0, 2 },
+                    { 10, new DateTime(2025, 6, 27, 0, 0, 0, 0, DateTimeKind.Unspecified), 3, 0, 5 },
+                    { 11, new DateTime(2025, 7, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), 4, 0, 1 },
+                    { 12, new DateTime(2025, 7, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), 4, 1, 3 }
+                });
 
             migrationBuilder.CreateIndex(
                 name: "IX_ActivityHistories_created_at",
@@ -1209,21 +1188,6 @@ namespace EcoChallenge.Services.Migrations
                 name: "IX_Badges_criteria_type_id",
                 table: "Badges",
                 column: "criteria_type_id");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ChatMessages_event_id",
-                table: "ChatMessages",
-                column: "event_id");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ChatMessages_reported_by_user_id",
-                table: "ChatMessages",
-                column: "reported_by_user_id");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ChatMessages_sender_user_id",
-                table: "ChatMessages",
-                column: "sender_user_id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Donations_organization_id",
@@ -1287,50 +1251,35 @@ namespace EcoChallenge.Services.Migrations
                 column: "status_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Galleries_event_id",
-                table: "Galleries",
-                column: "event_id");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Galleries_is_featured",
-                table: "Galleries",
-                column: "is_featured");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Galleries_location_id",
-                table: "Galleries",
-                column: "location_id");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Galleries_request_id",
-                table: "Galleries",
-                column: "request_id");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Galleries_uploaded_at",
-                table: "Galleries",
-                column: "uploaded_at");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Galleries_uploader_user_id",
-                table: "Galleries",
-                column: "uploader_user_id");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_GalleryReactions_gallery_id_user_id",
+                name: "IX_GalleryReactions_gallery_showcase_id_user_id",
                 table: "GalleryReactions",
-                columns: new[] { "gallery_id", "user_id" },
+                columns: new[] { "gallery_showcase_id", "user_id" },
                 unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_GalleryReactions_GalleryId1",
-                table: "GalleryReactions",
-                column: "GalleryId1");
 
             migrationBuilder.CreateIndex(
                 name: "IX_GalleryReactions_user_id",
                 table: "GalleryReactions",
                 column: "user_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_GalleryShowcases_created_by_admin_id",
+                table: "GalleryShowcases",
+                column: "created_by_admin_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_GalleryShowcases_event_id",
+                table: "GalleryShowcases",
+                column: "event_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_GalleryShowcases_location_id",
+                table: "GalleryShowcases",
+                column: "location_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_GalleryShowcases_request_id",
+                table: "GalleryShowcases",
+                column: "request_id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Locations_latitude_longitude",
@@ -1348,19 +1297,19 @@ namespace EcoChallenge.Services.Migrations
                 column: "user_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Reports_reported_entity_type_id",
-                table: "Reports",
-                column: "reported_entity_type_id");
+                name: "IX_Photos_event_id",
+                table: "Photos",
+                column: "event_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Reports_reporter_user_id",
-                table: "Reports",
-                column: "reporter_user_id");
+                name: "IX_Photos_request_id",
+                table: "Photos",
+                column: "request_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Reports_resolved_by_admin_id",
-                table: "Reports",
-                column: "resolved_by_admin_id");
+                name: "IX_Photos_uploader_user_id",
+                table: "Photos",
+                column: "uploader_user_id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Requests_assigned_admin_id",
@@ -1477,9 +1426,6 @@ namespace EcoChallenge.Services.Migrations
                 name: "AdminLogs");
 
             migrationBuilder.DropTable(
-                name: "ChatMessages");
-
-            migrationBuilder.DropTable(
                 name: "EventParticipants");
 
             migrationBuilder.DropTable(
@@ -1489,7 +1435,7 @@ namespace EcoChallenge.Services.Migrations
                 name: "Notifications");
 
             migrationBuilder.DropTable(
-                name: "Reports");
+                name: "Photos");
 
             migrationBuilder.DropTable(
                 name: "SystemSettings");
@@ -1501,13 +1447,13 @@ namespace EcoChallenge.Services.Migrations
                 name: "EntityTypes");
 
             migrationBuilder.DropTable(
-                name: "Galleries");
+                name: "TargetEntityTypes");
+
+            migrationBuilder.DropTable(
+                name: "GalleryShowcases");
 
             migrationBuilder.DropTable(
                 name: "Rewards");
-
-            migrationBuilder.DropTable(
-                name: "TargetEntityTypes");
 
             migrationBuilder.DropTable(
                 name: "Badges");

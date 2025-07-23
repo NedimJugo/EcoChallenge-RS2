@@ -2,21 +2,21 @@ class Event {
   final int id;
   final int creatorUserId;
   final int locationId;
-  final String? title;              // Nullable in C#
-  final String? description;        // Nullable in C#
-  final String? imageUrl;          // Nullable in C#
+  final String? title;
+  final String? description;
+  final List<String>? photoUrls;
   final int eventTypeId;
   final int maxParticipants;
   final int currentParticipants;
   final DateTime eventDate;
-  final String eventTime;          // TimeSpan from C# becomes String
+  final String eventTime;
   final int durationMinutes;
   final bool equipmentProvided;
-  final String? equipmentList;     // Nullable in C#
-  final String? meetingPoint;      // Nullable in C#
+  final String? equipmentList;
+  final String? meetingPoint;
   final int statusId;
   final bool isPaidRequest;
-  final int? relatedRequestId;     // Nullable in C#
+  final int? relatedRequestId;
   final bool adminApproved;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -27,7 +27,7 @@ class Event {
     required this.locationId,
     this.title,
     this.description,
-    this.imageUrl,
+    this.photoUrls,
     required this.eventTypeId,
     required this.maxParticipants,
     required this.currentParticipants,
@@ -47,28 +47,36 @@ class Event {
 
   factory Event.fromJson(Map<String, dynamic> json) {
     return Event(
-      id: json['id'] as int,
-      creatorUserId: json['creatorUserId'] as int,
-      locationId: json['locationId'] as int,
-      title: json['title'] as String?,                    // Safe null handling
-      description: json['description'] as String?,        // Safe null handling
-      imageUrl: json['imageUrl'] as String?,             // Safe null handling
-      eventTypeId: json['eventTypeId'] as int,
-      maxParticipants: json['maxParticipants'] as int,
-      currentParticipants: json['currentParticipants'] as int,
-      eventDate: DateTime.parse(json['eventDate'] as String),
-      eventTime: json['eventTime'] as String,            // TimeSpan as String
-      durationMinutes: json['durationMinutes'] as int,
-      equipmentProvided: json['equipmentProvided'] as bool,
-      equipmentList: json['equipmentList'] as String?,   // Safe null handling
-      meetingPoint: json['meetingPoint'] as String?,     // Safe null handling
-      statusId: json['statusId'] as int,
-      isPaidRequest: json['isPaidRequest'] as bool,
-      relatedRequestId: json['relatedRequestId'] as int?, // Safe null handling
-      adminApproved: json['adminApproved'] as bool,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      updatedAt: DateTime.parse(json['updatedAt'] as String),
+      id: json['id'],
+      creatorUserId: json['creatorUserId'],
+      locationId: json['locationId'],
+      title: json['title'],
+      description: json['description'],
+      photoUrls: (json['photoUrls'] as List?)?.map((e) => e.toString()).toList(),
+      eventTypeId: json['eventTypeId'],
+      maxParticipants: json['maxParticipants'],
+      currentParticipants: json['currentParticipants'],
+      eventDate: DateTime.parse(json['eventDate']),
+      eventTime: json['eventTime'] != null
+          ? _formatTimeSpan(json['eventTime'])
+          : '00:00',
+      durationMinutes: json['durationMinutes'],
+      equipmentProvided: json['equipmentProvided'],
+      equipmentList: json['equipmentList'],
+      meetingPoint: json['meetingPoint'],
+      statusId: json['statusId'],
+      isPaidRequest: json['isPaidRequest'],
+      relatedRequestId: json['relatedRequestId'],
+      adminApproved: json['adminApproved'],
+      createdAt: DateTime.parse(json['createdAt']),
+      updatedAt: DateTime.parse(json['updatedAt']),
     );
+  }
+
+  static String _formatTimeSpan(dynamic timeSpanJson) {
+    final h = timeSpanJson['hours'] ?? 0;
+    final m = timeSpanJson['minutes'] ?? 0;
+    return '${h.toString().padLeft(2, '0')}:${m.toString().padLeft(2, '0')}';
   }
 
   Map<String, dynamic> toJson() {
@@ -78,7 +86,7 @@ class Event {
       'locationId': locationId,
       'title': title,
       'description': description,
-      'imageUrl': imageUrl,
+      'photoUrls': photoUrls,
       'eventTypeId': eventTypeId,
       'maxParticipants': maxParticipants,
       'currentParticipants': currentParticipants,

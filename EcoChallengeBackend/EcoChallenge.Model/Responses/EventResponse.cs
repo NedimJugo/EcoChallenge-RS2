@@ -14,7 +14,7 @@ namespace EcoChallenge.Models.Responses
         public int LocationId { get; set; }
         public string? Title { get; set; }
         public string? Description { get; set; }
-        public string? ImageUrl { get; set; }
+        public List<string>? PhotoUrls { get; set; }
         public int EventTypeId { get; set; }
         public int MaxParticipants { get; set; }
         public int CurrentParticipants { get; set; }

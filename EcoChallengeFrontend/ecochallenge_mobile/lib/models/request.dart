@@ -4,11 +4,11 @@ class Request {
   final int locationId;
   final String? title;
   final String? description;
-  final String? imageUrl;
+  final List<String>? photoUrls;
   final int? estimatedCleanupTime;
-  final int urgencyLevel; // Changed from String to int (enum value)
+  final int urgencyLevel;
   final int wasteTypeId;
-  final int estimatedAmount; // Changed from String to int (enum value)
+  final int estimatedAmount;
   final DateTime? proposedDate;
   final String? proposedTime;
   final int statusId;
@@ -33,7 +33,7 @@ class Request {
     required this.locationId,
     this.title,
     this.description,
-    this.imageUrl,
+    this.photoUrls,
     this.estimatedCleanupTime,
     required this.urgencyLevel,
     required this.wasteTypeId,
@@ -64,7 +64,7 @@ class Request {
       locationId: json['locationId'],
       title: json['title'],
       description: json['description'],
-      imageUrl: json['imageUrl'],
+      photoUrls: (json['photoUrls'] as List?)?.map((e) => e.toString()).toList(), // ✅
       estimatedCleanupTime: json['estimatedCleanupTime'],
       urgencyLevel: json['urgencyLevel'],
       wasteTypeId: json['wasteTypeId'],
@@ -72,7 +72,9 @@ class Request {
       proposedDate: json['proposedDate'] != null
           ? DateTime.parse(json['proposedDate'])
           : null,
-      proposedTime: json['proposedTime'],
+      proposedTime: json['proposedTime'] != null
+          ? _formatTimeSpan(json['proposedTime'])
+          : null,
       statusId: json['statusId'],
       adminNotes: json['adminNotes'],
       rejectionReason: json['rejectionReason'],
@@ -102,7 +104,7 @@ class Request {
       'locationId': locationId,
       'title': title,
       'description': description,
-      'imageUrl': imageUrl,
+      'photoUrls': photoUrls,
       'estimatedCleanupTime': estimatedCleanupTime,
       'urgencyLevel': urgencyLevel,
       'wasteTypeId': wasteTypeId,
@@ -127,7 +129,13 @@ class Request {
     };
   }
 
-  /// Helper: Convert urgencyLevel enum int to string label
+  static String _formatTimeSpan(dynamic timeSpanJson) {
+    // Format: {"hours":1,"minutes":30,"seconds":0}
+    final h = timeSpanJson['hours'] ?? 0;
+    final m = timeSpanJson['minutes'] ?? 0;
+    return '${h.toString().padLeft(2, '0')}:${m.toString().padLeft(2, '0')}';
+  }
+
   String get urgencyLevelLabel {
     switch (urgencyLevel) {
       case 0:
@@ -143,7 +151,6 @@ class Request {
     }
   }
 
-  /// Helper: Convert estimatedAmount enum int to string label
   String get estimatedAmountLabel {
     switch (estimatedAmount) {
       case 0:
@@ -153,7 +160,7 @@ class Request {
       case 2:
         return 'Large';
       case 3:
-        return 'VeryLarge';
+        return 'Very Large';
       default:
         return 'Unknown';
     }

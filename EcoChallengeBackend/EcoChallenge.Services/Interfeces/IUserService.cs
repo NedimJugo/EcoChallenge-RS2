@@ -14,6 +14,7 @@ namespace EcoChallenge.Services.Interfeces
     public interface IUserService : ICRUDService<UserResponse, UserSearchObject, UserInsertRequest, UserUpdateRequest>
     {
         Task<UserResponse?> AuthenticateUser(UserLoginRequest request, CancellationToken ct = default);
+        Task<UserResponse> AuthenticateAdmin(UserLoginRequest request, CancellationToken ct);
         Task<UserResponse> RegisterAsync(UserInsertRequest request, CancellationToken ct);
     }
 }
