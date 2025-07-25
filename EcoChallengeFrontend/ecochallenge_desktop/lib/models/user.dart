@@ -117,6 +117,141 @@ class UserResponse {
   }
 }
 
+// Insert request matching your backend UserInsertRequest
+class UserInsertRequest {
+  final String username;
+  final String email;
+  final String passwordHash;
+  final String firstName;
+  final String lastName;
+  final String? profileImageUrl;
+  final String? phoneNumber;
+  final DateTime? dateOfBirth;
+  final String? city;
+  final String? country;
+  final int totalPoints;
+  final int totalCleanups;
+  final int totalEventsOrganized;
+  final int totalEventsParticipated;
+  final int userTypeId;
+  final bool isActive;
+  final DateTime? lastLogin;
+  final DateTime? deactivatedAt;
+
+  UserInsertRequest({
+    required this.username,
+    required this.email,
+    required this.passwordHash,
+    required this.firstName,
+    required this.lastName,
+    this.profileImageUrl,
+    this.phoneNumber,
+    this.dateOfBirth,
+    this.city,
+    this.country,
+    this.totalPoints = 0,
+    this.totalCleanups = 0,
+    this.totalEventsOrganized = 0,
+    this.totalEventsParticipated = 0,
+    required this.userTypeId,
+    this.isActive = true,
+    this.lastLogin,
+    this.deactivatedAt,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'username': username,
+      'email': email,
+      'passwordHash': passwordHash,
+      'firstName': firstName,
+      'lastName': lastName,
+      'profileImageUrl': profileImageUrl,
+      'phoneNumber': phoneNumber,
+      'dateOfBirth': dateOfBirth?.toIso8601String(),
+      'city': city,
+      'country': country,
+      'totalPoints': totalPoints,
+      'totalCleanups': totalCleanups,
+      'totalEventsOrganized': totalEventsOrganized,
+      'totalEventsParticipated': totalEventsParticipated,
+      'userTypeId': userTypeId,
+      'isActive': isActive,
+      'lastLogin': lastLogin?.toIso8601String(),
+      'deactivatedAt': deactivatedAt?.toIso8601String(),
+    };
+  }
+}
+
+// Update request matching your backend UserUpdateRequest
+class UserUpdateRequest {
+  final String? username;
+  final String? email;
+  final String? passwordHash;
+  final String? firstName;
+  final String? lastName;
+  final String? profileImageUrl;
+  final String? phoneNumber;
+  final DateTime? dateOfBirth;
+  final String? city;
+  final String? country;
+  final int? totalPoints;
+  final int? totalCleanups;
+  final int? totalEventsOrganized;
+  final int? totalEventsParticipated;
+  final int? userTypeId;
+  final bool? isActive;
+  final DateTime? lastLogin;
+  final DateTime? deactivatedAt;
+
+  UserUpdateRequest({
+    this.username,
+    this.email,
+    this.passwordHash,
+    this.firstName,
+    this.lastName,
+    this.profileImageUrl,
+    this.phoneNumber,
+    this.dateOfBirth,
+    this.city,
+    this.country,
+    this.totalPoints,
+    this.totalCleanups,
+    this.totalEventsOrganized,
+    this.totalEventsParticipated,
+    this.userTypeId,
+    this.isActive,
+    this.lastLogin,
+    this.deactivatedAt,
+  });
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = {};
+    
+    if (username != null) data['username'] = username;
+    if (email != null) data['email'] = email;
+    if (passwordHash != null) data['passwordHash'] = passwordHash;
+    if (firstName != null) data['firstName'] = firstName;
+    if (lastName != null) data['lastName'] = lastName;
+    if (profileImageUrl != null) data['profileImageUrl'] = profileImageUrl;
+    if (phoneNumber != null) data['phoneNumber'] = phoneNumber;
+    if (dateOfBirth != null) data['dateOfBirth'] = dateOfBirth!.toIso8601String();
+    if (city != null) data['city'] = city;
+    if (country != null) data['country'] = country;
+    if (totalPoints != null) data['totalPoints'] = totalPoints;
+    if (totalCleanups != null) data['totalCleanups'] = totalCleanups;
+    if (totalEventsOrganized != null) data['totalEventsOrganized'] = totalEventsOrganized;
+    if (totalEventsParticipated != null) data['totalEventsParticipated'] = totalEventsParticipated;
+    if (userTypeId != null) data['userTypeId'] = userTypeId;
+    if (isActive != null) data['isActive'] = isActive;
+    if (lastLogin != null) data['lastLogin'] = lastLogin!.toIso8601String();
+    if (deactivatedAt != null) data['deactivatedAt'] = deactivatedAt!.toIso8601String();
+    
+    return data;
+  }
+}
+
+
 class UserRegisterRequest {
   final String username;
   final String email;

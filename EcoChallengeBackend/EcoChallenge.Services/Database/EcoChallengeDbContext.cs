@@ -132,13 +132,6 @@ namespace EcoChallenge.Services.Database
                 .HasForeignKey(e => e.LocationId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Event -> Request (Related)
-            modelBuilder.Entity<Event>()
-                .HasOne(e => e.RelatedRequest)
-                .WithMany()
-                .HasForeignKey(e => e.RelatedRequestId)
-                .OnDelete(DeleteBehavior.SetNull);
-
             // EventParticipant relationships
             modelBuilder.Entity<EventParticipant>()
                 .HasOne(ep => ep.Event)

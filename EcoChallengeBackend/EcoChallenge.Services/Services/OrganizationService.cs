@@ -17,11 +17,13 @@ namespace EcoChallenge.Services.Services
     public class OrganizationService : BaseCRUDService<OrganizationResponse, OrganizationSearchObject, Organization, OrganizationInsertRequest, OrganizationUpdateRequest>, IOrganizationService
     {
         private readonly EcoChallengeDbContext _db;
+        private readonly IBlobService _blobService;
 
-        public OrganizationService(EcoChallengeDbContext db, IMapper mapper)
+        public OrganizationService(EcoChallengeDbContext db, IMapper mapper, IBlobService blobService)
             : base(db, mapper)
         {
             _db = db;
+            _blobService = blobService;
         }
 
         protected override IQueryable<Organization> ApplyFilter(IQueryable<Organization> query, OrganizationSearchObject s)
@@ -47,6 +49,29 @@ namespace EcoChallenge.Services.Services
                 query = query.Where(o => o.Category == s.Category);
 
             return query;
+        }
+
+        protected override async Task BeforeInsert(Organization entity, OrganizationInsertRequest request, CancellationToken cancellationToken = default)
+        {
+            if (request.LogoImage != null)
+            {
+                var url = await _blobService.UploadFileAsync(request.LogoImage);
+                entity.LogoUrl = url;
+            }
+
+            entity.CreatedAt = DateTime.UtcNow;
+            entity.UpdatedAt = DateTime.UtcNow;
+        }
+
+        protected override async Task BeforeUpdate(Organization entity, OrganizationUpdateRequest request, CancellationToken cancellationToken = default)
+        {
+            if (request.LogoImage != null)
+            {
+                var url = await _blobService.UploadFileAsync(request.LogoImage);
+                entity.LogoUrl = url;
+            }
+
+            entity.UpdatedAt = DateTime.UtcNow;
         }
     }
 }

@@ -19,7 +19,10 @@ builder.Configuration
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? "Server=localhost;Database=EcoChallenge;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True";
 builder.Services.AddDatabaseServices(connectionString);
-builder.Services.AddAutoMapper(cfg => { }, typeof(UserProfile).Assembly, typeof(RequestProfile).Assembly, typeof(EventProfile).Assembly);
+builder.Services.AddAutoMapper(cfg => { }, typeof(UserProfile).Assembly, typeof(RequestProfile).Assembly,
+    typeof(EventProfile).Assembly, typeof(UserTypeProfile).Assembly, typeof(BadgeProfile).Assembly,
+    typeof(LocationProfile).Assembly, typeof(UserBadgeProfile).Assembly, typeof(WasteTypeProfile).Assembly);
+
 builder.Services.AddAuthentication("BasicAuthentication")
     .AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>("BasicAuthentication", null);
 
@@ -30,6 +33,13 @@ builder.Services.AddScoped<IEventService, EventService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IOrganizationService, OrganizationService>();
 builder.Services.AddScoped<IAdminAuthService, AdminAuthService>();
+builder.Services.AddScoped<IOrganizationService, OrganizationService>();
+builder.Services.AddScoped<IUserTypeService, UserTypeService>();
+builder.Services.AddScoped<IBadgeService, BadgeService>();
+builder.Services.AddScoped<ILocationService, LocationService>();
+builder.Services.AddScoped<IUserBadgeService, UserBadgeService>();
+builder.Services.AddScoped<IWasteTypeService, WasteTypeService>();
+builder.Services.AddScoped<IBlobService, BlobService>();
 builder.Services.AddControllers();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

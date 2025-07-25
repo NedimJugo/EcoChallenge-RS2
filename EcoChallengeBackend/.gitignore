@@ -5,6 +5,14 @@ out/
 Debug/
 Release/
 
+# Ignore app development JSON files
+*.dev.json
+*.development.json
+app_config.json
+.env.json
+appsettings.Development.json
+
+
 # Visual Studio
 .vs/
 *.suo

@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using EcoChallenge.Services.Interfeces;
 using AutoMapper.QueryableExtensions;
 using EcoChallenge.Services.BaseServices;
+using EcoChallenge.Models.Enums;
 
 namespace EcoChallenge.Services.Services
 {
@@ -20,11 +21,12 @@ namespace EcoChallenge.Services.Services
 
     {
         private readonly EcoChallengeDbContext _db;
+        private readonly IBlobService _blobService;
 
-        public EventService(EcoChallengeDbContext db, IMapper mapper) : base(db, mapper)
+        public EventService(EcoChallengeDbContext db, IMapper mapper, IBlobService blobService) : base(db, mapper)
         {
             _db = db;
-
+            _blobService = blobService;
         }
 
         protected override IQueryable<Event> ApplyFilter(IQueryable<Event> query, EventSearchObject s)
@@ -35,7 +37,6 @@ namespace EcoChallenge.Services.Services
                .Include(e => e.Location)
                .Include(e => e.EventType)
                .Include(e => e.Status)
-               .Include(e => e.RelatedRequest)
                .Include(r => r.Photos);
             if (!string.IsNullOrWhiteSpace(s.Text))
             {
@@ -68,11 +69,65 @@ namespace EcoChallenge.Services.Services
                 .Include(e => e.Location)
                 .Include(e => e.EventType)
                 .Include(e => e.Status)
-                .Include(e => e.RelatedRequest)
                 .Include(r => r.Photos)
                 .FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
 
             return entity == null ? null : MapToResponse(entity);
+        }
+
+
+
+
+        protected override async Task BeforeInsert(Event entity, EventInsertRequest request, CancellationToken cancellationToken = default)
+        {
+            if (request.Photos != null && request.Photos.Any())
+            {
+                entity.Photos = new List<Photo>();
+
+                foreach (var file in request.Photos)
+                {
+                    var url = await _blobService.UploadFileAsync(file);
+                    entity.Photos.Add(new Photo
+                    {
+                        ImageUrl = url,
+                        UserId = entity.CreatorUserId,
+                        PhotoType = PhotoType.General,
+                        IsPrimary = entity.Photos.Count == 0,
+                        EventId = entity.Id
+                    });
+                }
+            }
+
+            await base.BeforeInsert(entity, request, cancellationToken);
+        }
+
+        protected override async Task BeforeUpdate(Event entity, EventUpdateRequest request, CancellationToken cancellationToken = default)
+        {
+            if (request.Photos != null && request.Photos.Any())
+            {
+                var existingPhotos = await _context.Photos
+                    .Where(p => p.EventId == entity.Id)
+                    .ToListAsync(cancellationToken);
+
+                _context.Photos.RemoveRange(existingPhotos);
+
+                entity.Photos = new List<Photo>();
+
+                foreach (var file in request.Photos)
+                {
+                    var url = await _blobService.UploadFileAsync(file);
+                    entity.Photos.Add(new Photo
+                    {
+                        ImageUrl = url,
+                        UserId = entity.CreatorUserId,
+                        PhotoType = PhotoType.General,
+                        IsPrimary = entity.Photos.Count == 0,
+                        EventId = entity.Id
+                    });
+                }
+            }
+
+            await base.BeforeUpdate(entity, request, cancellationToken);
         }
     }
 }

@@ -378,7 +378,6 @@ namespace EcoChallenge.Services.Database
                     StatusId = 2,
                     CreatedAt = new DateTime(2025, 6, 10),
                     UpdatedAt = new DateTime(2025, 6, 10),
-                    RelatedRequestId = 1
                 },
                 new Event
                 {

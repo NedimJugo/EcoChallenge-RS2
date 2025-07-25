@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -16,9 +17,7 @@ namespace EcoChallenge.Models.Requests
 
         [MaxLength(255)]
         public string? Website { get; set; }
-
-        [MaxLength(255)]
-        public string? LogoUrl { get; set; }
+        public IFormFile? LogoImage { get; set; } // ✅ Add this
 
         [MaxLength(100)]
         public string? ContactEmail { get; set; }

@@ -14,5 +14,19 @@ namespace EcoChallenge.WebAPI.Controllers
         public OrganizationController(IOrganizationService service) : base(service)
         {
         }
+
+        [HttpPost]
+        [Consumes("multipart/form-data")]
+        public override async Task<OrganizationResponse> Create([FromForm] OrganizationInsertRequest request)
+        {
+            return await _crudService.CreateAsync(request);
+        }
+
+        [HttpPut("{id}")]
+        [Consumes("multipart/form-data")]
+        public override async Task<OrganizationResponse?> Update(int id, [FromForm] OrganizationUpdateRequest request)
+        {
+            return await _crudService.UpdateAsync(id, request);
+        }
     }
 }
