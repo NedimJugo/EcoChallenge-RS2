@@ -44,13 +44,6 @@ namespace EcoChallenge.Services.Database.Entities
         [Required, ForeignKey(nameof(Status)), Column("status_id")]
         public int StatusId { get; set; }
         public virtual EventStatus? Status { get; set; }
-        [Column("is_paid_request")]
-        public bool IsPaidRequest { get; set; } = false;
-
-        [ForeignKey(nameof(RelatedRequest)), Column("related_request_id")]
-        public int? RelatedRequestId { get; set; }
-        public virtual Request? RelatedRequest { get; set; }
-
         [Column("admin_approved")]
         public bool AdminApproved { get; set; } = false;
         [Column("created_at")]

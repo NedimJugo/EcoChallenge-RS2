@@ -89,6 +89,48 @@ abstract class BaseProvider<T> with ChangeNotifier {
     }
   }
 
+
+  // Add delete method to base provider
+  Future<void> delete(int id) async {
+    var baseUrl = _baseUrl!.endsWith('/')
+        ? _baseUrl!.substring(0, _baseUrl!.length - 1)
+        : _baseUrl;
+    var endpoint = _endpoint.startsWith('/')
+        ? _endpoint.substring(1)
+        : _endpoint;
+    var url = "$baseUrl/$endpoint/$id";
+    var uri = Uri.parse(url);
+    var headers = createHeaders();
+    
+    var response = await http.delete(uri, headers: headers);
+    
+    if (!isValidResponse(response)) {
+      throw Exception("Failed to delete item");
+    }
+  }
+
+  // Add getById method to base provider
+  Future<T> getById(int id) async {
+    var baseUrl = _baseUrl!.endsWith('/')
+        ? _baseUrl!.substring(0, _baseUrl!.length - 1)
+        : _baseUrl;
+    var endpoint = _endpoint.startsWith('/')
+        ? _endpoint.substring(1)
+        : _endpoint;
+    var url = "$baseUrl/$endpoint/$id";
+    var uri = Uri.parse(url);
+    var headers = createHeaders();
+    
+    var response = await http.get(uri, headers: headers);
+    
+    if (isValidResponse(response)) {
+      var data = jsonDecode(response.body);
+      return fromJson(data);
+    } else {
+      throw Exception("Failed to get item");
+    }
+  }
+
   T fromJson(data) {
     throw Exception("Method not implemented");
   }

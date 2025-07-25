@@ -22,11 +22,13 @@ namespace EcoChallenge.Services.Mapping
 
             CreateMap<EventInsertRequest, Event>()
                 .ForMember(e => e.Id, o => o.Ignore())
+                .ForMember(dest => dest.Photos, opt => opt.Ignore())
                 .ForMember(e => e.CreatedAt, o => o.Ignore())
                 .ForMember(e => e.UpdatedAt, o => o.Ignore())
                 .ForMember(e => e.CurrentParticipants, o => o.Ignore());
 
             CreateMap<EventUpdateRequest, Event>()
+              .ForMember(dest => dest.Photos, opt => opt.Ignore())
               .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
         }
     }

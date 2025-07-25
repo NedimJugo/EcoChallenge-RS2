@@ -555,10 +555,6 @@ namespace EcoChallenge.Services.Migrations
                         .HasColumnType("int")
                         .HasColumnName("event_type_id");
 
-                    b.Property<bool>("IsPaidRequest")
-                        .HasColumnType("bit")
-                        .HasColumnName("is_paid_request");
-
                     b.Property<int>("LocationId")
                         .HasColumnType("int")
                         .HasColumnName("location_id");
@@ -570,10 +566,6 @@ namespace EcoChallenge.Services.Migrations
                     b.Property<string>("MeetingPoint")
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("meeting_point");
-
-                    b.Property<int?>("RelatedRequestId")
-                        .HasColumnType("int")
-                        .HasColumnName("related_request_id");
 
                     b.Property<int?>("RequestId")
                         .HasColumnType("int");
@@ -602,8 +594,6 @@ namespace EcoChallenge.Services.Migrations
 
                     b.HasIndex("LocationId");
 
-                    b.HasIndex("RelatedRequestId");
-
                     b.HasIndex("RequestId");
 
                     b.HasIndex("StatusId");
@@ -623,10 +613,8 @@ namespace EcoChallenge.Services.Migrations
                             EventDate = new DateTime(2025, 7, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             EventTime = new TimeSpan(0, 9, 0, 0, 0),
                             EventTypeId = 1,
-                            IsPaidRequest = false,
                             LocationId = 1,
                             MaxParticipants = 0,
-                            RelatedRequestId = 1,
                             StatusId = 2,
                             Title = "Park Cleanup",
                             UpdatedAt = new DateTime(2025, 6, 10, 0, 0, 0, 0, DateTimeKind.Unspecified)
@@ -643,7 +631,6 @@ namespace EcoChallenge.Services.Migrations
                             EventDate = new DateTime(2025, 7, 5, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             EventTime = new TimeSpan(0, 14, 0, 0, 0),
                             EventTypeId = 2,
-                            IsPaidRequest = false,
                             LocationId = 2,
                             MaxParticipants = 0,
                             StatusId = 1,
@@ -2542,11 +2529,6 @@ namespace EcoChallenge.Services.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("EcoChallenge.Services.Database.Entities.Request", "RelatedRequest")
-                        .WithMany()
-                        .HasForeignKey("RelatedRequestId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
                     b.HasOne("EcoChallenge.Services.Database.Entities.Request", null)
                         .WithMany("Events")
                         .HasForeignKey("RequestId");
@@ -2562,8 +2544,6 @@ namespace EcoChallenge.Services.Migrations
                     b.Navigation("EventType");
 
                     b.Navigation("Location");
-
-                    b.Navigation("RelatedRequest");
 
                     b.Navigation("Status");
                 });

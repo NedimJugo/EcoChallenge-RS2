@@ -1,4 +1,5 @@
 ﻿using EcoChallenge.Models.Enums;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -14,7 +15,6 @@ namespace EcoChallenge.Models.Requests
         public int LocationId { get; set; }
         public string? Title { get; set; }
         public string? Description { get; set; }
-        public string? ImageUrl { get; set; }
         public int? EstimatedCleanupTime { get; set; }
         public UrgencyLevel UrgencyLevel { get; set; }
         public int WasteTypeId { get; set; }
@@ -28,5 +28,6 @@ namespace EcoChallenge.Models.Requests
         public decimal SuggestedRewardMoney { get; set; }
         public string? AiAnalysisResult { get; set; }
         public int? AssignedAdminId { get; set; }
+        public List<IFormFile>? Photos { get; set; }
     }
 }

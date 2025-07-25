@@ -1,4 +1,5 @@
 ﻿using EcoChallenge.Models.Enums;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -20,10 +21,6 @@ namespace EcoChallenge.Models.Requests
         public string Title { get; set; } = string.Empty;
 
         public string? Description { get; set; }
-
-        [MaxLength(255)]
-        public string? ImageUrl { get; set; }
-
         [Required]
         public int EventTypeId { get; set; }
 
@@ -46,10 +43,7 @@ namespace EcoChallenge.Models.Requests
         [Required]
         public int StatusId { get; set; }
 
-        public bool IsPaidRequest { get; set; } = false;
-
-        public int? RelatedRequestId { get; set; }
-
         public bool AdminApproved { get; set; } = false;
+        public List<IFormFile>? Photos { get; set; } // NEW
     }
 }

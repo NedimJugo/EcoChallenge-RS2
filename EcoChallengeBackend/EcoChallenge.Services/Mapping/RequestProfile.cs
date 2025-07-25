@@ -21,11 +21,13 @@ namespace EcoChallenge.Services.Mapping
                            : new List<string>()));
 
             CreateMap<RequestInsertRequest, Request>()
+                .ForMember(dest => dest.Photos, opt => opt.Ignore())
                 .ForMember(r => r.Id, o => o.Ignore())
                 .ForMember(r => r.CreatedAt, o => o.Ignore())
                 .ForMember(r => r.UpdatedAt, o => o.Ignore());
 
             CreateMap<RequestUpdateRequest, Request>()
+              .ForMember(dest => dest.Photos, opt => opt.Ignore())
               .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
         }
     }

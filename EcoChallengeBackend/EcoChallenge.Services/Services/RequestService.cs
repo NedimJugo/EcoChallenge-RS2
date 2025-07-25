@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
+using EcoChallenge.Models.Enums;
 using EcoChallenge.Models.Requests;
 using EcoChallenge.Models.Responses;
 using EcoChallenge.Models.SearchObjects;
@@ -19,11 +20,12 @@ namespace EcoChallenge.Services.Services
     public class RequestService : BaseCRUDService<RequestResponse, RequestSearchObject, Request, RequestInsertRequest, RequestUpdateRequest>, IRequestService
     {
         private readonly EcoChallengeDbContext _db;
+        private readonly IBlobService _blobService;
 
-        public RequestService(EcoChallengeDbContext db, IMapper mapper) : base(db, mapper)
+        public RequestService(EcoChallengeDbContext db, IMapper mapper, IBlobService blobService) : base(db, mapper)
         {
             _db = db;
-
+            _blobService = blobService;
         }
 
         protected override IQueryable<Request> ApplyFilter(IQueryable<Request> query, RequestSearchObject s)
@@ -83,6 +85,58 @@ namespace EcoChallenge.Services.Services
 
             return entity == null ? null : MapToResponse(entity);
         }
+
+
+        protected override async Task BeforeInsert(Request entity, RequestInsertRequest request, CancellationToken cancellationToken = default)
+        {
+            if (request.Photos != null && request.Photos.Any())
+            {
+                entity.Photos = new List<Photo>();
+
+                foreach (var file in request.Photos)
+                {
+                    var url = await _blobService.UploadFileAsync(file);
+                    entity.Photos.Add(new Photo
+                    {
+                        ImageUrl = url,
+                        UserId = entity.UserId,
+                        PhotoType = PhotoType.General,
+                        IsPrimary = entity.Photos.Count == 0
+                    });
+                }
+            }
+
+            await base.BeforeInsert(entity, request, cancellationToken);
+        }
+
+        protected override async Task BeforeUpdate(Request entity, RequestUpdateRequest request, CancellationToken cancellationToken = default)
+        {
+            if (request.Photos != null && request.Photos.Any())
+            {
+                var existingPhotos = await _context.Photos
+                    .Where(p => p.RequestId == entity.Id)
+                    .ToListAsync(cancellationToken);
+
+                _context.Photos.RemoveRange(existingPhotos);
+
+                entity.Photos = new List<Photo>();
+
+                foreach (var file in request.Photos)
+                {
+                    var url = await _blobService.UploadFileAsync(file);
+                    entity.Photos.Add(new Photo
+                    {
+                        ImageUrl = url,
+                        UserId = entity.UserId,
+                        PhotoType = PhotoType.General,
+                        IsPrimary = entity.Photos.Count == 0
+                    });
+                }
+            }
+
+            await base.BeforeUpdate(entity, request, cancellationToken);
+        }
+
 
     }
 }
