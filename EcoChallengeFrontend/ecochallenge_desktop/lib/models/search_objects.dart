@@ -1,3 +1,5 @@
+import 'package:ecochallenge_desktop/models/reward.dart';
+
 class BaseSearchObject {
   int? page;
   int? pageSize;
@@ -266,3 +268,100 @@ class OrganizationSearchObject extends BaseSearchObject {
     return json;
   }
 }
+
+
+// NEW: Donation Search Object
+class DonationSearchObject extends BaseSearchObject {
+  int? userId;
+  int? organizationId;
+  int? statusId;
+  bool? isAnonymous;
+  double? minAmount;
+  double? maxAmount;
+
+  DonationSearchObject({
+    this.userId,
+    this.organizationId,
+    this.statusId,
+    this.isAnonymous,
+    this.minAmount,
+    this.maxAmount,
+    int? page = 0,
+    int? pageSize = 20,
+    String sortBy = "Id",
+    bool desc = false,
+    bool includeTotalCount = true,
+    bool retrieveAll = false,
+  }) : super(
+          page: page,
+          pageSize: pageSize,
+          sortBy: sortBy,
+          desc: desc,
+          includeTotalCount: includeTotalCount,
+          retrieveAll: retrieveAll,
+        );
+
+  @override
+  Map<String, dynamic> toJson() {
+    final json = super.toJson();
+    if (userId != null) json['userId'] = userId;
+    if (organizationId != null) json['organizationId'] = organizationId;
+    if (statusId != null) json['statusId'] = statusId;
+    if (isAnonymous != null) json['isAnonymous'] = isAnonymous;
+    if (minAmount != null) json['minAmount'] = minAmount;
+    if (maxAmount != null) json['maxAmount'] = maxAmount;
+    return json;
+  }
+}
+
+// NEW: Reward Search Object
+class RewardSearchObject extends BaseSearchObject {
+  int? userId;
+  int? rewardTypeId;
+  RewardStatus? status;
+  int? approvedByAdminId;
+  int? donationId;
+  int? eventId;
+  double? minAmount;
+  double? maxAmount;
+
+  RewardSearchObject({
+    this.userId,
+    this.rewardTypeId,
+    this.status,
+    this.approvedByAdminId,
+    this.donationId,
+    this.eventId,
+    this.minAmount,
+    this.maxAmount,
+    int? page = 0,
+    int? pageSize = 20,
+    String sortBy = "Id",
+    bool desc = false,
+    bool includeTotalCount = true,
+    bool retrieveAll = false,
+  }) : super(
+          page: page,
+          pageSize: pageSize,
+          sortBy: sortBy,
+          desc: desc,
+          includeTotalCount: includeTotalCount,
+          retrieveAll: retrieveAll,
+        );
+
+  @override
+  Map<String, dynamic> toJson() {
+    final json = super.toJson();
+    if (userId != null) json['userId'] = userId;
+    if (rewardTypeId != null) json['rewardTypeId'] = rewardTypeId;
+    if (status != null) json['status'] = status!.index;
+    if (approvedByAdminId != null) json['approvedByAdminId'] = approvedByAdminId;
+    if (donationId != null) json['donationId'] = donationId;
+    if (eventId != null) json['eventId'] = eventId;
+    if (minAmount != null) json['minAmount'] = minAmount;
+    if (maxAmount != null) json['maxAmount'] = maxAmount;
+    return json;
+  }
+}
+
+

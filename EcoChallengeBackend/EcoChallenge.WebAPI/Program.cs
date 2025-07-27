@@ -21,7 +21,8 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDatabaseServices(connectionString);
 builder.Services.AddAutoMapper(cfg => { }, typeof(UserProfile).Assembly, typeof(RequestProfile).Assembly,
     typeof(EventProfile).Assembly, typeof(UserTypeProfile).Assembly, typeof(BadgeProfile).Assembly,
-    typeof(LocationProfile).Assembly, typeof(UserBadgeProfile).Assembly, typeof(WasteTypeProfile).Assembly);
+    typeof(LocationProfile).Assembly, typeof(UserBadgeProfile).Assembly, typeof(WasteTypeProfile).Assembly,
+    typeof(RewardProfile).Assembly, typeof(DonationProfile).Assembly, typeof(BalanceSettingProfile).Assembly);
 
 builder.Services.AddAuthentication("BasicAuthentication")
     .AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>("BasicAuthentication", null);
@@ -39,6 +40,9 @@ builder.Services.AddScoped<IBadgeService, BadgeService>();
 builder.Services.AddScoped<ILocationService, LocationService>();
 builder.Services.AddScoped<IUserBadgeService, UserBadgeService>();
 builder.Services.AddScoped<IWasteTypeService, WasteTypeService>();
+builder.Services.AddScoped<IDonationService, DonationService>();
+builder.Services.AddScoped<IRewardService, RewardService>();
+builder.Services.AddScoped<IBalanceSettingService, BalanceSettingService>();
 builder.Services.AddScoped<IBlobService, BlobService>();
 builder.Services.AddControllers();
 

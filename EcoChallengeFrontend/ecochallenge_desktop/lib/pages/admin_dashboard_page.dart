@@ -6,8 +6,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:ecochallenge_desktop/pages/admin_login_page.dart';
 import 'package:ecochallenge_desktop/providers/admin_auth_provider.dart';
+import 'package:ecochallenge_desktop/providers/balance_setting_provider.dart';
+import 'package:ecochallenge_desktop/models/balance_setting.dart';
 
 class AdminDashboardPage extends StatefulWidget {
+  const AdminDashboardPage({Key? key}) : super(key: key);
+
   @override
   _AdminDashboardPageState createState() => _AdminDashboardPageState();
 }
@@ -16,8 +20,74 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
   int selectedIndex = 0;
   bool isNavCollapsed = false;
   
-  final List<Widget> _pages = [
-    OverviewPage(),
+  // Balance data
+  BalanceSettingResponse? _currentBalance;
+  bool _balanceLoading = true;
+  String _balanceError = '';
+  bool _useStaticBalance = false; // Flag to use static balance when API fails
+  
+  final BalanceSettingProvider _balanceProvider = BalanceSettingProvider();
+  
+  @override
+  void initState() {
+    super.initState();
+    _loadBalanceData();
+  }
+  
+  Future<void> _loadBalanceData() async {
+    try {
+      setState(() {
+        _balanceLoading = true;
+        _balanceError = '';
+        _useStaticBalance = false;
+      });
+      
+      final balance = await _balanceProvider.getCurrentBalance();
+      
+      setState(() {
+        _currentBalance = balance;
+        _balanceLoading = false;
+      });
+    } catch (e) {
+      print('Error loading balance: $e');
+      
+      // Check if it's a 404 error (API endpoint not found)
+      if (e.toString().contains('404') || e.toString().contains('Failed to get balance settings')) {
+        // Use static/demo balance data as fallback
+        setState(() {
+          _useStaticBalance = true;
+          _currentBalance = _createStaticBalance();
+          _balanceLoading = false;
+          _balanceError = 'Using demo data - API endpoint not available';
+        });
+      } else {
+        setState(() {
+          _balanceError = e.toString();
+          _balanceLoading = false;
+        });
+      }
+    }
+  }
+  
+  // Create a static balance for demo purposes
+  BalanceSettingResponse _createStaticBalance() {
+    return BalanceSettingResponse(
+      id: 1,
+      wholeBalance: 200000.0,
+      balanceLeft: 100000.0,
+      updatedAt: DateTime.now(),
+      updatedByName: 'Demo Admin',
+    );
+  }
+  
+  void _navigateToPage(int index) {
+    setState(() {
+      selectedIndex = index;
+    });
+  }
+
+  List<Widget> get _pages => [
+    OverviewPage(onNavigateToRewards: () => _navigateToPage(2)),
     ManagementPage(),
     RewardsPage(),
     RequestsPage(),
@@ -37,15 +107,261 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
     Icons.assignment_outlined,
   ];
 
+  Widget _buildBalanceSection() {
+    if (_balanceLoading) {
+      return Container(
+        margin: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          children: [
+            Text(
+              'Balance',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            SizedBox(height: 16),
+            SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+    
+    if (_currentBalance == null && !_useStaticBalance) {
+      return Container(
+        margin: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          children: [
+            Text(
+              'Balance',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            SizedBox(height: 8),
+            Text(
+              'API Error',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.red.shade200,
+                fontSize: 10,
+              ),
+            ),
+            SizedBox(height: 4),
+            Text(
+              'Endpoint not found',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.red.shade200,
+                fontSize: 9,
+              ),
+            ),
+            SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                IconButton(
+                  onPressed: _loadBalanceData,
+                  icon: Icon(
+                    Icons.refresh,
+                    color: Colors.white70,
+                    size: 16,
+                  ),
+                  tooltip: 'Retry API',
+                ),
+                IconButton(
+                  onPressed: () {
+                    setState(() {
+                      _useStaticBalance = true;
+                      _currentBalance = _createStaticBalance();
+                      _balanceError = 'Using demo data';
+                    });
+                  },
+                  icon: Icon(
+                    Icons.preview,
+                    color: Colors.white70,
+                    size: 16,
+                  ),
+                  tooltip: 'Use Demo Data',
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    }
+    
+    // Calculate progress value (0.0 to 1.0)
+    double progressValue = _currentBalance!.wholeBalance > 0 
+        ? _currentBalance!.balanceLeft / _currentBalance!.wholeBalance 
+        : 0.0;
+    
+    // Format balance text
+    String balanceText = '${_currentBalance!.balanceLeft.toStringAsFixed(0)}KM/${_currentBalance!.wholeBalance.toStringAsFixed(0)}KM';
+    
+    // Determine color based on balance level
+    Color progressColor;
+    if (_currentBalance!.isCriticalBalance) {
+      progressColor = const Color(0xFFEF4444); // Red 500
+    } else if (_currentBalance!.isLowBalance) {
+      progressColor = const Color(0xFFF97316); // Orange 500
+    } else {
+      progressColor = Color(0xFFFEFAE0);
+    }
+    
+    return Container(
+      margin: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: _useStaticBalance ? Border.all(color: const Color(0xFFF97316), width: 1) : null,
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Balance',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  if (_useStaticBalance)
+                    Text(
+                      'DEMO',
+                      style: TextStyle(
+                        color: const Color(0xFFFED7AA), // Orange 200
+                        fontSize: 8,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                ],
+              ),
+              Row(
+                children: [
+                  if (_useStaticBalance)
+                    Icon(
+                      Icons.warning_amber,
+                      color: const Color(0xFFFED7AA), // Orange 200
+                      size: 14,
+                    ),
+                  SizedBox(width: 4),
+                  IconButton(
+                    onPressed: _loadBalanceData,
+                    icon: Icon(
+                      Icons.refresh,
+                      color: Colors.white70,
+                      size: 16,
+                    ),
+                    tooltip: _useStaticBalance ? 'Try API Again' : 'Refresh Balance',
+                    padding: EdgeInsets.zero,
+                    constraints: BoxConstraints(),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          SizedBox(height: 8),
+          Text(
+            balanceText,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Colors.white70,
+              fontSize: 12,
+            ),
+          ),
+          if (_currentBalance!.isCriticalBalance || _currentBalance!.isLowBalance)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(
+                _currentBalance!.isCriticalBalance ? 'Critical!' : 'Low Balance',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: _currentBalance!.isCriticalBalance 
+                      ? const Color(0xFFFECACA) // Red 200
+                      : const Color(0xFFFED7AA), // Orange 200
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          SizedBox(height: 12),
+          Container(
+            height: 8,
+            child: LinearProgressIndicator(
+              value: progressValue,
+              backgroundColor: Colors.white.withOpacity(0.2),
+              valueColor: AlwaysStoppedAnimation<Color>(progressColor),
+              borderRadius: BorderRadius.circular(4),
+            ),
+          ),
+          if (_currentBalance!.updatedByName != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Text(
+                'Updated by: ${_currentBalance!.updatedByName}',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.white60,
+                  fontSize: 9,
+                ),
+              ),
+            ),
+          if (_useStaticBalance)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(
+                'Demo data - API unavailable',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: const Color(0xFFFED7AA), // Orange 200
+                  fontSize: 8,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final auth = Provider.of<AdminAuthProvider>(context);
     
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: const Color(0xFFFAFAFA), // Grey 50
       body: Row(
         children: [
-          // 🟩 LEFT SIDEBAR - Updated Design
+          // LEFT SIDEBAR
           AnimatedContainer(
             duration: Duration(milliseconds: 300),
             width: isNavCollapsed ? 80 : 280,
@@ -87,15 +403,15 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                       
                       SizedBox(height: 8),
                       
-                      // Logo Section - Bigger size
+                      // Logo Section
                       Container(
-                        width: 100, // Increased from 32
-                        height: 100, // Increased from 32
+                        width: 100,
+                        height: 100,
                         child: Center(
                           child: Image.asset(
-                            'assets/images/Eco-Light.png', // Your logo path
-                            width: 100, // Increased from 24
-                            height: 100, // Increased from 24
+                            'assets/images/Eco-Light.png',
+                            width: 100,
+                            height: 100,
                             fit: BoxFit.contain,
                           ),
                         ),
@@ -104,7 +420,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                   ),
                 ),
                 
-                // Navigation Menu - Only the 4 main items
+                // Navigation Menu
                 Expanded(
                   child: Padding(
                     padding: EdgeInsets.symmetric(
@@ -178,51 +494,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                   ),
                 ),
                 
-                // Balance Section - Centered with thicker progress bar
-                if (!isNavCollapsed)
-                  Container(
-                    margin: const EdgeInsets.all(16),
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Column(
-                      children: [
-                        Text(
-                          'Balance',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        SizedBox(height: 8),
-                        Text(
-                          '100000KM/200000KM',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: Colors.white70,
-                            fontSize: 12,
-                          ),
-                        ),
-                        SizedBox(height: 12),
-                        // Thicker progress bar
-                        Container(
-                          height: 8, // Made thicker (was default ~4px)
-                          child: LinearProgressIndicator(
-                            value: 100000 / 200000,
-                            backgroundColor: Colors.white.withOpacity(0.2),
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              Color(0xFFFEFAE0),
-                            ),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                // Dynamic Balance Section
+                if (!isNavCollapsed) _buildBalanceSection(),
                 
                 // Logout Button
                 Container(
@@ -239,7 +512,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                           },
                           icon: Icon(
                             Icons.logout,
-                            color: Colors.red[400],
+                            color: const Color(0xFFEF4444), // Red 500
                             size: 20,
                           ),
                           tooltip: 'Log out',
@@ -269,7 +542,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
             ),
           ),
           
-          // 🟦 MAIN CONTENT
+          // MAIN CONTENT
           Expanded(
             child: Column(
               children: [
@@ -295,7 +568,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
-                          color: Colors.grey[800],
+                          color: const Color(0xFF1F2937), // Grey 800
                         ),
                       ),
                       Row(
@@ -304,13 +577,13 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                           Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: Colors.grey[100],
+                              color: const Color(0xFFF3F4F6), // Grey 100
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Icon(
                               Icons.search,
                               size: 20,
-                              color: Colors.grey[600],
+                              color: const Color(0xFF4B5563), // Grey 600
                             ),
                           ),
                           SizedBox(width: 16),
@@ -344,15 +617,15 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                             child: Container(
                               padding: const EdgeInsets.all(2),
                               decoration: BoxDecoration(
-                                color: Colors.grey[100],
+                                color: const Color(0xFFF3F4F6), // Grey 100
                                 borderRadius: BorderRadius.circular(20),
                               ),
                               child: CircleAvatar(
                                 radius: 18,
-                                backgroundColor: Colors.grey[300],
+                                backgroundColor: const Color(0xFFD1D5DB), // Grey 300
                                 child: Icon(
                                   Icons.person,
-                                  color: Colors.grey[600],
+                                  color: const Color(0xFF4B5563), // Grey 600
                                   size: 18,
                                 ),
                               ),
@@ -367,7 +640,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                 // Page Content
                 Expanded(
                   child: Container(
-                    color: Colors.grey[50],
+                    color: const Color(0xFFFAFAFA), // Grey 50
                     padding: const EdgeInsets.all(24),
                     child: _pages[selectedIndex],
                   ),
