@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -743,6 +744,18 @@ namespace EcoChallenge.Services.Database
                     CreatedAt = new DateTime(2025, 6, 30)
                 }
             );
+
+            builder.Entity<BalanceSetting>().HasData(
+                    new BalanceSetting
+                    {
+                        Id = 1,
+                        WholeBalance = 20000.00m,
+                        BalanceLeft = 1800.00m,
+                        UpdatedAt = new DateTime(2024, 01, 01),
+                        UpdatedByAdminId = null
+                    }
+                );
+
         }
     }
 }

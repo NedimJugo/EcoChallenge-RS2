@@ -11,7 +11,8 @@ namespace EcoChallenge.Models.Requests
 {
     public class RequestUpdateRequest
     {
-
+        [Required]
+        public int Id { get; set; }
         public int? LocationId { get; set; }
         public string? Title { get; set; }
         public string? Description { get; set; }

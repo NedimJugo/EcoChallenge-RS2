@@ -46,6 +46,7 @@ namespace EcoChallenge.Services.Database
         public DbSet<GalleryShowcase> GalleryShowcases { get; set; }
         public DbSet<Photo> Photos { get; set; }
 
+        public DbSet<BalanceSetting> BalanceSettings { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

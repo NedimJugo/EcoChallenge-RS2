@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:ecochallenge_desktop/models/user.dart';
 import 'package:ecochallenge_desktop/models/user_type.dart';
 import 'package:ecochallenge_desktop/models/search_result.dart';
@@ -1770,6 +1769,12 @@ void _showEditOrganizationDialog(OrganizationResponse? organization) {
           type: CrudFieldType.checkbox,
           initialValue: organization?.isActive ?? true,
         ),
+        CrudField(
+          key: 'logoImage',
+          label: 'Logo Image',
+          type: CrudFieldType.image,
+          initialValue: organization?.logoUrl,
+        ),
       ],
       onSave: (values) => _saveOrganization(organization, values),
     ),
@@ -2198,35 +2203,44 @@ Future<void> _saveOrganization(OrganizationResponse? organization, Map<String, d
     if (organization == null) {
       final request = OrganizationInsertRequest(
         name: values['name'],
-        category: values['category'],
         description: values['description'],
         website: values['website'],
+        logoImage: values['logoImage'], // This is a File object
+        contactEmail: values['contactEmail'],
+        contactPhone: values['contactPhone'],
+        category: values['category'],
         isVerified: values['isVerified'] ?? false,
         isActive: values['isActive'] ?? true,
       );
-      await _organizationProvider.insert(request.toJson());
+      await _organizationProvider.insertOrganization(request);
     } else {
       final request = OrganizationUpdateRequest(
         name: values['name'],
-        category: values['category'],
         description: values['description'],
         website: values['website'],
+        logoImage: values['logoImage'], // Optional: only update if changed
+        contactEmail: values['contactEmail'],
+        contactPhone: values['contactPhone'],
+        category: values['category'],
         isVerified: values['isVerified'],
         isActive: values['isActive'],
       );
-      await _organizationProvider.update(organization.id, request.toJson());
+      await _organizationProvider.updateOrganization(organization.id, request);
     }
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Organization saved successfully')),
     );
     _loadData();
-  } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Error saving organization: $e')),
-    );
-  }
+  } catch (e, stackTrace) {
+  print('Error saving organization: $e');
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(content: Text('Error saving organization: $e')),
+  );
 }
+
+}
+
 
   Future<void> _deleteUser(int id) async {
     try {
