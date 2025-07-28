@@ -296,8 +296,6 @@ class _CrudDialogState<T> extends State<CrudDialog<T>> {
             ],
           ),
         );
-      default:
-        return SizedBox.shrink();
     }
   }
 

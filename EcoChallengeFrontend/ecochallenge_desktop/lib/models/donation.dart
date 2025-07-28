@@ -1,6 +1,4 @@
-import 'package:ecochallenge_desktop/models/search_result.dart';
 
-// Donation Response Model
 class DonationResponse {
   final int id;
   final int userId;

@@ -1,7 +1,7 @@
-import 'dart:convert';
+
 import 'package:ecochallenge_desktop/models/user_type.dart';
 import 'package:ecochallenge_desktop/providers/base_provider.dart';
-import 'package:http/http.dart' as http;
+
 
 class UserTypeProvider extends BaseProvider<UserType> {
   UserTypeProvider() : super("UserType");

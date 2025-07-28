@@ -12,6 +12,10 @@ class AuthProvider with ChangeNotifier {
   bool _isLoggedIn = false;
 
   bool get isLoggedIn => _isLoggedIn;
+
+   UserResponse? get currentUser => userData;
+    int? get currentUserId => userData?.id;
+
   Future<void> loadCredentials() async {
     final prefs = await SharedPreferences.getInstance();
     username = prefs.getString('username');

@@ -8,7 +8,6 @@ class OrganizationProvider extends BaseProvider<Organization> {
 
   @override
   Organization fromJson(data) {
-    // TODO: implement fromJson
     return Organization.fromJson(data);
   }
 }

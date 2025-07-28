@@ -2,6 +2,7 @@ import 'package:ecochallenge_mobile/pages/home_page.dart';
 import 'package:ecochallenge_mobile/pages/login_page.dart';
 import 'package:ecochallenge_mobile/pages/register_page.dart';
 import 'package:ecochallenge_mobile/providers/event_provider.dart';
+import 'package:ecochallenge_mobile/providers/location_provider.dart';
 import 'package:ecochallenge_mobile/providers/organization_provider.dart';
 import 'package:ecochallenge_mobile/providers/request_provider.dart';
 import 'package:flutter/material.dart';
@@ -22,6 +23,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => OrganizationProvider()),
         ChangeNotifierProvider(create: (_) => RequestProvider()),
         ChangeNotifierProvider(create: (_) => EventProvider()),
+        ChangeNotifierProvider(create: (_) => LocationProvider()),
         // Add more providers here if needed
       ],
       child: MyApp(initialRoute: authProvider.isLoggedIn ? '/home' : '/login'),

@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:ecochallenge_desktop/layouts/constants.dart';
 import 'package:ecochallenge_desktop/models/organization.dart';
 import 'package:ecochallenge_desktop/providers/base_provider.dart';

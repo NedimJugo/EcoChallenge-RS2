@@ -184,6 +184,7 @@ class _FilterWidgetState extends State<FilterWidget> {
           if (widget.entityType == 'Locations') ..._buildLocationFilters(),
           if (widget.entityType == 'User Badges') ..._buildUserBadgeFilters(),
           if (widget.entityType == 'Waste Types') ..._buildWasteTypeFilters(),
+          if (widget.entityType == 'Organizations') ..._buildOrganizationFilters(),
         ],
       ),
     );

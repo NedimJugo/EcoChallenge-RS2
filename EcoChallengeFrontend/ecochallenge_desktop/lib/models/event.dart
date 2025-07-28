@@ -1,6 +1,4 @@
-import 'package:ecochallenge_desktop/models/search_result.dart';
 
-// Event Response Model
 class EventResponse {
   final int id;
   final int creatorUserId;

@@ -392,6 +392,9 @@ class _ManagementPageState extends State<ManagementPage> {
   }
 
   Widget _buildContent() {
+    if (_isLoading) {
+    return Center(child: CircularProgressIndicator());
+  }
   return Expanded(
     child: Container(
       color: Colors.white,
@@ -2233,7 +2236,8 @@ Future<void> _saveOrganization(OrganizationResponse? organization, Map<String, d
     );
     _loadData();
   } catch (e, stackTrace) {
-  print('Error saving organization: $e');
+   print('Error saving organization: $e');
+  print('Stack trace: $stackTrace');
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(content: Text('Error saving organization: $e')),
   );

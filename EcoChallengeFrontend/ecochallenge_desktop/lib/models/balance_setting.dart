@@ -1,6 +1,4 @@
-import 'package:ecochallenge_desktop/models/search_result.dart';
 
-// Balance Setting Response Model
 class BalanceSettingResponse {
   final int id;
   final double wholeBalance;

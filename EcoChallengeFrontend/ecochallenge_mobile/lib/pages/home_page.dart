@@ -1,4 +1,5 @@
 import 'package:ecochallenge_mobile/layouts/constants.dart';
+import 'package:ecochallenge_mobile/pages/selection_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:ecochallenge_mobile/models/organization.dart';
@@ -19,11 +20,11 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   List<Organization> organizations = [];
-  List<Request> paidRequests = [];
-  List<Event> events = [];
+  List<RequestResponse> paidRequests = [];
+  List<EventResponse> events = [];
   bool isLoading = true;
   String? errorMessage;
-  
+
   // Animation controller for the profile panel
   late AnimationController _animationController;
   late Animation<Offset> _slideAnimation;
@@ -33,13 +34,13 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     _loadData();
-    
+
     // Initialize animation controller
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
-    
+
     _slideAnimation =
         Tween<Offset>(begin: const Offset(1.0, 0.0), end: Offset.zero).animate(
           CurvedAnimation(
@@ -59,7 +60,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     setState(() {
       _isProfilePanelVisible = !_isProfilePanelVisible;
     });
-    
+
     if (_isProfilePanelVisible) {
       _animationController.forward();
     } else {
@@ -104,8 +105,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
       setState(() {
         organizations = orgResult.items as List<Organization>;
-        paidRequests = requestResult.items as List<Request>;
-        events = eventResult.items as List<Event>;
+        paidRequests = requestResult.items as List<RequestResponse>;
+        events = eventResult.items as List<EventResponse>;
         isLoading = false;
       });
     } catch (e) {
@@ -142,14 +143,19 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Stack(
-                             clipBehavior: Clip.none,
-                             children: [
+                            clipBehavior: Clip.none,
+                            children: [
                               _buildHeader(),
-                              Positioned(
-                                left: 20,
-                                right: 20,
-                                bottom: -28, // Half of button height to overlap
-                                child: _buildAddRequestButton(),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 20.0,
+                                ),
+                                child: Column(
+                                  children: [
+                                    const SizedBox(height: 120),
+                                    _buildAddRequestButton(),
+                                  ],
+                                ),
                               ),
                             ],
                           ),
@@ -178,7 +184,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     ),
                   ),
           ),
-          
+
           // Overlay when profile panel is visible
           if (_isProfilePanelVisible)
             GestureDetector(
@@ -189,7 +195,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 height: double.infinity,
               ),
             ),
-          
+
           // Profile Panel
           if (_isProfilePanelVisible)
             Positioned(
@@ -229,7 +235,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   Widget _buildHeader() {
     final user = AuthProvider.userData;
     final displayName = user?.firstName ?? AuthProvider.username ?? 'User';
-    
+
     return Container(
       width: double.infinity,
       decoration: const BoxDecoration(
@@ -305,10 +311,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       height: 56,
       child: ElevatedButton(
         onPressed: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Add request/event feature coming soon!'),
-            ),
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => SelectionPage()),
           );
         },
         style: ElevatedButton.styleFrom(
@@ -344,11 +349,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         Row(
           children: [
             // Decorative line
-            Container(
-              width: 60,
-              height: 2,
-              color: Colors.black87,
-            ),
+            Container(width: 60, height: 2, color: Colors.black87),
             const SizedBox(width: 8),
             // Three dots
             Row(
@@ -506,7 +507,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildRequestCard(Request request) {
+  Widget _buildRequestCard(RequestResponse request) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       child: Card(
@@ -524,7 +525,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   borderRadius: BorderRadius.circular(8),
                   color: Colors.grey[200],
                 ),
-                child: (request.photoUrls != null && request.photoUrls!.isNotEmpty)
+                child:
+                    (request.photoUrls != null && request.photoUrls!.isNotEmpty)
                     ? ClipRRect(
                         borderRadius: BorderRadius.circular(8),
                         child: Image.network(
@@ -631,7 +633,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildEventCard(Event event) {
+  Widget _buildEventCard(EventResponse event) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       child: Card(
@@ -726,7 +728,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   Widget _buildBottomNavigation() {
     const int currentIndex = 2; // Home is at index 2
-    
+
     return Container(
       margin: const EdgeInsets.all(16),
       height: 70,
@@ -760,7 +762,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   Widget _buildNavItem(IconData icon, int index, int currentIndex) {
     final bool isSelected = index == currentIndex;
-    
+
     return GestureDetector(
       onTap: () {
         switch (index) {
@@ -783,9 +785,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             );
             break;
           case 4:
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Chat coming soon!')),
-            );
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(const SnackBar(content: Text('Chat coming soon!')));
             break;
         }
       },
@@ -793,7 +795,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         width: 50,
         height: 50,
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF8B4513) : Colors.transparent, // Brown background for active tab
+          color: isSelected
+              ? const Color(0xFF8B4513)
+              : Colors.transparent, // Brown background for active tab
           shape: BoxShape.circle,
         ),
         child: Icon(

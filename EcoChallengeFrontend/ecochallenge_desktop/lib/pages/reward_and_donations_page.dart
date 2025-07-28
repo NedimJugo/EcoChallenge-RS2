@@ -3,7 +3,6 @@ import 'package:ecochallenge_desktop/models/reward.dart';
 import 'package:ecochallenge_desktop/models/donation.dart';
 import 'package:ecochallenge_desktop/providers/reward_provider.dart';
 import 'package:ecochallenge_desktop/providers/donation_provider.dart';
-import 'package:ecochallenge_desktop/models/search_result.dart';
 
 class RewardsPage extends StatefulWidget {
   @override
