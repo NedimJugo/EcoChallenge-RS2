@@ -348,6 +348,19 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                 ),
               ),
             ),
+                  if (_balanceError.isNotEmpty)
+        Padding(
+          padding: const EdgeInsets.only(top: 8),
+          child: Text(
+            _balanceError,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Colors.red.shade200,
+              fontSize: 10,
+            ),
+          ),
+        ),
+
         ],
       ),
     );

@@ -1,6 +1,4 @@
-import 'package:ecochallenge_desktop/models/search_result.dart';
 
-// Reward Status Enum
 enum RewardStatus {
   pending,
   approved,

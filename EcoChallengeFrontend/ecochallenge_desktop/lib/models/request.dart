@@ -1,6 +1,4 @@
-import 'package:ecochallenge_desktop/models/search_result.dart';
 
-// Enums to match your backend
 enum UrgencyLevel {
   low,
   medium,
