@@ -2,12 +2,15 @@ import 'package:ecochallenge_mobile/pages/gallery_page.dart';
 import 'package:ecochallenge_mobile/pages/home_page.dart';
 import 'package:ecochallenge_mobile/pages/login_page.dart';
 import 'package:ecochallenge_mobile/pages/register_page.dart';
+import 'package:ecochallenge_mobile/providers/badge_provider.dart';
 import 'package:ecochallenge_mobile/providers/event_provider.dart';
 import 'package:ecochallenge_mobile/providers/gallery_reaction_provider.dart';
 import 'package:ecochallenge_mobile/providers/gallery_showcase_provider.dart';
 import 'package:ecochallenge_mobile/providers/location_provider.dart';
 import 'package:ecochallenge_mobile/providers/organization_provider.dart';
 import 'package:ecochallenge_mobile/providers/request_provider.dart';
+import 'package:ecochallenge_mobile/providers/user_badge_provider.dart';
+import 'package:ecochallenge_mobile/providers/user_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -27,8 +30,11 @@ void main() async {
         ChangeNotifierProvider(create: (_) => RequestProvider()),
         ChangeNotifierProvider(create: (_) => EventProvider()),
         ChangeNotifierProvider(create: (_) => LocationProvider()),
-        ChangeNotifierProvider(create: (_) => GalleryShowcaseProvider()), // Add this
-        ChangeNotifierProvider(create: (_) => GalleryReactionProvider()), // Add this
+        ChangeNotifierProvider(create: (_) => GalleryShowcaseProvider()), 
+        ChangeNotifierProvider(create: (_) => GalleryReactionProvider()),
+        ChangeNotifierProvider(create: (_) => BadgeProvider()),
+        ChangeNotifierProvider(create: (_) => UserBadgeProvider()),
+        ChangeNotifierProvider(create: (_) => UserProvider()),
         // Add more providers here if needed
       ],
       child: MyApp(initialRoute: authProvider.isLoggedIn ? '/home' : '/login'),

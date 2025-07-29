@@ -24,15 +24,18 @@ namespace EcoChallenge.Services.Services
     {
         private readonly IPasswordHasher _hasher;
         private readonly EcoChallengeDbContext _db;
+        private readonly IBlobService _blobService;
 
         public UserService(
             EcoChallengeDbContext db,
             IMapper mapper,
-            IPasswordHasher hasher
+            IPasswordHasher hasher,
+            IBlobService blobService
         ) : base(db, mapper)
         {
             _hasher = hasher;
             _db = db;
+            _blobService = blobService;
         }
 
         public override async Task<PagedResult<UserResponse>> GetAsync(UserSearchObject search, CancellationToken cancellationToken = default)
@@ -124,6 +127,11 @@ namespace EcoChallenge.Services.Services
             var entity = _mapper.Map<User>(req);
             entity.PasswordHash = _hasher.Hash(req.PasswordHash);
 
+            if (req.ProfileImageUrl != null)
+            {
+                entity.ProfileImageUrl = await _blobService.UploadFileAsync(req.ProfileImageUrl);
+            }
+
             _db.Add(entity);
             await _db.SaveChangesAsync(ct);
 
@@ -139,6 +147,10 @@ namespace EcoChallenge.Services.Services
 
             if (!string.IsNullOrWhiteSpace(req.PasswordHash))
                 entity.PasswordHash = _hasher.Hash(req.PasswordHash);
+            if (req.ProfileImageUrl != null)
+            {
+                entity.ProfileImageUrl = await _blobService.UploadFileAsync(req.ProfileImageUrl);
+            }
 
             entity.UpdatedAt = DateTime.UtcNow;
 

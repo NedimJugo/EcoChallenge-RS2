@@ -1,4 +1,5 @@
 ﻿using EcoChallenge.Models.Enums;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -27,8 +28,7 @@ namespace EcoChallenge.Models.Requests
         [MaxLength(50)]
         public string? LastName { get; set; }
 
-        [MaxLength(255)]
-        public string? ProfileImageUrl { get; set; }
+        public IFormFile? ProfileImageUrl { get; set; }  // new line
 
         [MaxLength(20)]
         public string? PhoneNumber { get; set; }

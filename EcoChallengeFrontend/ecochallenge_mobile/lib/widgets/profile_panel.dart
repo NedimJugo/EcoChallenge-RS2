@@ -1,3 +1,4 @@
+import 'package:ecochallenge_mobile/pages/user_profile_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:ecochallenge_mobile/providers/auth_provider.dart';
@@ -17,12 +18,10 @@ class ProfilePanel extends StatelessWidget {
       height: double.infinity,
       decoration: const BoxDecoration(
         color: Color.fromARGB(255, 255, 255, 255),
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(20),
-        ),
+        borderRadius: BorderRadius.only(topLeft: Radius.circular(20)),
       ),
       child: SafeArea(
-        child: SingleChildScrollView(  // Wrap the Column with SingleChildScrollView
+        child: SingleChildScrollView(
           child: Column(
             children: [
               // Header with close button
@@ -42,7 +41,6 @@ class ProfilePanel extends StatelessWidget {
                   ],
                 ),
               ),
-              
               // Profile Section
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -69,10 +67,9 @@ class ProfilePanel extends StatelessWidget {
                           : _buildDefaultAvatar(user),
                     ),
                     const SizedBox(height: 16),
-                    
                     // User Name
                     Text(
-                      user != null 
+                      user != null
                           ? '${user.firstName} ${user.lastName}'
                           : AuthProvider.username ?? 'User',
                       style: const TextStyle(
@@ -82,22 +79,15 @@ class ProfilePanel extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    
                     // Email
                     Text(
                       user?.email ?? 'user@example.com',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[600],
-                      ),
+                      style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                     ),
-                    
                   ],
                 ),
               ),
-              
               const SizedBox(height: 32),
-              
               // Menu Items
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -107,42 +97,69 @@ class ProfilePanel extends StatelessWidget {
                       icon: Icons.person_outline,
                       title: 'Profile',
                       onTap: () {
-                        onClose();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Profile page coming soon!')),
-                        );
+                        // Check if user data and userId are available
+                        final userId = Provider.of<AuthProvider>(context, listen: false).currentUserId;
+                        
+                        if (userId != null) {
+                          onClose();
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => UserProfilePage(userId: userId),
+                            ),
+                          );
+                        } else {
+                          // Handle case where user ID is not available
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Unable to load profile. Please try logging in again.'),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        }
                       },
                     ),
                     _buildMenuItem(
                       icon: Icons.event_outlined,
                       title: 'My events',
-                      subtitle: user != null ? '${user.totalEventsParticipated} participated' : null,
+                      subtitle: user != null
+                          ? '${user.totalEventsParticipated} participated'
+                          : null,
                       onTap: () {
                         onClose();
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('My events page coming soon!')),
+                          const SnackBar(
+                            content: Text('My events page coming soon!'),
+                          ),
                         );
                       },
                     ),
                     _buildMenuItem(
                       icon: Icons.history,
                       title: 'My event/request history',
-                      subtitle: user != null ? '${user.totalCleanups} cleanups completed' : null,
+                      subtitle: user != null
+                          ? '${user.totalCleanups} cleanups completed'
+                          : null,
                       onTap: () {
                         onClose();
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('History page coming soon!')),
+                          const SnackBar(
+                            content: Text('History page coming soon!'),
+                          ),
                         );
                       },
                     ),
                     _buildMenuItem(
                       icon: Icons.leaderboard_outlined,
                       title: 'Leaderboard',
-                      subtitle: user != null ? '${user.totalPoints} points' : null,
+                      subtitle: user != null
+                          ? '${user.totalPoints} points'
+                          : null,
                       onTap: () {
                         onClose();
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Leaderboard page coming soon!')),
+                          const SnackBar(
+                            content: Text('Leaderboard page coming soon!'),
+                          ),
                         );
                       },
                     ),
@@ -152,7 +169,9 @@ class ProfilePanel extends StatelessWidget {
                       onTap: () {
                         onClose();
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Requests page coming soon!')),
+                          const SnackBar(
+                            content: Text('Requests page coming soon!'),
+                          ),
                         );
                       },
                     ),
@@ -162,13 +181,13 @@ class ProfilePanel extends StatelessWidget {
                       onTap: () {
                         onClose();
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Notifications page coming soon!')),
+                          const SnackBar(
+                            content: Text('Notifications page coming soon!'),
+                          ),
                         );
                       },
                     ),
-                    
-                    const SizedBox(height: 32), // Add more space between logout button
-
+                    const SizedBox(height: 32),
                     // Logout Button
                     Padding(
                       padding: const EdgeInsets.only(bottom: 32.0),
@@ -178,7 +197,10 @@ class ProfilePanel extends StatelessWidget {
                         child: ElevatedButton(
                           onPressed: () async {
                             try {
-                              await Provider.of<AuthProvider>(context, listen: false).logout();
+                              await Provider.of<AuthProvider>(
+                                context,
+                                listen: false,
+                              ).logout();
                               Navigator.pushReplacementNamed(context, '/login');
                             } catch (e) {
                               ScaffoldMessenger.of(context).showSnackBar(
@@ -223,10 +245,10 @@ class ProfilePanel extends StatelessWidget {
       ),
       child: Center(
         child: Text(
-          user != null 
+          user != null
               ? '${user.firstName[0]}${user.lastName[0]}'.toUpperCase()
-              : (AuthProvider.username?.isNotEmpty == true 
-                  ? AuthProvider.username![0].toUpperCase() 
+              : (AuthProvider.username?.isNotEmpty == true
+                  ? AuthProvider.username![0].toUpperCase()
                   : 'U'),
           style: const TextStyle(
             color: Colors.white,
@@ -259,11 +281,7 @@ class ProfilePanel extends StatelessWidget {
             ),
             child: Row(
               children: [
-                Icon(
-                  icon,
-                  color: Colors.black87,
-                  size: 24,
-                ),
+                Icon(icon, color: Colors.black87, size: 24),
                 const SizedBox(width: 16),
                 Expanded(
                   child: Column(
