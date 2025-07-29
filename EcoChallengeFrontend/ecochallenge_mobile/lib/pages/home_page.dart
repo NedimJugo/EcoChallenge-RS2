@@ -1,5 +1,6 @@
 import 'package:ecochallenge_mobile/layouts/constants.dart';
 import 'package:ecochallenge_mobile/pages/selection_page.dart';
+import 'package:ecochallenge_mobile/widgets/bottom_navigation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:ecochallenge_mobile/models/organization.dart';
@@ -727,85 +728,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   Widget _buildBottomNavigation() {
-    const int currentIndex = 2; // Home is at index 2
+  return SharedBottomNavigation(
+    currentIndex: 2, // Home is at index 2
+  );
+}
 
-    return Container(
-      margin: const EdgeInsets.all(16),
-      height: 70,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(35),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            spreadRadius: 0,
-            blurRadius: 10,
-            offset: const Offset(0, 5),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(35),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            _buildNavItem(Icons.language, 0, currentIndex),
-            _buildNavItem(Icons.image, 1, currentIndex),
-            _buildNavItem(Icons.home, 2, currentIndex),
-            _buildNavItem(Icons.person, 3, currentIndex),
-            _buildNavItem(Icons.chat, 4, currentIndex),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNavItem(IconData icon, int index, int currentIndex) {
-    final bool isSelected = index == currentIndex;
-
-    return GestureDetector(
-      onTap: () {
-        switch (index) {
-          case 0:
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Global section coming soon!')),
-            );
-            break;
-          case 1:
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Gallery coming soon!')),
-            );
-            break;
-          case 2:
-            // Already on home
-            break;
-          case 3:
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Profile coming soon!')),
-            );
-            break;
-          case 4:
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(const SnackBar(content: Text('Chat coming soon!')));
-            break;
-        }
-      },
-      child: Container(
-        width: 50,
-        height: 50,
-        decoration: BoxDecoration(
-          color: isSelected
-              ? const Color(0xFF8B4513)
-              : Colors.transparent, // Brown background for active tab
-          shape: BoxShape.circle,
-        ),
-        child: Icon(
-          icon,
-          size: 28,
-          color: isSelected ? Colors.white : Colors.grey[400],
-        ),
-      ),
-    );
-  }
 }

@@ -18,6 +18,17 @@ abstract class BaseProvider<T> with ChangeNotifier {
     );
   }
 
+   String get baseUrl {
+    return _baseUrl!.endsWith('/')
+        ? _baseUrl!.substring(0, _baseUrl!.length - 1)
+        : _baseUrl!;
+  }
+ String get endpoint {
+    return _endpoint.startsWith('/')
+        ? _endpoint.substring(1)
+        : _endpoint;
+  }
+
   Future<SearchResult<T>> get({dynamic filter}) async {
     // Ensure proper URL formatting
     var baseUrl = _baseUrl!.endsWith('/')

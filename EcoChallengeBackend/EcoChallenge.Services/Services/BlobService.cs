@@ -14,11 +14,11 @@ namespace EcoChallenge.Services.Services
     {
 
         private readonly BlobServiceClient _blobServiceClient;
-        private readonly string _containerName = "profile-images";
-
+        private readonly string? _containerName;
         public BlobService(IConfiguration config)
         {
             _blobServiceClient = new BlobServiceClient(config["AzureBlobStorage:ConnectionString"]);
+            _containerName = config["AzureBlobStorage:Container name"]!;
         }
 
         public async Task<string> UploadFileAsync(IFormFile file)
