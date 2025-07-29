@@ -66,5 +66,19 @@ namespace EcoChallenge.WebAPI.Controllers
             return Ok(user);
         }
 
+
+        [HttpPost]
+        [Consumes("multipart/form-data")]
+        public override Task<UserResponse> Create([FromForm] UserInsertRequest request)
+        {
+            return base.Create(request);
+        }
+
+        [HttpPut("{id}")]
+        [Consumes("multipart/form-data")]
+        public override Task<UserResponse?> Update(int id, [FromForm] UserUpdateRequest request)
+        {
+            return base.Update(id, request);
+        }
     }
 }
