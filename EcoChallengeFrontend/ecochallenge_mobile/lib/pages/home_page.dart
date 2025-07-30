@@ -1,5 +1,8 @@
 import 'package:ecochallenge_mobile/layouts/constants.dart';
 import 'package:ecochallenge_mobile/pages/selection_page.dart';
+import 'package:ecochallenge_mobile/pages/event_detail_page.dart';
+import 'package:ecochallenge_mobile/pages/request_detail_page.dart';
+import 'package:ecochallenge_mobile/pages/events_list_page.dart';
 import 'package:ecochallenge_mobile/widgets/bottom_navigation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -35,13 +38,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     _loadData();
-
     // Initialize animation controller
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
-
     _slideAnimation =
         Tween<Offset>(begin: const Offset(1.0, 0.0), end: Offset.zero).animate(
           CurvedAnimation(
@@ -61,7 +62,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     setState(() {
       _isProfilePanelVisible = !_isProfilePanelVisible;
     });
-
     if (_isProfilePanelVisible) {
       _animationController.forward();
     } else {
@@ -82,7 +82,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         isLoading = true;
         errorMessage = null;
       });
-
       final orgProvider = Provider.of<OrganizationProvider>(
         context,
         listen: false,
@@ -95,14 +94,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
       // Load organizations for donations
       final orgResult = await orgProvider.get();
-
       // Load last 3 paid cleanup requests
       final requestResult = await requestProvider.get(
         filter: {'isPaidRequest': true, 'take': 3, 'orderBy': 'createdAt desc'},
       );
-
-      // Load events
-      final eventResult = await eventProvider.get();
+      // Load last 3 events
+      final eventResult = await eventProvider.get(
+        filter: {'take': 3, 'orderBy': 'eventDate desc'},
+      );
 
       setState(() {
         organizations = orgResult.items as List<Organization>;
@@ -185,7 +184,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     ),
                   ),
           ),
-
           // Overlay when profile panel is visible
           if (_isProfilePanelVisible)
             GestureDetector(
@@ -196,7 +194,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 height: double.infinity,
               ),
             ),
-
           // Profile Panel
           if (_isProfilePanelVisible)
             Positioned(
@@ -236,7 +233,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   Widget _buildHeader() {
     final user = AuthProvider.userData;
     final displayName = user?.firstName ?? AuthProvider.username ?? 'User';
-
     return Container(
       width: double.infinity,
       decoration: const BoxDecoration(
@@ -487,12 +483,38 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   Widget _buildPaidCleanupSection() {
+    // Show only first 3 requests
+    final displayRequests = paidRequests.take(3).toList();
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionTitle('Paid cleanup requests'),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            _buildSectionTitle('Paid cleanup requests'),
+            if (paidRequests.length > 3)
+              TextButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => EventsListPage(initialFilter: 'Requests'),
+                    ),
+                  );
+                },
+                child: const Text(
+                  'View All',
+                  style: TextStyle(
+                    color: Color(0xFF2D5016),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+          ],
+        ),
         const SizedBox(height: 16),
-        paidRequests.isEmpty
+        displayRequests.isEmpty
             ? const Center(
                 child: Text(
                   'No paid cleanup requests available',
@@ -500,10 +522,38 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 ),
               )
             : Column(
-                children: paidRequests
+                children: displayRequests
                     .map((request) => _buildRequestCard(request))
                     .toList(),
               ),
+        if (displayRequests.isNotEmpty && paidRequests.length > 3)
+          Padding(
+            padding: const EdgeInsets.only(top: 16),
+            child: Center(
+              child: OutlinedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => EventsListPage(initialFilter: 'Requests'),
+                    ),
+                  );
+                },
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFF2D5016),
+                  side: const BorderSide(color: Color(0xFF2D5016)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                ),
+                child: Text(
+                  'View All Requests (${paidRequests.length})',
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+              ),
+            ),
+          ),
       ],
     );
   }
@@ -515,97 +565,109 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         elevation: 2,
         color: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              Container(
-                width: 70,
-                height: 70,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                  color: Colors.grey[200],
-                ),
-                child:
-                    (request.photoUrls != null && request.photoUrls!.isNotEmpty)
-                    ? ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: Image.network(
-                          request.photoUrls!.first,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Icon(
-                              Icons.delete_outline,
-                              color: Colors.grey[400],
-                              size: 32,
-                            );
-                          },
+        child: InkWell(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => RequestDetailPage(request: request),
+              ),
+            );
+          },
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Container(
+                  width: 70,
+                  height: 70,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    color: Colors.grey[200],
+                  ),
+                  child:
+                      (request.photoUrls != null && request.photoUrls!.isNotEmpty)
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.network(
+                            request.photoUrls!.first,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Icon(
+                                Icons.delete_outline,
+                                color: Colors.grey[400],
+                                size: 32,
+                              );
+                            },
+                          ),
+                        )
+                      : Icon(
+                          Icons.delete_outline,
+                          color: Colors.grey[400],
+                          size: 32,
                         ),
-                      )
-                    : Icon(
-                        Icons.delete_outline,
-                        color: Colors.grey[400],
-                        size: 32,
-                      ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      request.title ?? 'Small junk',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                        color: Colors.black87,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      request.description ?? 'Environmental cleanup needed',
-                      style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      '\$${request.suggestedRewardMoney.toStringAsFixed(0)}',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                        color: Colors.black87,
-                      ),
-                    ),
-                  ],
                 ),
-              ),
-              Container(
-                height: 36,
-                child: ElevatedButton(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Request details for: ${request.title}'),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        request.title ?? 'Small junk',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: Colors.black87,
+                        ),
                       ),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF2D5016),
-                    foregroundColor: Colors.white,
-                    elevation: 1,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(18),
-                    ),
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                  ),
-                  child: const Text(
-                    'Details',
-                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                      const SizedBox(height: 4),
+                      Text(
+                        request.description ?? 'Environmental cleanup needed',
+                        style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        '\$${request.suggestedRewardMoney.toStringAsFixed(0)}',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: Colors.black87,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ),
-            ],
+                Container(
+                  height: 36,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => RequestDetailPage(request: request),
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF2D5016),
+                      foregroundColor: Colors.white,
+                      elevation: 1,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                    ),
+                    child: const Text(
+                      'Details',
+                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -613,12 +675,38 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   Widget _buildEventsSection() {
+    // Show only first 3 events
+    final displayEvents = events.take(3).toList();
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionTitle('Events/Community'),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            _buildSectionTitle('Events/Community'),
+            if (events.length > 3)
+              TextButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => EventsListPage(initialFilter: 'Events'),
+                    ),
+                  );
+                },
+                child: const Text(
+                  'View All',
+                  style: TextStyle(
+                    color: Color(0xFF2D5016),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+          ],
+        ),
         const SizedBox(height: 16),
-        events.isEmpty
+        displayEvents.isEmpty
             ? const Center(
                 child: Text(
                   'No events available',
@@ -626,10 +714,38 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 ),
               )
             : Column(
-                children: events
+                children: displayEvents
                     .map((event) => _buildEventCard(event))
                     .toList(),
               ),
+        if (displayEvents.isNotEmpty && events.length > 3)
+          Padding(
+            padding: const EdgeInsets.only(top: 16),
+            child: Center(
+              child: OutlinedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => EventsListPage(initialFilter: 'Events'),
+                    ),
+                  );
+                },
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFF2D5016),
+                  side: const BorderSide(color: Color(0xFF2D5016)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                ),
+                child: Text(
+                  'View All Events (${events.length})',
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+              ),
+            ),
+          ),
       ],
     );
   }
@@ -641,86 +757,100 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         elevation: 2,
         color: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              Container(
-                width: 70,
-                height: 70,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                  color: Colors.grey[200],
+        child: InkWell(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => EventDetailPage(event: event),
+              ),
+            );
+          },
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Container(
+                  width: 70,
+                  height: 70,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    color: Colors.grey[200],
+                  ),
+                  child: (event.photoUrls != null && event.photoUrls!.isNotEmpty)
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.network(
+                            event.photoUrls!.first,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Icon(
+                                Icons.event,
+                                color: Colors.grey[400],
+                                size: 32,
+                              );
+                            },
+                          ),
+                        )
+                      : Icon(Icons.event, color: Colors.grey[400], size: 32),
                 ),
-                child: (event.photoUrls != null && event.photoUrls!.isNotEmpty)
-                    ? ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: Image.network(
-                          event.photoUrls!.first,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Icon(
-                              Icons.event,
-                              color: Colors.grey[400],
-                              size: 32,
-                            );
-                          },
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        event.title ?? 'Community Event',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: Colors.black87,
                         ),
-                      )
-                    : Icon(Icons.event, color: Colors.grey[400], size: 32),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      event.title ?? 'Community Event',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                        color: Colors.black87,
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      event.description ?? 'Join our community event',
-                      style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      '${event.currentParticipants}/${event.maxParticipants} participants',
-                      style: TextStyle(fontSize: 12, color: Colors.grey[500]),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                height: 36,
-                child: ElevatedButton(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Joined event: ${event.title}')),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF2D5016),
-                    foregroundColor: Colors.white,
-                    elevation: 1,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(18),
-                    ),
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                  ),
-                  child: const Text(
-                    'Join',
-                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                      const SizedBox(height: 4),
+                      Text(
+                        event.description ?? 'Join our community event',
+                        style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        '${event.currentParticipants}/${event.maxParticipants} participants',
+                        style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                      ),
+                    ],
                   ),
                 ),
-              ),
-            ],
+                Container(
+                  height: 36,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => EventDetailPage(event: event),
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF2D5016),
+                      foregroundColor: Colors.white,
+                      elevation: 1,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                    ),
+                    child: const Text(
+                      'Join',
+                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -728,9 +858,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   Widget _buildBottomNavigation() {
-  return SharedBottomNavigation(
-    currentIndex: 2, // Home is at index 2
-  );
-}
-
+    return SharedBottomNavigation(
+      currentIndex: 2, // Home is at index 2
+    );
+  }
 }

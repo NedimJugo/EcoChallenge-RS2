@@ -1,9 +1,11 @@
 import 'package:ecochallenge_mobile/pages/cleanup_map_page.dart';
+import 'package:ecochallenge_mobile/pages/events_list_page.dart';
 import 'package:ecochallenge_mobile/pages/gallery_page.dart';
 import 'package:ecochallenge_mobile/pages/home_page.dart';
 import 'package:ecochallenge_mobile/pages/login_page.dart';
 import 'package:ecochallenge_mobile/pages/register_page.dart';
 import 'package:ecochallenge_mobile/providers/badge_provider.dart';
+import 'package:ecochallenge_mobile/providers/event_participant_provider.dart';
 import 'package:ecochallenge_mobile/providers/event_provider.dart';
 import 'package:ecochallenge_mobile/providers/gallery_reaction_provider.dart';
 import 'package:ecochallenge_mobile/providers/gallery_showcase_provider.dart';
@@ -19,7 +21,6 @@ import 'providers/auth_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
   final authProvider = AuthProvider();
   await authProvider.loadCredentials();
 
@@ -36,6 +37,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => BadgeProvider()),
         ChangeNotifierProvider(create: (_) => UserBadgeProvider()),
         ChangeNotifierProvider(create: (_) => UserProvider()),
+        ChangeNotifierProvider(create: (_) => EventParticipantProvider()),
         // Add more providers here if needed
       ],
       child: MyApp(initialRoute: authProvider.isLoggedIn ? '/home' : '/login'),
@@ -74,6 +76,7 @@ class MyApp extends StatelessWidget {
         '/home': (context) => const HomePage(),
         '/gallery': (context) => GalleryPage(),
         '/cleanup-map': (context) => const CleanupMapPage(),
+        '/events': (context) => EventsListPage(),
       },
     );
   }

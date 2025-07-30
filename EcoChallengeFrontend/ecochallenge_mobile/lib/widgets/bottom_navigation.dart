@@ -35,7 +35,7 @@ class SharedBottomNavigation extends StatelessWidget {
             _buildNavItem(Icons.language, 0, context),
             _buildNavItem(Icons.image, 1, context),
             _buildNavItem(Icons.home, 2, context),
-            _buildNavItem(Icons.person, 3, context),
+            _buildNavItem(Icons.calendar_today, 3, context),
             _buildNavItem(Icons.chat, 4, context),
           ],
         ),
@@ -82,9 +82,8 @@ class SharedBottomNavigation extends StatelessWidget {
         Navigator.pushReplacementNamed(context, '/home');
         break;
       case 3:
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Profile coming soon!')),
-        );
+        // Navigate to Events (current screen)
+        Navigator.pushReplacementNamed(context, '/events');
         break;
       case 4:
         ScaffoldMessenger.of(context).showSnackBar(

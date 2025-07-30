@@ -1,5 +1,3 @@
-// Request model for user login
-import 'package:image_picker/image_picker.dart';
 
 class UserLoginRequest {
   final String username;
