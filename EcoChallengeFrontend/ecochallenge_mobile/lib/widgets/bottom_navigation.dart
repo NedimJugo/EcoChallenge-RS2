@@ -71,9 +71,7 @@ class SharedBottomNavigation extends StatelessWidget {
 
     switch (index) {
       case 0:
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Global section coming soon!')),
-        );
+        Navigator.pushReplacementNamed(context, '/cleanup-map');
         break;
       case 1:
         // Navigate to Gallery
