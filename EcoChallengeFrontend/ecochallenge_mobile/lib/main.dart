@@ -1,3 +1,4 @@
+import 'package:ecochallenge_mobile/pages/cleanup_map_page.dart';
 import 'package:ecochallenge_mobile/pages/gallery_page.dart';
 import 'package:ecochallenge_mobile/pages/home_page.dart';
 import 'package:ecochallenge_mobile/pages/login_page.dart';
@@ -71,7 +72,8 @@ class MyApp extends StatelessWidget {
         '/login': (context) => const LoginPage(),
         '/register': (context) => const RegisterPage(),
         '/home': (context) => const HomePage(),
-        '/gallery': (context) => GalleryPage(), // Add this route
+        '/gallery': (context) => GalleryPage(),
+        '/cleanup-map': (context) => const CleanupMapPage(),
       },
     );
   }

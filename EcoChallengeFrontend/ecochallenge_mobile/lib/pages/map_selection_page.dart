@@ -29,8 +29,8 @@ class _MapSelectionPageState extends State<MapSelectionPage> {
   @override
   void initState() {
     super.initState();
-    _selectedLat = widget.initialLat ?? 45.521563; // Default to Portland
-    _selectedLng = widget.initialLng ?? -122.677433;
+    _selectedLat = widget.initialLat ?? 43.343774; // Mostar, BiH
+    _selectedLng = widget.initialLng ?? 17.807758;
     if (_selectedLat != null && _selectedLng != null) {
       _getAddressFromCoordinates(_selectedLat!, _selectedLng!);
     }
