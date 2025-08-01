@@ -1,4 +1,5 @@
 import 'package:ecochallenge_mobile/pages/leaderboard_page.dart';
+import 'package:ecochallenge_mobile/pages/my_events_page.dart';
 import 'package:ecochallenge_mobile/pages/user_profile_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -132,9 +133,9 @@ class ProfilePanel extends StatelessWidget {
                           : null,
                       onTap: () {
                         onClose();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('My events page coming soon!'),
+                         Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const MyEventsScreen(),
                           ),
                         );
                       },

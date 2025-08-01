@@ -900,18 +900,18 @@ class _EventFormPageState extends State<EventFormPage> {
   }
 
   Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: _selectedDate,
-      firstDate: DateTime.now(),
-      lastDate: DateTime(2025),
-    );
-    if (picked != null) {
-      setState(() {
-        _selectedDate = picked;
-      });
-    }
+  final DateTime? picked = await showDatePicker(
+    context: context,
+    initialDate: _selectedDate,
+    firstDate: DateTime.now(),
+    lastDate: DateTime.now().add(Duration(days: 365)), 
+  );
+  if (picked != null) {
+    setState(() {
+      _selectedDate = picked;
+    });
   }
+}
 
   Future<void> _selectTime(BuildContext context) async {
     final TimeOfDay? picked = await showTimePicker(

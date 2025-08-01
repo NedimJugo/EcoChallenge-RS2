@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-
 import 'package:ecochallenge_mobile/models/user.dart';
 import 'package:ecochallenge_mobile/providers/auth_provider.dart';
 import 'package:ecochallenge_mobile/providers/base_provider.dart';
@@ -14,30 +13,60 @@ class UserProvider extends BaseProvider<UserResponse> {
     return UserResponse.fromJson(data);
   }
 
-  // Override the update method to handle multipart form data
+  // ADD THIS METHOD - Get user by ID directly
+  Future<UserResponse?> getUserById(int userId) async {
+    var baseUrl = this.baseUrl;
+    var endpoint = this.endpoint;
+    var url = "$baseUrl/$endpoint/$userId";
+    
+    print("GET User by ID URL: $url");
+    var uri = Uri.parse(url);
+    var headers = createHeaders();
+    
+    try {
+      var response = await http.get(uri, headers: headers);
+      print("Get user by ID response status: ${response.statusCode}");
+      print("Get user by ID response body: ${response.body}");
+      
+      if (response.statusCode == 200) {
+        var data = jsonDecode(response.body);
+        return fromJson(data);
+      } else if (response.statusCode == 404) {
+        print("User with ID $userId not found");
+        return null;
+      } else {
+        throw Exception("Server error ${response.statusCode}: ${response.body}");
+      }
+    } catch (e) {
+      print("Get user by ID request failed: $e");
+      throw Exception("Network error: $e");
+    }
+  }
+
+  // ... rest of your existing methods remain the same
+  
   @override
   Future<UserResponse> update(int id, [dynamic request]) async {
     var baseUrl = this.baseUrl;
     var endpoint = this.endpoint;
     var url = "$baseUrl/$endpoint/$id";
-
     print("PUT URL (Multipart): $url");
     var uri = Uri.parse(url);
-
+    
     // Create multipart request
     var multipartRequest = http.MultipartRequest('PUT', uri);
-
+    
     // Add authentication header
     String username = AuthProvider.username ?? "";
     String password = AuthProvider.password ?? "";
     print("Using credentials: $username, $password");
-
+    
     if (username.isNotEmpty && password.isNotEmpty) {
       String basicAuth =
           "Basic ${base64Encode(utf8.encode('$username:$password'))}";
       multipartRequest.headers['Authorization'] = basicAuth;
     }
-
+    
     // Add form fields from request object
     if (request != null) {
       var requestMap = request.toJson();
@@ -54,14 +83,15 @@ class UserProvider extends BaseProvider<UserResponse> {
         }
       });
     }
-
+    
     print("Request fields: ${multipartRequest.fields}");
-
+    
     try {
       var streamedResponse = await multipartRequest.send();
       var response = await http.Response.fromStream(streamedResponse);
       print("Response status: ${response.statusCode}");
       print("Response body: ${response.body}");
+      
       if (isValidResponse(response)) {
         var data = jsonDecode(response.body);
         return fromJson(data);
@@ -76,7 +106,6 @@ class UserProvider extends BaseProvider<UserResponse> {
     }
   }
 
-  // Add a separate method for updates with files
   Future<UserResponse> updateWithFiles(
     int id,
     dynamic request, {
@@ -85,24 +114,23 @@ class UserProvider extends BaseProvider<UserResponse> {
     var baseUrl = this.baseUrl;
     var endpoint = this.endpoint;
     var url = "$baseUrl/$endpoint/$id";
-
     print("PUT URL (Multipart with files): $url");
     var uri = Uri.parse(url);
-
+    
     // Create multipart request
     var multipartRequest = http.MultipartRequest('PUT', uri);
-
+    
     // Add authentication header
     String username = AuthProvider.username ?? "";
     String password = AuthProvider.password ?? "";
     print("Using credentials: $username, $password");
-
+    
     if (username.isNotEmpty && password.isNotEmpty) {
       String basicAuth =
           "Basic ${base64Encode(utf8.encode('$username:$password'))}";
       multipartRequest.headers['Authorization'] = basicAuth;
     }
-
+    
     // Add form fields from request object
     if (request != null) {
       var requestMap = request.toJson();
@@ -119,7 +147,7 @@ class UserProvider extends BaseProvider<UserResponse> {
         }
       });
     }
-
+    
     // Add files if provided
     if (files != null && files.isNotEmpty) {
       for (int i = 0; i < files.length; i++) {
@@ -136,15 +164,16 @@ class UserProvider extends BaseProvider<UserResponse> {
         }
       }
     }
-
+    
     print("Request fields: ${multipartRequest.fields}");
     print("Request files count: ${multipartRequest.files.length}");
-
+    
     try {
       var streamedResponse = await multipartRequest.send();
       var response = await http.Response.fromStream(streamedResponse);
       print("Response status: ${response.statusCode}");
       print("Response body: ${response.body}");
+      
       if (isValidResponse(response)) {
         var data = jsonDecode(response.body);
         return fromJson(data);

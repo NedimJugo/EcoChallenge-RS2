@@ -276,3 +276,47 @@ class UserUpdateRequest {
     return data;
   }
 }
+
+// Add this UserSearchObject class to your user.dart file or create a separate file
+
+class UserSearchObject {
+  int? page;
+  int? pageSize;
+  String sortBy;
+  bool desc;
+  bool includeTotalCount;
+  bool retrieveAll;
+  int? id;
+  String? username;
+  String? email;
+
+  UserSearchObject({
+    this.page = 0,
+    this.pageSize = 20,
+    this.sortBy = "Id",
+    this.desc = false,
+    this.includeTotalCount = true,
+    this.retrieveAll = false,
+    this.id,
+    this.username,
+    this.email,
+  });
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = {
+      'page': page,
+      'pageSize': pageSize,
+      'sortBy': sortBy,
+      'desc': desc,
+      'includeTotalCount': includeTotalCount,
+      'retrieveAll': retrieveAll,
+    };
+    
+    if (id != null) data['id'] = id;
+    if (username != null) data['username'] = username;
+    if (email != null) data['email'] = email;
+    
+    return data;
+  }
+}
+

@@ -5,6 +5,7 @@ import '../models/event.dart';
 import '../models/location.dart';
 import '../models/event_participant.dart';
 import '../providers/event_participant_provider.dart';
+import '../providers/event_provider.dart';
 import '../providers/location_provider.dart';
 import '../providers/auth_provider.dart';
 import 'map_view_page.dart';
@@ -22,11 +23,97 @@ class _EventDetailPageState extends State<EventDetailPage> {
   bool _isSigningUp = false;
   LocationResponse? _location;
   bool _isLoadingLocation = true;
+  bool _eventExists = true;
+  bool _isAlreadyRegistered = false;
 
   @override
   void initState() {
     super.initState();
+    _verifyEventExists();
     _loadLocation();
+    _checkExistingRegistration();
+  }
+
+  // Check if user is already registered for this event
+  Future<void> _checkExistingRegistration() async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final userId = authProvider.currentUserId;
+    
+    if (userId == null || widget.event.id == null) return;
+    
+    try {
+      final participantProvider = Provider.of<EventParticipantProvider>(context, listen: false);
+      final participations = await participantProvider.getUserParticipations(userId);
+      
+      final isRegistered = participations.any((p) => p.eventId == widget.event.id);
+      
+      if (mounted) {
+        setState(() => _isAlreadyRegistered = isRegistered);
+      }
+    } catch (e) {
+      print('DEBUG: Error checking existing registration: $e');
+    }
+  }
+
+  // Enhanced event verification
+  Future<void> _verifyEventExists() async {
+    try {
+      if (widget.event.id == null || widget.event.title == null) {
+        _showEventExpired();
+        return;
+      }
+
+      // Verify the event still exists in the database
+      final eventProvider = Provider.of<EventProvider>(context, listen: false);
+      try {
+        // Try to get the specific event by ID
+        final eventSearchObject = EventSearchObject(
+          retrieveAll: true,
+          status: 1, // Active status
+        );
+        final result = await eventProvider.get(filter: eventSearchObject.toJson());
+        final events = result.items ?? [];
+        
+        // Check if our event still exists
+        final eventStillExists = events.any((e) => e.id == widget.event.id);
+        
+        if (!eventStillExists) {
+          print('DEBUG: Event ${widget.event.id} no longer exists in database');
+          setState(() => _eventExists = false);
+          _showEventExpired();
+        } else {
+          print('DEBUG: Event ${widget.event.id} verified to exist');
+        }
+      } catch (e) {
+        print('DEBUG: Error verifying event existence: $e');
+        // If we can't verify, assume it exists to avoid blocking the user
+      }
+    } catch (e) {
+      print('DEBUG: Error in _verifyEventExists: $e');
+      _showEventExpired();
+    }
+  }
+
+  void _showEventExpired() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => AlertDialog(
+          title: Text('Event Unavailable'),
+          content: Text('This event no longer exists or has been cancelled. You will be returned to the events list.'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context); // Close dialog
+                Navigator.pop(context); // Go back to events list
+              },
+              child: Text('OK'),
+            ),
+          ],
+        ),
+      );
+    });
   }
 
   Future<void> _loadLocation() async {
@@ -61,7 +148,6 @@ class _EventDetailPageState extends State<EventDetailPage> {
       );
       return;
     }
-
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => MapViewPage(location: _location!),
@@ -72,6 +158,44 @@ class _EventDetailPageState extends State<EventDetailPage> {
 
   @override
   Widget build(BuildContext context) {
+    // Early return if event is invalid or doesn't exist
+    if (widget.event.id == null || !_eventExists) {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text('Event Unavailable'),
+          backgroundColor: Color(0xFFD4A574),
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.event_busy, size: 64, color: Colors.grey),
+              SizedBox(height: 20),
+              Text(
+                'This event is no longer available',
+                style: Theme.of(context).textTheme.headlineSmall,
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 8),
+              Text(
+                'The event may have been cancelled or removed',
+                style: TextStyle(color: Colors.grey[600]),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Color(0xFF8B4513),
+                ),
+                child: Text('Back to Events', style: TextStyle(color: Colors.white)),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
@@ -80,6 +204,10 @@ class _EventDetailPageState extends State<EventDetailPage> {
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
+        ),
+        title: Text(
+          'Event Details',
+          style: TextStyle(color: Colors.white),
         ),
       ),
       body: SingleChildScrollView(
@@ -171,13 +299,35 @@ class _EventDetailPageState extends State<EventDetailPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            widget.event.title ?? 'Untitled Event',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.grey[800],
-            ),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  widget.event.title ?? 'Untitled Event',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey[800],
+                  ),
+                ),
+              ),
+              // Add event ID for debugging
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.blue[100],
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  'ID: ${widget.event.id}',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.blue[800],
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
           ),
           SizedBox(height: 16),
           Text(
@@ -325,7 +475,6 @@ class _EventDetailPageState extends State<EventDetailPage> {
           borderRadius: BorderRadius.circular(8),
           child: Stack(
             children: [
-              // Terrain-like background
               Container(
                 decoration: BoxDecoration(
                   gradient: RadialGradient(
@@ -341,12 +490,10 @@ class _EventDetailPageState extends State<EventDetailPage> {
                   ),
                 ),
               ),
-              // Terrain pattern
               CustomPaint(
                 size: Size(double.infinity, 120),
                 painter: TerrainPainter(),
               ),
-              // Location marker
               if (hasValidCoordinates)
                 Positioned(
                   left: 60,
@@ -373,7 +520,6 @@ class _EventDetailPageState extends State<EventDetailPage> {
                     ),
                   ),
                 ),
-              // Location info overlay
               Positioned(
                 bottom: 8,
                 left: 8,
@@ -410,7 +556,6 @@ class _EventDetailPageState extends State<EventDetailPage> {
                   ),
                 ),
               ),
-              // View map button
               Positioned(
                 top: 8,
                 right: 8,
@@ -444,7 +589,6 @@ class _EventDetailPageState extends State<EventDetailPage> {
                   ),
                 ),
               ),
-              // No coordinates overlay
               if (!hasValidCoordinates)
                 Center(
                   child: Column(
@@ -531,9 +675,9 @@ class _EventDetailPageState extends State<EventDetailPage> {
         width: double.infinity,
         height: 50,
         child: ElevatedButton(
-          onPressed: _isSigningUp ? null : _signUpForEvent,
+          onPressed: _isSigningUp || _isAlreadyRegistered ? null : _signUpForEvent,
           style: ElevatedButton.styleFrom(
-            backgroundColor: Color(0xFF8B4513),
+            backgroundColor: _isAlreadyRegistered ? Colors.grey : Color(0xFF8B4513),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(25),
             ),
@@ -541,7 +685,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
           child: _isSigningUp
               ? CircularProgressIndicator(color: Colors.white)
               : Text(
-                  'Join community event',
+                  _isAlreadyRegistered ? 'Already Registered' : 'Join community event',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 16,
@@ -572,6 +716,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
     }
   }
 
+  // ENHANCED: Better signup with comprehensive error handling
   Future<void> _signUpForEvent() async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final userId = authProvider.currentUserId;
@@ -586,33 +731,86 @@ class _EventDetailPageState extends State<EventDetailPage> {
     setState(() => _isSigningUp = true);
 
     try {
+      if (widget.event.id == null) {
+        throw Exception('This event is no longer available');
+      }
+
+      print('DEBUG: Attempting to sign up for event ${widget.event.id} (${widget.event.title})');
+      
       final participantProvider = Provider.of<EventParticipantProvider>(context, listen: false);
       
       final participantRequest = EventParticipantInsertRequest(
-        eventId: widget.event.id,
+        eventId: widget.event.id!,
         userId: userId,
-        status: AttendanceStatus.Registered,
+        status: AttendanceStatus.registered,
       );
 
-      await participantProvider.insert(participantRequest);
-
+      print('DEBUG: Sending participant request: ${participantRequest.toJson()}');
+      
+      final result = await participantProvider.addParticipant(participantRequest);
+      
+      print('DEBUG: Successfully created participant: ${result.toJson()}');
+      
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Successfully signed up for ${widget.event.title}!'),
           backgroundColor: Colors.green,
         ),
       );
-
-      Navigator.pop(context);
+      
+      // Update the registration status
+      setState(() => _isAlreadyRegistered = true);
+      
     } catch (e) {
+      print('DEBUG: Error signing up for event: $e');
+      
+      String errorMessage;
+      
+      if (e.toString().contains('event no longer exists') || 
+          e.toString().contains('cancelled')) {
+        errorMessage = 'This event no longer exists and has been removed.';
+        // Show dialog and go back to events list
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text('Event Removed'),
+            content: Text('This event has been cancelled or removed. You will be returned to the events list.'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context); // Close dialog
+                  Navigator.pop(context); // Go back to events list
+                },
+                child: Text('OK'),
+              ),
+            ],
+          ),
+        );
+        return;
+      } else if (e.toString().contains('already registered') || 
+                 e.toString().contains('duplicate')) {
+        errorMessage = 'You are already signed up for this event';
+        setState(() => _isAlreadyRegistered = true);
+      } else if (e.toString().contains('Unauthorized')) {
+        errorMessage = 'Please log in again to sign up for events';
+      } else if (e.toString().contains('full') || 
+                 e.toString().contains('capacity')) {
+        errorMessage = 'This event is full and no longer accepting registrations';
+      } else {
+        errorMessage = 'Failed to sign up: Unable to register for this event';
+      }
+      
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error signing up: $e'),
+          content: Text(errorMessage),
           backgroundColor: Colors.red,
+          duration: Duration(seconds: 3),
         ),
       );
     } finally {
-      setState(() => _isSigningUp = false);
+      if (mounted) {
+        setState(() => _isSigningUp = false);
+      }
     }
   }
 }
@@ -625,10 +823,8 @@ class TerrainPainter extends CustomPainter {
       ..strokeWidth = 1.0
       ..style = PaintingStyle.stroke;
 
-    // Draw terrain contour lines
     paint.color = Colors.brown.withOpacity(0.3);
     
-    // Draw some curved contour lines to simulate terrain
     final path1 = Path();
     path1.moveTo(0, size.height * 0.3);
     path1.quadraticBezierTo(size.width * 0.3, size.height * 0.2, size.width * 0.6, size.height * 0.4);
@@ -647,11 +843,9 @@ class TerrainPainter extends CustomPainter {
     path3.quadraticBezierTo(size.width * 0.8, size.height * 0.95, size.width, size.height * 0.8);
     canvas.drawPath(path3, paint);
 
-    // Add some vegetation dots
     paint.style = PaintingStyle.fill;
     paint.color = Colors.green.withOpacity(0.4);
     
-    // Random vegetation spots
     final spots = [
       Offset(size.width * 0.2, size.height * 0.4),
       Offset(size.width * 0.4, size.height * 0.6),
