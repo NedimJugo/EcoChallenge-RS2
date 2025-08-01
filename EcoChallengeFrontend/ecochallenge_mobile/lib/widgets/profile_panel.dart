@@ -1,3 +1,4 @@
+import 'package:ecochallenge_mobile/pages/leaderboard_page.dart';
 import 'package:ecochallenge_mobile/pages/user_profile_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -98,8 +99,11 @@ class ProfilePanel extends StatelessWidget {
                       title: 'Profile',
                       onTap: () {
                         // Check if user data and userId are available
-                        final userId = Provider.of<AuthProvider>(context, listen: false).currentUserId;
-                        
+                        final userId = Provider.of<AuthProvider>(
+                          context,
+                          listen: false,
+                        ).currentUserId;
+
                         if (userId != null) {
                           onClose();
                           Navigator.of(context).push(
@@ -111,7 +115,9 @@ class ProfilePanel extends StatelessWidget {
                           // Handle case where user ID is not available
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                              content: Text('Unable to load profile. Please try logging in again.'),
+                              content: Text(
+                                'Unable to load profile. Please try logging in again.',
+                              ),
                               backgroundColor: Colors.red,
                             ),
                           );
@@ -156,9 +162,9 @@ class ProfilePanel extends StatelessWidget {
                           : null,
                       onTap: () {
                         onClose();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Leaderboard page coming soon!'),
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const LeaderboardPage(),
                           ),
                         );
                       },
@@ -248,8 +254,8 @@ class ProfilePanel extends StatelessWidget {
           user != null
               ? '${user.firstName[0]}${user.lastName[0]}'.toUpperCase()
               : (AuthProvider.username?.isNotEmpty == true
-                  ? AuthProvider.username![0].toUpperCase()
-                  : 'U'),
+                    ? AuthProvider.username![0].toUpperCase()
+                    : 'U'),
           style: const TextStyle(
             color: Colors.white,
             fontSize: 24,
