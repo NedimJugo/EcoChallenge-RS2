@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 // Event Participant Response Model
 class EventParticipantResponse {
   final int id;
@@ -23,8 +25,8 @@ class EventParticipantResponse {
       userId: json['userId'],
       joinedAt: DateTime.parse(json['joinedAt']),
       status: AttendanceStatus.values.firstWhere(
-        (e) => e.toString().split('.').last == json['status'],
-        orElse: () => AttendanceStatus.Registered,
+        (e) => e.toString().split('.').last.toLowerCase() == json['status'].toString().toLowerCase(),
+        orElse: () => AttendanceStatus.registered,
       ),
       pointsEarned: json['pointsEarned'] ?? 0,
     );
@@ -42,7 +44,7 @@ class EventParticipantResponse {
   }
 }
 
-// Event Participant Insert Request Model
+// FIXED: Event Participant Insert Request Model
 class EventParticipantInsertRequest {
   final int eventId;
   final int userId;
@@ -52,17 +54,34 @@ class EventParticipantInsertRequest {
   EventParticipantInsertRequest({
     required this.eventId,
     required this.userId,
-    this.status = AttendanceStatus.Registered,
+    this.status = AttendanceStatus.registered,
     this.pointsEarned = 0,
   });
 
+  // FIXED: Remove the "request" wrapper and send data directly
   Map<String, dynamic> toJson() {
     return {
       'eventId': eventId,
       'userId': userId,
-      'status': status.toString().split('.').last,
+      'status': _statusToInt(status), // Convert to integer
       'pointsEarned': pointsEarned,
     };
+  }
+
+  // Convert AttendanceStatus enum to integer (matching backend enum values)
+  int _statusToInt(AttendanceStatus status) {
+    switch (status) {
+      case AttendanceStatus.registered:
+        return 0;
+      case AttendanceStatus.attended:
+        return 1;
+      case AttendanceStatus.completed:
+        return 2;
+      case AttendanceStatus.cancelled:
+        return 3;
+      case AttendanceStatus.noShow:
+        return 4;
+    }
   }
 }
 
@@ -87,10 +106,25 @@ class EventParticipantUpdateRequest {
     
     if (eventId != null) data['eventId'] = eventId;
     if (userId != null) data['userId'] = userId;
-    if (status != null) data['status'] = status.toString().split('.').last;
+    if (status != null) data['status'] = _statusToInt(status!);
     if (pointsEarned != null) data['pointsEarned'] = pointsEarned;
     
     return data;
+  }
+
+  int _statusToInt(AttendanceStatus status) {
+    switch (status) {
+      case AttendanceStatus.registered:
+        return 0;
+      case AttendanceStatus.attended:
+        return 1;
+      case AttendanceStatus.completed:
+        return 2;
+      case AttendanceStatus.cancelled:
+        return 3;
+      case AttendanceStatus.noShow:
+        return 4;
+    }
   }
 }
 
@@ -125,19 +159,35 @@ class EventParticipantSearchObject {
       'includeTotalCount': includeTotalCount,
       'retrieveAll': retrieveAll,
     };
-
     if (eventId != null) data['eventId'] = eventId;
     if (userId != null) data['userId'] = userId;
-
     return data;
   }
 }
 
 // Attendance Status Enum
 enum AttendanceStatus {
-  Registered,
-  Attended,
-  Completed,
-  Cancelled,
-  NoShow,
+  registered,  // 0
+  attended,    // 1
+  completed,   // 2
+  cancelled,   // 3
+  noShow,      // 4
+}
+
+// Extension to get display names
+extension AttendanceStatusExtension on AttendanceStatus {
+  String get displayName {
+    switch (this) {
+      case AttendanceStatus.registered:
+        return 'Registered';
+      case AttendanceStatus.attended:
+        return 'Attended';
+      case AttendanceStatus.completed:
+        return 'Completed';
+      case AttendanceStatus.cancelled:
+        return 'Cancelled';
+      case AttendanceStatus.noShow:
+        return 'No Show';
+    }
+  }
 }

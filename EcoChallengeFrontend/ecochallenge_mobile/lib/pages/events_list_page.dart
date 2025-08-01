@@ -39,7 +39,6 @@ class _EventsListPageState extends State<EventsListPage> {
   @override
   void initState() {
     super.initState();
-    // Set initial filter if provided, otherwise default to 'All'
     _selectedFilter = widget.initialFilter ?? 'All';
     
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -71,6 +70,10 @@ class _EventsListPageState extends State<EventsListPage> {
       final locationProvider = Provider.of<LocationProvider>(context, listen: false);
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       
+      // Get current user ID
+      final userId = authProvider.currentUserId;
+      print('DEBUG: Current user ID: $userId');
+      
       // Load locations first
       final locationsResult = await locationProvider.get();
       _locations = locationsResult.items ?? [];
@@ -87,6 +90,39 @@ class _EventsListPageState extends State<EventsListPage> {
       }
       _cities = citySet.toList()..sort();
       
+      // Load user's participated events FIRST
+      if (userId != null) {
+        print('DEBUG: Loading participations for user $userId');
+        final participantSearchObject = EventParticipantSearchObject(
+          userId: userId,
+          retrieveAll: true,
+        );
+        
+        try {
+          final participantsResult = await participantProvider.get(filter: participantSearchObject.toJson());
+          print('DEBUG: Participants result: ${participantsResult.items?.length ?? 0} items');
+          
+          if (participantsResult.items != null) {
+            _userParticipatedEventIds = participantsResult.items!.map((p) => p.eventId).toList();
+            print('DEBUG: User participated event IDs: $_userParticipatedEventIds');
+            
+            // Print detailed participation info
+            for (var participant in participantsResult.items!) {
+              print('DEBUG: Participation - EventID: ${participant.eventId}, UserID: ${participant.userId}, Status: ${participant.status}');
+            }
+          } else {
+            _userParticipatedEventIds = [];
+            print('DEBUG: No participations found');
+          }
+        } catch (e) {
+          print('DEBUG: Error loading participations: $e');
+          _userParticipatedEventIds = [];
+        }
+      } else {
+        print('DEBUG: No user ID found');
+        _userParticipatedEventIds = [];
+      }
+      
       // Load events and requests
       final eventSearchObject = EventSearchObject(
         status: 1, // Active status
@@ -101,15 +137,14 @@ class _EventsListPageState extends State<EventsListPage> {
       final eventsResult = await eventProvider.get(filter: eventSearchObject.toJson());
       final requestsResult = await requestProvider.get(filter: requestSearchObject.toJson());
       
-      // Load user's participated events
-      final userId = authProvider.currentUserId;
-      if (userId != null) {
-        final participantSearchObject = EventParticipantSearchObject(
-          userId: userId,
-          retrieveAll: true,
-        );
-        final participantsResult = await participantProvider.get(filter: participantSearchObject.toJson());
-        _userParticipatedEventIds = participantsResult.items?.map((p) => p.eventId).toList() ?? [];
+      print('DEBUG: Loaded ${eventsResult.items?.length ?? 0} events');
+      print('DEBUG: Loaded ${requestsResult.items?.length ?? 0} requests');
+      
+      // Print all event IDs for debugging
+      if (eventsResult.items != null) {
+        for (var event in eventsResult.items!) {
+          print('DEBUG: Event ID: ${event.id}, Title: ${event.title}');
+        }
       }
       
       if (mounted) {
@@ -137,34 +172,55 @@ class _EventsListPageState extends State<EventsListPage> {
   List<dynamic> get _filteredItems {
     List<dynamic> allItems = [];
     
-    // Filter events
+    print('DEBUG: Filtering events. User participated IDs: $_userParticipatedEventIds');
+    
+    // Filter events - exclude events user has already joined
     List<EventResponse> filteredEvents = _events.where((event) {
-      if (_userParticipatedEventIds.contains(event.id)) return false;
+      bool isParticipated = _userParticipatedEventIds.contains(event.id);
+      print('DEBUG: Event ${event.id} (${event.title}) - Is participated: $isParticipated');
+      
+      // Skip events the user has already joined
+      if (isParticipated) {
+        print('DEBUG: ✗ Filtering out event ${event.id} - user already participated');
+        return false;
+      }
       
       bool matchesFilter = _selectedFilter == 'All' || _selectedFilter == 'Events';
       bool matchesCity = _selectedCity == null || 
           (_locationMap[event.locationId]?.city == _selectedCity);
-      bool matchesDate = _selectedDateRange == null || 
+      bool matchesDate = _selectedDateRange == null ||
           (event.eventDate.isAfter(_selectedDateRange!.start) &&
-           event.eventDate.isBefore(_selectedDateRange!.end.add(Duration(days: 1))));
+          event.eventDate.isBefore(_selectedDateRange!.end.add(Duration(days: 1))));
       
-      return matchesFilter && matchesCity && matchesDate;
+      bool shouldShow = matchesFilter && matchesCity && matchesDate;
+      print('DEBUG: ✓ Event ${event.id} will be shown: $shouldShow (filter: $matchesFilter, city: $matchesCity, date: $matchesDate)');
+      
+      return shouldShow;
     }).toList();
     
-    // Filter requests
+    // Filter requests - exclude requests user has already participated in
     List<RequestResponse> filteredRequests = _requests.where((request) {
-      if (_userParticipatedRequestIds.contains(request.id)) return false;
+      bool isParticipated = _userParticipatedRequestIds.contains(request.id);
+      
+      // Skip requests the user has already participated in
+      if (isParticipated) {
+        print('DEBUG: Filtering out request ${request.id} - user already participated');
+        return false;
+      }
       
       bool matchesFilter = _selectedFilter == 'All' || _selectedFilter == 'Requests';
       bool matchesCity = _selectedCity == null || 
           (_locationMap[request.locationId]?.city == _selectedCity);
-      bool matchesDate = _selectedDateRange == null || 
+      bool matchesDate = _selectedDateRange == null ||
           (request.proposedDate != null &&
-          request.proposedDate!.isAfter(_selectedDateRange!.start) &&
-           request.proposedDate!.isBefore(_selectedDateRange!.end.add(Duration(days: 1))));
+          request.proposedDate!.isAfter(_selectedDateRange!.start) && 
+          request.proposedDate!.isBefore(_selectedDateRange!.end.add(Duration(days: 1))));
       
       return matchesFilter && matchesCity && matchesDate;
     }).toList();
+    
+    print('DEBUG: Final filtered events count: ${filteredEvents.length}');
+    print('DEBUG: Final filtered requests count: ${filteredRequests.length}');
     
     allItems.addAll(filteredEvents);
     allItems.addAll(filteredRequests);
@@ -186,7 +242,7 @@ class _EventsListPageState extends State<EventsListPage> {
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
         title: Text(
-          'Events',
+          'Available Events',
           style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
@@ -199,16 +255,39 @@ class _EventsListPageState extends State<EventsListPage> {
         actions: [
           IconButton(
             onPressed: () {
+              print('DEBUG: Refresh button pressed');
               _hasInitialized = false;
               _loadData();
             },
             icon: Icon(Icons.refresh, color: Colors.white),
+          ),
+          // Add debug button to show participated events
+          IconButton(
+            onPressed: () {
+              _showDebugInfo();
+            },
+            icon: Icon(Icons.bug_report, color: Colors.white),
           ),
         ],
       ),
       body: Column(
         children: [
           _buildFilterSection(),
+          // Add debug info section
+          if (_userParticipatedEventIds.isNotEmpty)
+            Container(
+              padding: EdgeInsets.all(8),
+              margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.blue[50],
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.blue[200]!),
+              ),
+              child: Text(
+                'DEBUG: You are registered for ${_userParticipatedEventIds.length} events: ${_userParticipatedEventIds.join(", ")}',
+                style: TextStyle(fontSize: 12, color: Colors.blue[800]),
+              ),
+            ),
           Expanded(
             child: _isLoading
                 ? Center(child: CircularProgressIndicator())
@@ -217,6 +296,39 @@ class _EventsListPageState extends State<EventsListPage> {
         ],
       ),
       bottomNavigationBar: SharedBottomNavigation(currentIndex: 3),
+    );
+  }
+
+  void _showDebugInfo() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Debug Info'),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('User ID: ${Provider.of<AuthProvider>(context, listen: false).currentUserId}'),
+              SizedBox(height: 8),
+              Text('Participated Event IDs: $_userParticipatedEventIds'),
+              SizedBox(height: 8),
+              Text('Total Events: ${_events.length}'),
+              SizedBox(height: 8),
+              Text('Filtered Events: ${_filteredItems.where((item) => item is EventResponse).length}'),
+              SizedBox(height: 8),
+              Text('All Event IDs:'),
+              ..._events.map((e) => Text('  - ${e.id}: ${e.title}')),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Close'),
+          ),
+        ],
+      ),
     );
   }
 
@@ -407,8 +519,13 @@ class _EventsListPageState extends State<EventsListPage> {
             Icon(Icons.event_busy, size: 64, color: Colors.grey[400]),
             SizedBox(height: 16),
             Text(
-              'No events or requests available',
+              'No new events or requests available',
               style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+            ),
+            SizedBox(height: 8),
+            Text(
+              'Events you\'ve already joined are hidden',
+              style: TextStyle(fontSize: 14, color: Colors.grey[500]),
             ),
             if (_selectedFilter != 'All' || _selectedCity != null || _selectedDateRange != null) ...[
               SizedBox(height: 8),
@@ -428,7 +545,7 @@ class _EventsListPageState extends State<EventsListPage> {
         Padding(
           padding: EdgeInsets.all(16),
           child: Text(
-            'Requests and community',
+            'Available Events & Requests (${items.length})',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -457,6 +574,7 @@ class _EventsListPageState extends State<EventsListPage> {
 
   Widget _buildEventCard(EventResponse event) {
     final location = _locationMap[event.locationId];
+    final isParticipated = _userParticipatedEventIds.contains(event.id);
     
     return Card(
       margin: EdgeInsets.only(bottom: 16),
@@ -467,100 +585,128 @@ class _EventsListPageState extends State<EventsListPage> {
         borderRadius: BorderRadius.circular(12),
         child: Padding(
           padding: EdgeInsets.all(16),
-          child: Row(
+          child: Column(
             children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: Container(
-                  width: 80,
-                  height: 80,
-                  color: Colors.grey[300],
-                  child: event.photoUrls?.isNotEmpty == true
-                      ? Image.network(
-                          event.photoUrls!.first,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) =>
-                              Icon(Icons.event, size: 40, color: Colors.grey[600]),
-                        )
-                      : Icon(Icons.event, size: 40, color: Colors.grey[600]),
+              // Add debug indicator
+              if (isParticipated)
+                Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.all(8),
+                  margin: EdgeInsets.only(bottom: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.red[100],
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    'DEBUG: This event should be hidden (you are registered)',
+                    style: TextStyle(color: Colors.red[800], fontSize: 12),
+                    textAlign: TextAlign.center,
+                  ),
                 ),
-              ),
-              SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      event.title ?? 'Untitled Event',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.grey[800],
-                      ),
+              Row(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Container(
+                      width: 80,
+                      height: 80,
+                      color: Colors.grey[300],
+                      child: event.photoUrls?.isNotEmpty == true
+                          ? Image.network(
+                              event.photoUrls!.first,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  Icon(Icons.event, size: 40, color: Colors.grey[600]),
+                            )
+                          : Icon(Icons.event, size: 40, color: Colors.grey[600]),
                     ),
-                    SizedBox(height: 4),
-                    Text(
-                      event.description ?? 'No description available',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[600],
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    SizedBox(height: 4),
-                    Row(
+                  ),
+                  SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(Icons.location_on, size: 14, color: Colors.grey[500]),
-                        SizedBox(width: 4),
-                        Expanded(
-                          child: Text(
-                            location?.city ?? location?.name ?? 'Unknown Location',
-                            style: TextStyle(fontSize: 12, color: Colors.grey[500]),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 4),
-                    Row(
-                      children: [
-                        Icon(Icons.calendar_today, size: 14, color: Colors.grey[500]),
-                        SizedBox(width: 4),
                         Text(
-                          _formatDate(event.eventDate),
-                          style: TextStyle(fontSize: 12, color: Colors.grey[500]),
-                        ),
-                        Spacer(),
-                        Icon(Icons.people, size: 16, color: Colors.grey[500]),
-                        SizedBox(width: 4),
-                        Text(
-                          '${event.currentParticipants}/${event.maxParticipants}',
-                          style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 8),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: Container(
-                        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: Color(0xFF8B4513),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(
-                          'Join',
+                          event.title ?? 'Untitled Event',
                           style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.grey[800],
                           ),
                         ),
-                      ),
+                        SizedBox(height: 4),
+                        Text(
+                          'Event ID: ${event.id}', // Add event ID for debugging
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.blue[600],
+                          ),
+                        ),
+                        SizedBox(height: 4),
+                        Text(
+                          event.description ?? 'No description available',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey[600],
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Icon(Icons.location_on, size: 14, color: Colors.grey[500]),
+                            SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                location?.city ?? location?.name ?? 'Unknown Location',
+                                style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Icon(Icons.calendar_today, size: 14, color: Colors.grey[500]),
+                            SizedBox(width: 4),
+                            Text(
+                              _formatDate(event.eventDate),
+                              style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                            ),
+                            Spacer(),
+                            Icon(Icons.people, size: 16, color: Colors.grey[500]),
+                            SizedBox(width: 4),
+                            Text(
+                              '${event.currentParticipants}/${event.maxParticipants}',
+                              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 8),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: Container(
+                            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: isParticipated ? Colors.grey : Color(0xFF8B4513),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              isParticipated ? 'Joined' : 'Join',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ],
           ),
