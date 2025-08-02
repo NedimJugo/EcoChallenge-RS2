@@ -77,6 +77,7 @@ namespace EcoChallenge.Services.Database.Entities
         public virtual ICollection<Photo>? Photos { get; set; } // NEW: Replace ImageUrl/CompletionImageUrl
         public virtual ICollection<GalleryShowcase>? GalleryShowcases { get; set; }
         public virtual ICollection<ActivityHistory>? History { get; set; }
+        public virtual ICollection<RequestParticipation>? Participations { get; set; }
         public ICollection<Event>? Events { get; set; }
     }
 }
