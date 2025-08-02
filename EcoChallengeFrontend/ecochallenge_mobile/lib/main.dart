@@ -11,6 +11,7 @@ import 'package:ecochallenge_mobile/providers/gallery_reaction_provider.dart';
 import 'package:ecochallenge_mobile/providers/gallery_showcase_provider.dart';
 import 'package:ecochallenge_mobile/providers/location_provider.dart';
 import 'package:ecochallenge_mobile/providers/organization_provider.dart';
+import 'package:ecochallenge_mobile/providers/request_participation_provider.dart';
 import 'package:ecochallenge_mobile/providers/request_provider.dart';
 import 'package:ecochallenge_mobile/providers/stripe_provider.dart';
 import 'package:ecochallenge_mobile/providers/user_badge_provider.dart';
@@ -40,6 +41,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => UserProvider()),
         ChangeNotifierProvider(create: (_) => EventParticipantProvider()),
         ChangeNotifierProvider(create: (_) => StripeProvider()),
+        ChangeNotifierProvider(create: (_) => RequestParticipationProvider()),
         // Add more providers here if needed
       ],
       child: MyApp(initialRoute: authProvider.isLoggedIn ? '/home' : '/login'),

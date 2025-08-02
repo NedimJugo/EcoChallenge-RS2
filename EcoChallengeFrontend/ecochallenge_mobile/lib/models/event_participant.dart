@@ -1,4 +1,3 @@
-import 'dart:convert';
 
 // Event Participant Response Model
 class EventParticipantResponse {
