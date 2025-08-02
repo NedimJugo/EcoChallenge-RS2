@@ -45,6 +45,7 @@ namespace EcoChallenge.Services.Database
         public DbSet<EntityType> EntityTypes { get; set; }
         public DbSet<GalleryShowcase> GalleryShowcases { get; set; }
         public DbSet<Photo> Photos { get; set; }
+        public DbSet<RequestParticipation> RequestParticipations { get; set; }
 
         public DbSet<BalanceSetting> BalanceSettings { get; set; }
 

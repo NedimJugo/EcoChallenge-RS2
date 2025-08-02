@@ -1,6 +1,7 @@
 import 'package:ecochallenge_mobile/pages/leaderboard_page.dart';
 import 'package:ecochallenge_mobile/pages/my_events_page.dart';
 import 'package:ecochallenge_mobile/pages/user_profile_page.dart';
+import 'package:ecochallenge_mobile/pages/history_page.dart'; // Add this import
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:ecochallenge_mobile/providers/auth_provider.dart';
@@ -147,10 +148,10 @@ class ProfilePanel extends StatelessWidget {
                           ? '${user.totalCleanups} cleanups completed'
                           : null,
                       onTap: () {
-                        onClose();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('History page coming soon!'),
+                        onClose(); // Close the profile panel first
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => HistoryPage(), // Navigate to HistoryPage
                           ),
                         );
                       },

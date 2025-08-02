@@ -756,6 +756,34 @@ namespace EcoChallenge.Services.Database
                     }
                 );
 
+            builder.Entity<RequestParticipation>().HasData(
+    new RequestParticipation
+    {
+        Id = 1,
+        UserId = 1,
+        RequestId = 3,
+        Status = ParticipationStatus.Pending,
+        AdminNotes = null,
+        RewardPoints = 0,
+        RewardMoney = 0.00m,
+        SubmittedAt = new DateTime(2025, 8, 1, 14, 30, 0, DateTimeKind.Utc),
+        ApprovedAt = null
+    },
+    new RequestParticipation
+    {
+        Id = 2,
+        UserId = 2,
+        RequestId = 4,
+        Status = ParticipationStatus.Approved,
+        AdminNotes = "Good job! Cleaned thoroughly.",
+        RewardPoints = 50,
+        RewardMoney = 10.00m,
+        SubmittedAt = new DateTime(2025, 8, 1, 15, 00, 0, DateTimeKind.Utc),
+        ApprovedAt = new DateTime(2025, 8, 2, 10, 00, 0, DateTimeKind.Utc)
+    }
+);
+
+
         }
     }
 }
