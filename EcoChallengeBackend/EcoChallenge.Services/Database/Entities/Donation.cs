@@ -28,6 +28,12 @@ namespace EcoChallenge.Services.Database.Entities
         public string? PaymentMethod { get; set; }
         [Column("payment_reference"), MaxLength(100)]
         public string? PaymentReference { get; set; }
+        // Add Stripe-specific fields
+        [Column("stripe_payment_intent_id"), MaxLength(100)]
+        public string? StripePaymentIntentId { get; set; }
+
+        [Column("stripe_payment_status"), MaxLength(50)]
+        public string? StripePaymentStatus { get; set; }
         [Column("donation_message")]
         public string? DonationMessage { get; set; }
         [Column("is_anonymous")]
