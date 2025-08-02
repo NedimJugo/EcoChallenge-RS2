@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-import 'package:ecochallenge_mobile/models/event.dart';
-import 'package:ecochallenge_mobile/models/request.dart';
-import 'package:ecochallenge_mobile/models/event_participant.dart';
 import 'package:ecochallenge_mobile/providers/auth_provider.dart';
 import 'package:ecochallenge_mobile/providers/event_provider.dart';
 import 'package:ecochallenge_mobile/providers/request_provider.dart';

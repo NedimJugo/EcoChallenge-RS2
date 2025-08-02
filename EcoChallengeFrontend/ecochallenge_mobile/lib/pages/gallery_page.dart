@@ -283,31 +283,6 @@ void _updateItemCounts(int itemId, ReactionType? oldType, ReactionType? newType)
   print('Final counts - Likes: $newLikesCount, Dislikes: $newDislikesCount');
 }
 
-  // Helper method to create updated gallery item
-  GalleryShowcaseResponse _createUpdatedItem(GalleryShowcaseResponse item, {
-    int? likesCount,
-    int? dislikesCount,
-  }) {
-    return GalleryShowcaseResponse(
-      id: item.id,
-      requestId: item.requestId,
-      eventId: item.eventId,
-      locationId: item.locationId,
-      createdByAdminId: item.createdByAdminId,
-      beforeImageUrl: item.beforeImageUrl,
-      afterImageUrl: item.afterImageUrl,
-      title: item.title,
-      description: item.description,
-      likesCount: likesCount ?? item.likesCount,
-      dislikesCount: dislikesCount ?? item.dislikesCount,
-      isFeatured: item.isFeatured,
-      isApproved: item.isApproved,
-      isReported: item.isReported,
-      reportCount: item.reportCount,
-      createdAt: item.createdAt,
-    );
-  }
-
   // Image viewer dialog
   void _showImageDialog(GalleryShowcaseResponse item) {
     showDialog(

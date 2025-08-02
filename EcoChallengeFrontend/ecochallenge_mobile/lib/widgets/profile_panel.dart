@@ -1,7 +1,8 @@
 import 'package:ecochallenge_mobile/pages/leaderboard_page.dart';
 import 'package:ecochallenge_mobile/pages/my_events_page.dart';
+import 'package:ecochallenge_mobile/pages/request_tracking_page.dart';
 import 'package:ecochallenge_mobile/pages/user_profile_page.dart';
-import 'package:ecochallenge_mobile/pages/history_page.dart'; // Add this import
+import 'package:ecochallenge_mobile/pages/history_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:ecochallenge_mobile/providers/auth_provider.dart';
@@ -15,7 +16,6 @@ class ProfilePanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final user = AuthProvider.userData;
-
     return Container(
       width: MediaQuery.of(context).size.width * 0.85,
       height: double.infinity,
@@ -105,7 +105,6 @@ class ProfilePanel extends StatelessWidget {
                           context,
                           listen: false,
                         ).currentUserId;
-
                         if (userId != null) {
                           onClose();
                           Navigator.of(context).push(
@@ -175,10 +174,10 @@ class ProfilePanel extends StatelessWidget {
                       icon: Icons.assignment_outlined,
                       title: 'Requests',
                       onTap: () {
-                        onClose();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Requests page coming soon!'),
+                        onClose(); // Close the profile panel first
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => RequestsTrackingPage(), // Navigate to RequestsTrackingPage
                           ),
                         );
                       },

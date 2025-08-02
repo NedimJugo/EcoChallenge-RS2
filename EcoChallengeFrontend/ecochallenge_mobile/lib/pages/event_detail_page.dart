@@ -39,7 +39,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final userId = authProvider.currentUserId;
     
-    if (userId == null || widget.event.id == null) return;
+    if (userId == null) return;
     
     try {
       final participantProvider = Provider.of<EventParticipantProvider>(context, listen: false);
@@ -58,7 +58,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
   // Enhanced event verification
   Future<void> _verifyEventExists() async {
     try {
-      if (widget.event.id == null || widget.event.title == null) {
+      if (!_eventExists) {
         _showEventExpired();
         return;
       }
@@ -159,7 +159,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
   @override
   Widget build(BuildContext context) {
     // Early return if event is invalid or doesn't exist
-    if (widget.event.id == null || !_eventExists) {
+    if (!_eventExists) {
       return Scaffold(
         appBar: AppBar(
           title: Text('Event Unavailable'),
@@ -731,16 +731,13 @@ class _EventDetailPageState extends State<EventDetailPage> {
     setState(() => _isSigningUp = true);
 
     try {
-      if (widget.event.id == null) {
-        throw Exception('This event is no longer available');
-      }
 
       print('DEBUG: Attempting to sign up for event ${widget.event.id} (${widget.event.title})');
       
       final participantProvider = Provider.of<EventParticipantProvider>(context, listen: false);
       
       final participantRequest = EventParticipantInsertRequest(
-        eventId: widget.event.id!,
+        eventId: widget.event.id,
         userId: userId,
         status: AttendanceStatus.registered,
       );

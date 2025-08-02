@@ -23,7 +23,8 @@ builder.Services.AddAutoMapper(cfg => { }, typeof(UserProfile).Assembly, typeof(
     typeof(EventProfile).Assembly, typeof(UserTypeProfile).Assembly, typeof(BadgeProfile).Assembly,
     typeof(LocationProfile).Assembly, typeof(UserBadgeProfile).Assembly, typeof(WasteTypeProfile).Assembly,
     typeof(RewardProfile).Assembly, typeof(DonationProfile).Assembly, typeof(BalanceSettingProfile).Assembly,
-    typeof(GalleryReactionProfile).Assembly, typeof(GalleryShowcaseProfile).Assembly, typeof(EventParticipantProfile).Assembly);
+    typeof(GalleryReactionProfile).Assembly, typeof(GalleryShowcaseProfile).Assembly, typeof(EventParticipantProfile).Assembly,
+    typeof(RequestParticipationProfile).Assembly);
 
 builder.Services.AddAuthentication("BasicAuthentication")
     .AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>("BasicAuthentication", null);
@@ -47,6 +48,7 @@ builder.Services.AddScoped<IGalleryReactionService, GalleryReactionService>();
 builder.Services.AddScoped<IGalleryShowcaseService, GalleryShowcaseService>();
 builder.Services.AddScoped<IEventParticipantService, EventParticipantService>();
 builder.Services.AddScoped<IBalanceSettingService, BalanceSettingService>();
+builder.Services.AddScoped<IRequestParticipationService, RequestParticipationService>();
 builder.Services.AddScoped<IStripeService, StripeService>();
 builder.Services.AddScoped<IBlobService, BlobService>();
 builder.Services.AddControllers();
