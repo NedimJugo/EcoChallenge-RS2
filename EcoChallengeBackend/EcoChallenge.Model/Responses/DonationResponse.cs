@@ -15,6 +15,8 @@ namespace EcoChallenge.Models.Responses
         public string Currency { get; set; } = string.Empty;
         public string? PaymentMethod { get; set; }
         public string? PaymentReference { get; set; }
+        public string? StripePaymentIntentId { get; set; }
+        public string? StripePaymentStatus { get; set; }
         public string? DonationMessage { get; set; }
         public bool IsAnonymous { get; set; }
         public int StatusId { get; set; }

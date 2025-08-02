@@ -1,4 +1,5 @@
 import 'package:ecochallenge_mobile/layouts/constants.dart';
+import 'package:ecochallenge_mobile/pages/donation_page.dart';
 import 'package:ecochallenge_mobile/pages/selection_page.dart';
 import 'package:ecochallenge_mobile/pages/event_detail_page.dart';
 import 'package:ecochallenge_mobile/pages/request_detail_page.dart';
@@ -447,9 +448,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                 height: 36,
                                 child: ElevatedButton(
                                   onPressed: () {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text('Donate to ${org.name}'),
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            DonationPage(organization: org),
                                       ),
                                     );
                                   },
@@ -485,7 +488,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   Widget _buildPaidCleanupSection() {
     // Show only first 3 requests
     final displayRequests = paidRequests.take(3).toList();
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -499,7 +502,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => EventsListPage(initialFilter: 'Requests'),
+                      builder: (context) =>
+                          EventsListPage(initialFilter: 'Requests'),
                     ),
                   );
                 },
@@ -535,7 +539,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => EventsListPage(initialFilter: 'Requests'),
+                      builder: (context) =>
+                          EventsListPage(initialFilter: 'Requests'),
                     ),
                   );
                 },
@@ -545,7 +550,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 12,
+                  ),
                 ),
                 child: Text(
                   'View All Requests (${paidRequests.length})',
@@ -587,7 +595,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     color: Colors.grey[200],
                   ),
                   child:
-                      (request.photoUrls != null && request.photoUrls!.isNotEmpty)
+                      (request.photoUrls != null &&
+                          request.photoUrls!.isNotEmpty)
                       ? ClipRRect(
                           borderRadius: BorderRadius.circular(8),
                           child: Image.network(
@@ -647,7 +656,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => RequestDetailPage(request: request),
+                          builder: (context) =>
+                              RequestDetailPage(request: request),
                         ),
                       );
                     },
@@ -662,7 +672,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     ),
                     child: const Text(
                       'Details',
-                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ),
@@ -677,7 +690,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   Widget _buildEventsSection() {
     // Show only first 3 events
     final displayEvents = events.take(3).toList();
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -691,7 +704,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => EventsListPage(initialFilter: 'Events'),
+                      builder: (context) =>
+                          EventsListPage(initialFilter: 'Events'),
                     ),
                   );
                 },
@@ -727,7 +741,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => EventsListPage(initialFilter: 'Events'),
+                      builder: (context) =>
+                          EventsListPage(initialFilter: 'Events'),
                     ),
                   );
                 },
@@ -737,7 +752,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 12,
+                  ),
                 ),
                 child: Text(
                   'View All Events (${events.length})',
@@ -778,7 +796,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     borderRadius: BorderRadius.circular(8),
                     color: Colors.grey[200],
                   ),
-                  child: (event.photoUrls != null && event.photoUrls!.isNotEmpty)
+                  child:
+                      (event.photoUrls != null && event.photoUrls!.isNotEmpty)
                       ? ClipRRect(
                           borderRadius: BorderRadius.circular(8),
                           child: Image.network(
@@ -845,7 +864,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     ),
                     child: const Text(
                       'Join',
-                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ),

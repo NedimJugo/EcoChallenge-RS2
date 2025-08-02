@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace EcoChallenge.Models.Requests
 {
-    public class DonationInsertRequest
+    public class StripePaymentRequest
     {
         [Required]
         public int UserId { get; set; }
@@ -22,24 +22,11 @@ namespace EcoChallenge.Models.Requests
         [MaxLength(3)]
         public string Currency { get; set; } = "BAM";
 
-        [MaxLength(50)]
-        public string? PaymentMethod { get; set; }
-
-        [MaxLength(100)]
-        public string? PaymentReference { get; set; }
-        [MaxLength(100)]
-        public string? StripePaymentIntentId { get; set; }
-
-        [MaxLength(50)]
-        public string? StripePaymentStatus { get; set; }
-
         public string? DonationMessage { get; set; }
 
         public bool IsAnonymous { get; set; } = false;
 
-        [Required]
-        public int StatusId { get; set; }
-
-        public int PointsEarned { get; set; } = 0;
+        // Return URL for redirect after payment
+        public string? ReturnUrl { get; set; }
     }
 }

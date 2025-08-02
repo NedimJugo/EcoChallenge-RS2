@@ -47,6 +47,7 @@ builder.Services.AddScoped<IGalleryReactionService, GalleryReactionService>();
 builder.Services.AddScoped<IGalleryShowcaseService, GalleryShowcaseService>();
 builder.Services.AddScoped<IEventParticipantService, EventParticipantService>();
 builder.Services.AddScoped<IBalanceSettingService, BalanceSettingService>();
+builder.Services.AddScoped<IStripeService, StripeService>();
 builder.Services.AddScoped<IBlobService, BlobService>();
 builder.Services.AddControllers();
 
