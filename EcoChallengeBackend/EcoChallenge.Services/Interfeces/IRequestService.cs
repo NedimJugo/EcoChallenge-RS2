@@ -10,7 +10,9 @@ using System.Threading.Tasks;
 
 namespace EcoChallenge.Services.Interfeces
 {
-    public interface IRequestService: ICRUDService<RequestResponse, RequestSearchObject, RequestInsertRequest, RequestUpdateRequest>
+    public interface IRequestService : ICRUDService<RequestResponse, RequestSearchObject, RequestInsertRequest, RequestUpdateRequest>
     {
+        Task RetrainMLModelAsync();
+        Task ReanalyzeRequestAsync(int requestId);
     }
 }

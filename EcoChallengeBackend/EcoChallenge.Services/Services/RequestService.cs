@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
+using EcoChallenge.Models.AI_Models;
 using EcoChallenge.Models.Enums;
 using EcoChallenge.Models.Requests;
 using EcoChallenge.Models.Responses;
@@ -9,6 +10,8 @@ using EcoChallenge.Services.Database;
 using EcoChallenge.Services.Database.Entities;
 using EcoChallenge.Services.Interfeces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,11 +24,19 @@ namespace EcoChallenge.Services.Services
     {
         private readonly EcoChallengeDbContext _db;
         private readonly IBlobService _blobService;
+        private readonly IAzureVisionService _azureVisionService;
+        private readonly IMLPricingService _mlPricingService;
+        private readonly ILogger<RequestService> _logger;
 
-        public RequestService(EcoChallengeDbContext db, IMapper mapper, IBlobService blobService) : base(db, mapper)
+        public RequestService(EcoChallengeDbContext db, IMapper mapper, IBlobService blobService, IAzureVisionService azureVisionService,
+        IMLPricingService mlPricingService,
+        ILogger<RequestService> logger) : base(db, mapper)
         {
             _db = db;
             _blobService = blobService;
+            _azureVisionService = azureVisionService;
+            _mlPricingService = mlPricingService;
+            _logger = logger;
         }
 
         protected override IQueryable<Request> ApplyFilter(IQueryable<Request> query, RequestSearchObject s)
@@ -87,15 +98,100 @@ namespace EcoChallenge.Services.Services
         }
 
 
+        // Services/Services/RequestService.cs - Updated BeforeInsert method
         protected override async Task BeforeInsert(Request entity, RequestInsertRequest request, CancellationToken cancellationToken = default)
         {
+            // Validate and set default StatusId if not provided or invalid
+            if (entity.StatusId <= 0)
+            {
+                // Get default status (e.g., "Pending" or "New")
+                var defaultStatus = await _context.RequestStatuses
+                    .FirstOrDefaultAsync(s => s.Name.ToLower() == "pending" || s.Name.ToLower() == "new", cancellationToken);
+
+                if (defaultStatus != null)
+                {
+                    entity.StatusId = defaultStatus.Id;
+                }
+                else
+                {
+                    // If no default status found, create one or use ID 1
+                    entity.StatusId = 1; // Adjust based on your database
+                }
+            }
+            else
+            {
+                // Validate that the provided StatusId exists
+                var statusExists = await _context.RequestStatuses
+                    .AnyAsync(s => s.Id == entity.StatusId, cancellationToken);
+
+                if (!statusExists)
+                {
+                    throw new ArgumentException($"Invalid StatusId: {entity.StatusId}");
+                }
+            }
+
+            // Validate and set default WasteTypeId if not provided or invalid
+            if (entity.WasteTypeId <= 0)
+            {
+                // Get default waste type (e.g., "Mixed" or "General")
+                var defaultWasteType = await _context.WasteTypes
+                    .FirstOrDefaultAsync(w => w.Name.ToLower() == "mixed" || w.Name.ToLower() == "general", cancellationToken);
+
+                if (defaultWasteType != null)
+                {
+                    entity.WasteTypeId = defaultWasteType.Id;
+                }
+                else
+                {
+                    // If no default waste type found, create one or use ID 1
+                    entity.WasteTypeId = 1; // Adjust based on your database
+                }
+            }
+            else
+            {
+                // Validate that the provided WasteTypeId exists
+                var wasteTypeExists = await _context.WasteTypes
+                    .AnyAsync(w => w.Id == entity.WasteTypeId, cancellationToken);
+
+                if (!wasteTypeExists)
+                {
+                    throw new ArgumentException($"Invalid WasteTypeId: {entity.WasteTypeId}");
+                }
+            }
+
+            // Validate other required foreign keys
+            if (entity.UserId > 0)
+            {
+                var userExists = await _context.Users
+                    .AnyAsync(u => u.Id == entity.UserId, cancellationToken);
+
+                if (!userExists)
+                {
+                    throw new ArgumentException($"Invalid UserId: {entity.UserId}");
+                }
+            }
+
+            if (entity.LocationId > 0)
+            {
+                var locationExists = await _context.Locations
+                    .AnyAsync(l => l.Id == entity.LocationId, cancellationToken);
+
+                if (!locationExists)
+                {
+                    throw new ArgumentException($"Invalid LocationId: {entity.LocationId}");
+                }
+            }
+
             if (request.Photos != null && request.Photos.Any())
             {
                 entity.Photos = new List<Photo>();
+                var imageUrls = new List<string>();
 
                 foreach (var file in request.Photos)
                 {
                     var url = await _blobService.UploadFileAsync(file);
+                    imageUrls.Add(url);
+
                     entity.Photos.Add(new Photo
                     {
                         ImageUrl = url,
@@ -104,9 +200,87 @@ namespace EcoChallenge.Services.Services
                         IsPrimary = entity.Photos.Count == 0
                     });
                 }
+
+                try
+                {
+                    var wasteAnalysis = await _azureVisionService.AnalyzeMultipleImagesAsync(imageUrls);
+                    entity.AiAnalysisResult = JsonConvert.SerializeObject(wasteAnalysis);
+
+                    // Get ML pricing recommendation
+                    var pricingRecommendation = await _mlPricingService.PredictPricingAsync(wasteAnalysis, entity);
+
+                    entity.SuggestedRewardMoney = pricingRecommendation.SuggestedRewardMoney;
+                    entity.SuggestedRewardPoints = pricingRecommendation.SuggestedRewardPoints;
+
+                    _logger.LogInformation("AI analysis completed for request. Suggested reward: ${Money}, {Points} points",
+                        pricingRecommendation.SuggestedRewardMoney, pricingRecommendation.SuggestedRewardPoints);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error during AI analysis for request");
+                    // Set default values if AI analysis fails
+                    entity.SuggestedRewardMoney = 10m;
+                    entity.SuggestedRewardPoints = 100;
+
+                    // Store error information in AI analysis result
+                    entity.AiAnalysisResult = JsonConvert.SerializeObject(new AggregatedWasteAnalysis
+                    {
+                        DominantWasteType = "mixed",
+                        TotalEstimatedWeight = 5.0,
+                        TotalEstimatedVolume = 0.1,
+                        OverallQuantityLevel = "medium",
+                        ProcessedImageUrls = imageUrls
+                    });
+                }
             }
 
             await base.BeforeInsert(entity, request, cancellationToken);
+        }
+
+        public async Task RetrainMLModelAsync()
+        {
+            try
+            {
+                await _mlPricingService.TrainModelAsync();
+                _logger.LogInformation("ML model retrained successfully");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retraining ML model");
+                throw;
+            }
+        }
+
+        public async Task ReanalyzeRequestAsync(int requestId)
+        {
+            var request = await _context.Requests
+                .Include(r => r.Photos)
+                .Include(r => r.Location)
+                .FirstOrDefaultAsync(r => r.Id == requestId);
+
+            if (request?.Photos?.Any() == true)
+            {
+                var imageUrls = request.Photos.Select(p => p.ImageUrl).ToList();
+
+                try
+                {
+                    var wasteAnalysis = await _azureVisionService.AnalyzeMultipleImagesAsync(imageUrls);
+                    request.AiAnalysisResult = JsonConvert.SerializeObject(wasteAnalysis);
+
+                    var pricingRecommendation = await _mlPricingService.PredictPricingAsync(wasteAnalysis, request);
+                    request.SuggestedRewardMoney = pricingRecommendation.SuggestedRewardMoney;
+                    request.SuggestedRewardPoints = pricingRecommendation.SuggestedRewardPoints;
+
+                    await _context.SaveChangesAsync();
+
+                    _logger.LogInformation("Request {RequestId} reanalyzed successfully", requestId);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error reanalyzing request {RequestId}", requestId);
+                    throw;
+                }
+            }
         }
 
         protected override async Task BeforeUpdate(Request entity, RequestUpdateRequest request, CancellationToken cancellationToken = default)

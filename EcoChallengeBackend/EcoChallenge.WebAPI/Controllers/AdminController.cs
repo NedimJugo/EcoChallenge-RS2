@@ -13,11 +13,50 @@ namespace EcoChallenge.WebAPI.Controllers
     {
         private readonly IAdminAuthService _adminAuthService;
         private readonly ILogger<AdminAuthController> _logger;
+        private readonly IRequestService _requestService;
+        private readonly IMLPricingService _mlPricingService;
 
-        public AdminAuthController(IAdminAuthService adminAuthService, ILogger<AdminAuthController> logger)
+        public AdminAuthController(IAdminAuthService adminAuthService, ILogger<AdminAuthController> logger, IRequestService requestService, IMLPricingService mlPricingService)
         {
             _adminAuthService = adminAuthService;
             _logger = logger;
+            _requestService = requestService;
+            _mlPricingService = mlPricingService;
+        }
+
+        [HttpPost("retrain-ml-model")]
+        public async Task<IActionResult> RetrainMLModel()
+        {
+            try
+            {
+                await _mlPricingService.TrainModelAsync();
+                return Ok(new { message = "ML model retrained successfully" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
+        [HttpPost("reanalyze-request/{id}")]
+        public async Task<IActionResult> ReanalyzeRequest(int id)
+        {
+            try
+            {
+                await _requestService.ReanalyzeRequestAsync(id);
+                return Ok(new { message = "Request reanalyzed successfully" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
+        [HttpGet("ml-model-status")]
+        public async Task<IActionResult> GetMLModelStatus()
+        {
+            var isModelTrained = await _mlPricingService.IsModelTrainedAsync();
+            return Ok(new { isModelTrained });
         }
 
         [HttpPost("login")]

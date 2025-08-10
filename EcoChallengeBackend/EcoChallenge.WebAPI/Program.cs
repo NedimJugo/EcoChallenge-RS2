@@ -50,7 +50,11 @@ builder.Services.AddScoped<IEventParticipantService, EventParticipantService>();
 builder.Services.AddScoped<IBalanceSettingService, BalanceSettingService>();
 builder.Services.AddScoped<IRequestParticipationService, RequestParticipationService>();
 builder.Services.AddScoped<IStripeService, StripeService>();
+builder.Services.AddScoped<IAzureVisionService, AzureVisionService>();
+builder.Services.AddScoped<IMLPricingService, MLPricingService>();
 builder.Services.AddScoped<IBlobService, BlobService>();
+builder.Services.AddHostedService<MLTrainingBackgroundService>();
+
 builder.Services.AddControllers();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
