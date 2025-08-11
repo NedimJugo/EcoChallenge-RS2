@@ -1,4 +1,6 @@
 import 'package:ecochallenge_mobile/models/event_participant.dart';
+import 'package:ecochallenge_mobile/models/request_participation.dart';
+import 'package:ecochallenge_mobile/providers/request_participation_provider.dart';
 import 'package:ecochallenge_mobile/widgets/bottom_navigation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -59,174 +61,149 @@ class _EventsListPageState extends State<EventsListPage> {
   }
 
   Future<void> _loadData() async {
-    if (!mounted) return;
+  if (!mounted) return;
+  
+  setState(() => _isLoading = true);
+  
+  try {
+    final eventProvider = Provider.of<EventProvider>(context, listen: false);
+    final requestProvider = Provider.of<RequestProvider>(context, listen: false);
+    final participantProvider = Provider.of<EventParticipantProvider>(context, listen: false);
+    final requestParticipationProvider = Provider.of<RequestParticipationProvider>(context, listen: false);
+    final locationProvider = Provider.of<LocationProvider>(context, listen: false);
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
     
-    setState(() => _isLoading = true);
+    // Get current user ID
+    final userId = authProvider.currentUserId;
     
-    try {
-      final eventProvider = Provider.of<EventProvider>(context, listen: false);
-      final requestProvider = Provider.of<RequestProvider>(context, listen: false);
-      final participantProvider = Provider.of<EventParticipantProvider>(context, listen: false);
-      final locationProvider = Provider.of<LocationProvider>(context, listen: false);
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      
-      // Get current user ID
-      final userId = authProvider.currentUserId;
-      print('DEBUG: Current user ID: $userId');
-      
-      // Load locations first
-      final locationsResult = await locationProvider.get();
-      _locations = locationsResult.items ?? [];
-      
-      // Create location map for quick lookup
-      _locationMap = {for (var location in _locations) location.id: location};
-      
-      // Extract unique cities from locations
-      Set<String> citySet = {};
-      for (var location in _locations) {
-        if (location.city != null && location.city!.isNotEmpty) {
-          citySet.add(location.city!);
-        }
-      }
-      _cities = citySet.toList()..sort();
-      
-      // Load user's participated events FIRST
-      if (userId != null) {
-        print('DEBUG: Loading participations for user $userId');
-        final participantSearchObject = EventParticipantSearchObject(
-          userId: userId,
-          retrieveAll: true,
-        );
-        
-        try {
-          final participantsResult = await participantProvider.get(filter: participantSearchObject.toJson());
-          print('DEBUG: Participants result: ${participantsResult.items?.length ?? 0} items');
-          
-          if (participantsResult.items != null) {
-            _userParticipatedEventIds = participantsResult.items!.map((p) => p.eventId).toList();
-            print('DEBUG: User participated event IDs: $_userParticipatedEventIds');
-            
-            // Print detailed participation info
-            for (var participant in participantsResult.items!) {
-              print('DEBUG: Participation - EventID: ${participant.eventId}, UserID: ${participant.userId}, Status: ${participant.status}');
-            }
-          } else {
-            _userParticipatedEventIds = [];
-            print('DEBUG: No participations found');
-          }
-        } catch (e) {
-          print('DEBUG: Error loading participations: $e');
-          _userParticipatedEventIds = [];
-        }
-      } else {
-        print('DEBUG: No user ID found');
-        _userParticipatedEventIds = [];
-      }
-      
-      // Load events and requests
-      final eventSearchObject = EventSearchObject(
-        status: 1, // Active status
-        retrieveAll: true,
-      );
-      
-      final requestSearchObject = RequestSearchObject(
-        status: 1, // Active status
-        retrieveAll: true,
-      );
-      
-      final eventsResult = await eventProvider.get(filter: eventSearchObject.toJson());
-      final requestsResult = await requestProvider.get(filter: requestSearchObject.toJson());
-      
-      print('DEBUG: Loaded ${eventsResult.items?.length ?? 0} events');
-      print('DEBUG: Loaded ${requestsResult.items?.length ?? 0} requests');
-      
-      // Print all event IDs for debugging
-      if (eventsResult.items != null) {
-        for (var event in eventsResult.items!) {
-          print('DEBUG: Event ID: ${event.id}, Title: ${event.title}');
-        }
-      }
-      
-      if (mounted) {
-        setState(() {
-          _events = eventsResult.items ?? [];
-          _requests = requestsResult.items ?? [];
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
-      print('Error loading data: $e');
-      if (mounted) {
-        setState(() => _isLoading = false);
-        Future.delayed(Duration(milliseconds: 100), () {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Error loading data: $e')),
-            );
-          }
-        });
+    // Load locations first
+    final locationsResult = await locationProvider.get();
+    _locations = locationsResult.items ?? [];
+    _locationMap = {for (var location in _locations) location.id: location};
+    
+    // Extract unique cities from locations
+    Set<String> citySet = {};
+    for (var location in _locations) {
+      if (location.city != null && location.city!.isNotEmpty) {
+        citySet.add(location.city!);
       }
     }
+    _cities = citySet.toList()..sort();
+    
+    // Load user's participated events and requests
+    if (userId != null) {
+      // Load event participations
+      final participantSearchObject = EventParticipantSearchObject(
+        userId: userId,
+        retrieveAll: true,
+      );
+      final participantsResult = await participantProvider.get(filter: participantSearchObject.toJson());
+      _userParticipatedEventIds = participantsResult.items?.map((p) => p.eventId).toList() ?? [];
+      
+      // Load request participations
+      final requestParticipationSearch = RequestParticipationSearchObject(
+        userId: userId,
+        retrieveAll: true,
+      );
+      final requestParticipations = await requestParticipationProvider.get(filter: requestParticipationSearch.toJson());
+      _userParticipatedRequestIds = requestParticipations.items?.map((p) => p.requestId).toList() ?? [];
+    } else {
+      _userParticipatedEventIds = [];
+      _userParticipatedRequestIds = [];
+    }
+    
+    // Load active events (status = 1)
+    final eventSearchObject = EventSearchObject(
+      status: 1, // Active status
+      retrieveAll: true,
+    );
+    
+    // Load active requests (status = 1)
+    final requestSearchObject = RequestSearchObject(
+      status: 1, // Active status
+      retrieveAll: true,
+    );
+    
+    final eventsResult = await eventProvider.get(filter: eventSearchObject.toJson());
+    final requestsResult = await requestProvider.get(filter: requestSearchObject.toJson());
+    
+    if (mounted) {
+      setState(() {
+        _events = eventsResult.items ?? [];
+        _requests = requestsResult.items ?? [];
+        _isLoading = false;
+      });
+    }
+  } catch (e) {
+    print('Error loading data: $e');
+    if (mounted) {
+      setState(() => _isLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error loading data: $e')),
+      );
+    }
   }
+}
 
-  List<dynamic> get _filteredItems {
-    List<dynamic> allItems = [];
+List<dynamic> get _filteredItems {
+  List<dynamic> allItems = [];
+  
+  // Filter events - exclude past events and events user has already joined
+  List<EventResponse> filteredEvents = _events.where((event) {
+    bool isParticipated = _userParticipatedEventIds.contains(event.id);
+    bool isPastEvent = event.eventDate.isBefore(DateTime.now());
     
-    print('DEBUG: Filtering events. User participated IDs: $_userParticipatedEventIds');
+    // Skip events the user has already joined or are past
+    if (isParticipated || isPastEvent) {
+      return false;
+    }
     
-    // Filter events - exclude events user has already joined
-    List<EventResponse> filteredEvents = _events.where((event) {
-      bool isParticipated = _userParticipatedEventIds.contains(event.id);
-      print('DEBUG: Event ${event.id} (${event.title}) - Is participated: $isParticipated');
-      
-      // Skip events the user has already joined
-      if (isParticipated) {
-        print('DEBUG: ✗ Filtering out event ${event.id} - user already participated');
-        return false;
-      }
-      
-      bool matchesFilter = _selectedFilter == 'All' || _selectedFilter == 'Events';
-      bool matchesCity = _selectedCity == null || 
-          (_locationMap[event.locationId]?.city == _selectedCity);
-      bool matchesDate = _selectedDateRange == null ||
-          (event.eventDate.isAfter(_selectedDateRange!.start) &&
-          event.eventDate.isBefore(_selectedDateRange!.end.add(Duration(days: 1))));
-      
-      bool shouldShow = matchesFilter && matchesCity && matchesDate;
-      print('DEBUG: ✓ Event ${event.id} will be shown: $shouldShow (filter: $matchesFilter, city: $matchesCity, date: $matchesDate)');
-      
-      return shouldShow;
-    }).toList();
+    bool matchesFilter = _selectedFilter == 'All' || _selectedFilter == 'Events';
+    bool matchesCity = _selectedCity == null || 
+        (_locationMap[event.locationId]?.city == _selectedCity);
+    bool matchesDate = _selectedDateRange == null ||
+        (event.eventDate.isAfter(_selectedDateRange!.start) &&
+        event.eventDate.isBefore(_selectedDateRange!.end.add(Duration(days: 1))));
     
-    // Filter requests - exclude requests user has already participated in
-    List<RequestResponse> filteredRequests = _requests.where((request) {
-      bool isParticipated = _userParticipatedRequestIds.contains(request.id);
-      
-      // Skip requests the user has already participated in
-      if (isParticipated) {
-        print('DEBUG: Filtering out request ${request.id} - user already participated');
-        return false;
-      }
-      
-      bool matchesFilter = _selectedFilter == 'All' || _selectedFilter == 'Requests';
-      bool matchesCity = _selectedCity == null || 
-          (_locationMap[request.locationId]?.city == _selectedCity);
-      bool matchesDate = _selectedDateRange == null ||
-          (request.proposedDate != null &&
-          request.proposedDate!.isAfter(_selectedDateRange!.start) && 
-          request.proposedDate!.isBefore(_selectedDateRange!.end.add(Duration(days: 1))));
-      
-      return matchesFilter && matchesCity && matchesDate;
-    }).toList();
+    return matchesFilter && matchesCity && matchesDate;
+  }).toList();
+  
+  // Filter requests - exclude requests user has already participated in
+  List<RequestResponse> filteredRequests = _requests.where((request) {
+    bool isParticipated = _userParticipatedRequestIds.contains(request.id);
     
-    print('DEBUG: Final filtered events count: ${filteredEvents.length}');
-    print('DEBUG: Final filtered requests count: ${filteredRequests.length}');
+    // Skip requests the user has already participated in
+    if (isParticipated) {
+      return false;
+    }
     
-    allItems.addAll(filteredEvents);
-    allItems.addAll(filteredRequests);
+    bool matchesFilter = _selectedFilter == 'All' || _selectedFilter == 'Requests';
+    bool matchesCity = _selectedCity == null || 
+        (_locationMap[request.locationId]?.city == _selectedCity);
+    bool matchesDate = _selectedDateRange == null ||
+        (request.proposedDate != null &&
+        request.proposedDate!.isAfter(_selectedDateRange!.start) && 
+        request.proposedDate!.isBefore(_selectedDateRange!.end.add(Duration(days: 1))));
     
-    return allItems;
-  }
+    return matchesFilter && matchesCity && matchesDate;
+  }).toList();
+  
+  allItems.addAll(filteredEvents);
+  allItems.addAll(filteredRequests);
+  
+  // Sort by date (events and requests with dates)
+  allItems.sort((a, b) {
+    DateTime? aDate = a is EventResponse ? a.eventDate : (a as RequestResponse).proposedDate;
+    DateTime? bDate = b is EventResponse ? b.eventDate : (b as RequestResponse).proposedDate;
+    
+    if (aDate == null && bDate == null) return 0;
+    if (aDate == null) return 1;
+    if (bDate == null) return -1;
+    return aDate.compareTo(bDate);
+  });
+  
+  return allItems;
+}
 
   void _clearFilters() {
     setState(() {
