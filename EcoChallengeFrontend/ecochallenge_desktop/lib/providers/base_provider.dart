@@ -18,6 +18,8 @@ abstract class BaseProvider<T> with ChangeNotifier {
     );
   }
 
+
+
   Future<SearchResult<T>> get({dynamic filter}) async {
     // Ensure proper URL formatting
     var baseUrl = _baseUrl!.endsWith('/')

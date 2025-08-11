@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:ecochallenge_mobile/models/event.dart';
 import 'package:ecochallenge_mobile/providers/base_provider.dart';
 import 'package:http/http.dart' as http;

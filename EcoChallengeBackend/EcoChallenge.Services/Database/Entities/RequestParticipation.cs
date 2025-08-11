@@ -35,6 +35,17 @@ namespace EcoChallenge.Services.Database.Entities
 
         [Column("reward_money"), Precision(10, 2)]
         public decimal RewardMoney { get; set; }
+        [Column("card_holder_name")]
+        public string? CardHolderName { get; set; }
+
+        [Column("bank_name")]
+        public string? BankName { get; set; }
+
+        [Column("transaction_number")]
+        public string? TransactionNumber { get; set; }
+
+        [Column("rejection_reason")]
+        public string? RejectionReason { get; set; }
 
         [Column("submitted_at")]
         public DateTime SubmittedAt { get; set; } = DateTime.UtcNow;

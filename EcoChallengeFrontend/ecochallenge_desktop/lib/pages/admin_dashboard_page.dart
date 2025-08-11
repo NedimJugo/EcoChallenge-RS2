@@ -1,6 +1,6 @@
 import 'package:ecochallenge_desktop/pages/management_page.dart';
 import 'package:ecochallenge_desktop/pages/overview_page.dart';
-import 'package:ecochallenge_desktop/pages/requests_page.dart';
+import 'package:ecochallenge_desktop/pages/admin_request_management_page.dart';
 import 'package:ecochallenge_desktop/pages/reward_and_donations_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -90,7 +90,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
     OverviewPage(onNavigateToRewards: () => _navigateToPage(2)),
     ManagementPage(),
     RewardsPage(),
-    RequestsPage(),
+    AdminRequestManagementPage(),
   ];
   
   final List<String> _titles = [

@@ -28,5 +28,9 @@ namespace EcoChallenge.Models.Responses
         public DateTime? ApprovedAt { get; set; }
 
         public List<string>? PhotoUrls { get; set; }
+        public string? CardHolderName { get; set; }
+        public string? BankName { get; set; }
+        public string? TransactionNumber { get; set; }
+        public string? RejectionReason { get; set; }
     }
 }
