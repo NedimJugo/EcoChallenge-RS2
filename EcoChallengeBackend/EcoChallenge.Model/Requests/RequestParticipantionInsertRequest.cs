@@ -19,6 +19,9 @@ namespace EcoChallenge.Models.Requests
         public string? AdminNotes { get; set; }
 
         public List<IFormFile>? Photos { get; set; }
+        public string? CardHolderName { get; set; }
+        public string? BankName { get; set; }
+        public string? TransactionNumber { get; set; }
     }
 
 }
