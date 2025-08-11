@@ -34,6 +34,11 @@ class RequestParticipationResponse {
   final DateTime submittedAt;
   final DateTime? approvedAt;
   final List<String>? photoUrls;
+   // Payment Details - New fields
+  final String? cardHolderName;
+  final String? bankName;
+  final String? transactionNumber;
+  final String? rejectionReason; // For payment denial reasons
 
   RequestParticipationResponse({
     required this.id,
@@ -46,6 +51,10 @@ class RequestParticipationResponse {
     required this.submittedAt,
     this.approvedAt,
     this.photoUrls,
+    this.cardHolderName,
+    this.bankName,
+    this.transactionNumber,
+    this.rejectionReason,
   });
 
   factory RequestParticipationResponse.fromJson(Map<String, dynamic> json) {
@@ -62,6 +71,10 @@ class RequestParticipationResponse {
       photoUrls: json['photoUrls'] != null 
           ? List<String>.from(json['photoUrls'])
           : null,
+       cardHolderName: json['cardHolderName'],
+      bankName: json['bankName'],
+      transactionNumber: json['transactionNumber'],
+      rejectionReason: json['rejectionReason'],
     );
   }
 
@@ -77,6 +90,10 @@ class RequestParticipationResponse {
       'submittedAt': submittedAt.toIso8601String(),
       'approvedAt': approvedAt?.toIso8601String(),
       'photoUrls': photoUrls,
+      'cardHolderName': cardHolderName,
+      'bankName': bankName,
+      'transactionNumber': transactionNumber,
+      'rejectionReason': rejectionReason,
     };
   }
 }
@@ -87,12 +104,18 @@ class RequestParticipationInsertRequest {
   final int requestId;
   final String? adminNotes;
   final List<String>? photoUrls;
+   final String? cardHolderName;
+  final String? bankName;
+  final String? transactionNumber;
 
   RequestParticipationInsertRequest({
     required this.userId,
     required this.requestId,
     this.adminNotes,
     this.photoUrls,
+    this.cardHolderName,
+    this.bankName,
+    this.transactionNumber,
   });
 
   Map<String, dynamic> toJson() {
@@ -101,6 +124,9 @@ class RequestParticipationInsertRequest {
       'requestId': requestId,
       'adminNotes': adminNotes,
       'photoUrls': photoUrls,
+      'cardHolderName': cardHolderName,
+      'bankName': bankName,
+      'transactionNumber': transactionNumber,
     };
   }
 }
@@ -114,6 +140,10 @@ class RequestParticipationUpdateRequest {
   final double? rewardMoney;
   final DateTime? approvedAt;
   final List<String>? photoUrls;
+  final String? cardHolderName;
+  final String? bankName;
+  final String? transactionNumber;
+  final String? rejectionReason;
 
   RequestParticipationUpdateRequest({
     required this.id,
@@ -123,6 +153,10 @@ class RequestParticipationUpdateRequest {
     this.rewardMoney,
     this.approvedAt,
     this.photoUrls,
+    this.cardHolderName,
+    this.bankName,
+    this.transactionNumber,
+    this.rejectionReason,
   });
 
   Map<String, dynamic> toJson() {
@@ -134,7 +168,10 @@ class RequestParticipationUpdateRequest {
     if (rewardMoney != null) data['rewardMoney'] = rewardMoney;
     if (approvedAt != null) data['approvedAt'] = approvedAt!.toIso8601String();
     if (photoUrls != null) data['photoUrls'] = photoUrls;
-    
+    if (cardHolderName != null) data['cardHolderName'] = cardHolderName;
+    if (bankName != null) data['bankName'] = bankName;
+    if (transactionNumber != null) data['transactionNumber'] = transactionNumber;
+    if (rejectionReason != null) data['rejectionReason'] = rejectionReason;
     return data;
   }
 }

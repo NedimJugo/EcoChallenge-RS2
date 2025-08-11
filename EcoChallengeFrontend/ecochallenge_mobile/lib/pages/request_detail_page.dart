@@ -6,6 +6,7 @@ import '../models/location.dart';
 import '../providers/location_provider.dart';
 import '../providers/auth_provider.dart';
 import 'map_view_page.dart';
+import 'package:ecochallenge_mobile/pages/proof_submission_page.dart';
 
 class RequestDetailPage extends StatefulWidget {
   final RequestResponse request;
@@ -51,6 +52,8 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
       setState(() => _isLoadingLocation = false);
     }
   }
+
+  
 
   Future<void> _openMapView() async {
     if (_location == null) {
@@ -532,7 +535,7 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
         width: double.infinity,
         height: 50,
         child: ElevatedButton(
-          onPressed: _isSigningUp ? null : _signUpForRequest,
+          onPressed: _isSigningUp ? null : _navigateToProofSubmission,
           style: ElevatedButton.styleFrom(
             backgroundColor: Color(0xFF8B4513),
             shape: RoundedRectangleBorder(
@@ -543,8 +546,8 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
               ? CircularProgressIndicator(color: Colors.white)
               : Text(
                   widget.request.suggestedRewardMoney > 0 
-                      ? 'Send proof and get money'
-                      : 'Participate in cleanup',
+                      ? 'Submit Proof & Get Reward'
+                      : 'Submit Cleanup Proof',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 16,
@@ -575,44 +578,24 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
     }
   }
 
-  Future<void> _signUpForRequest() async {
+  void _navigateToProofSubmission() {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final userId = authProvider.currentUserId;
     
     if (userId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please log in to participate in requests')),
+        SnackBar(content: Text('Please log in to submit proof')),
       );
       return;
     }
 
-    setState(() => _isSigningUp = true);
-
-    try {
-      // Here you would implement the logic to sign up for a request
-      // This might involve creating a new participant record or updating the request
-      // For now, we'll just simulate the process
-      
-      await Future.delayed(Duration(seconds: 2)); // Simulate API call
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Successfully signed up for ${widget.request.title}!'),
-          backgroundColor: Colors.green,
-        ),
-      );
-
-      Navigator.pop(context); // Return to list page
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error signing up: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    } finally {
-      setState(() => _isSigningUp = false);
-    }
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ProofSubmissionPage(request: widget.request),
+        settings: RouteSettings(name: '/proof-submission'),
+      ),
+    );
   }
 }
 

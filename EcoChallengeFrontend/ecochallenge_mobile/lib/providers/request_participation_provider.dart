@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:ecochallenge_mobile/models/request_participation.dart';
 import 'package:ecochallenge_mobile/providers/base_provider.dart';
 
@@ -12,5 +13,11 @@ class RequestParticipationProvider extends BaseProvider<RequestParticipationResp
   // Method to insert request participation without files (JSON only)
   Future<RequestParticipationResponse> insertRequestParticipation(RequestParticipationInsertRequest requestParticipation) async {
     return await super.insert(requestParticipation);
+  }
+
+    Future<RequestParticipationResponse> insertRequestParticipationWithFiles(
+      RequestParticipationInsertRequest requestParticipation,
+      {List<File>? files}) async {
+    return await super.insertWithFiles(requestParticipation, files: files);
   }
 }

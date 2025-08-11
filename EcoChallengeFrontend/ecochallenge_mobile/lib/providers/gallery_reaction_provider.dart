@@ -62,8 +62,6 @@ class GalleryReactionProvider extends BaseProvider<GalleryReactionResponse> {
         return 1;
       case ReactionType.report:
         return 2;
-      default:
-        return 0;
     }
   }
 
