@@ -14,6 +14,8 @@ using EcoChallenge.Services.Interfeces;
 using AutoMapper.QueryableExtensions;
 using EcoChallenge.Services.BaseServices;
 using EcoChallenge.Models.Enums;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace EcoChallenge.Services.Services
 {
@@ -22,11 +24,15 @@ namespace EcoChallenge.Services.Services
     {
         private readonly EcoChallengeDbContext _db;
         private readonly IBlobService _blobService;
+        private readonly IServiceProvider _serviceProvider;
+        private readonly ILogger<EventService> _logger;
 
-        public EventService(EcoChallengeDbContext db, IMapper mapper, IBlobService blobService) : base(db, mapper)
+        public EventService(EcoChallengeDbContext db, IMapper mapper, IBlobService blobService, IServiceProvider serviceProvider, ILogger<EventService> logger) : base(db, mapper)
         {
             _db = db;
             _blobService = blobService;
+            _serviceProvider = serviceProvider;
+            _logger = logger;
         }
 
         protected override IQueryable<Event> ApplyFilter(IQueryable<Event> query, EventSearchObject s)
@@ -99,6 +105,19 @@ namespace EcoChallenge.Services.Services
             }
 
             await base.BeforeInsert(entity, request, cancellationToken);
+
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    var badgeService = _serviceProvider.GetRequiredService<IBadgeManagementService>();
+                    await badgeService.CheckEventsBadgesAsync(entity.CreatorUserId);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to check badges for user {UserId} after event creation", entity.CreatorUserId);
+                }
+            });
         }
 
         protected override async Task BeforeUpdate(Event entity, EventUpdateRequest request, CancellationToken cancellationToken = default)

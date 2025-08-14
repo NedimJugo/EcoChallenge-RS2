@@ -15,6 +15,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using EcoChallenge.Models.Messages;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace EcoChallenge.Services.Services
 {
@@ -24,17 +25,20 @@ namespace EcoChallenge.Services.Services
         private readonly IBlobService _blobService;
         private readonly IRabbitMQService _rabbitMQService;
         private readonly INotificationService _notificationService;
+        private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<RequestParticipationService> _logger;
 
 
         public RequestParticipationService(EcoChallengeDbContext db, IMapper mapper, IBlobService blobService, IRabbitMQService rabbitMQService,
             INotificationService notificationService,
+            IServiceProvider serviceProvider,
             ILogger<RequestParticipationService> logger) : base(db, mapper)
         {
             _db = db;
             _blobService = blobService;
             _rabbitMQService = rabbitMQService;
             _notificationService = notificationService;
+            _serviceProvider = serviceProvider;
             _logger = logger;
         }
 
@@ -120,6 +124,18 @@ namespace EcoChallenge.Services.Services
                 // Only publish for Approved or Denied status changes
                 if (newStatus == ParticipationStatus.Approved || newStatus == ParticipationStatus.Rejected)
                 {
+                    _ = Task.Run(async () =>
+                    {
+                        try
+                        {
+                            var badgeService = _serviceProvider.GetRequiredService<IBadgeManagementService>();
+                            await badgeService.CheckAndAwardBadgesAsync(entity.UserId);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Failed to check badges for user {UserId} after participation approval", entity.UserId);
+                        }
+                    });
                     await PublishProofStatusChangedMessage(entity, originalStatus, newStatus, request, cancellationToken);
                 }
             }

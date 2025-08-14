@@ -12,6 +12,7 @@ namespace EcoChallenge.Models.Responses
         public int UserId { get; set; }
         public int BadgeId { get; set; }
         public DateTime EarnedAt { get; set; }
+        public BadgeResponse? Badge { get; set; }
     }
 
 }

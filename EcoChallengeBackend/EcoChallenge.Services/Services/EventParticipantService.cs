@@ -7,11 +7,18 @@ using EcoChallenge.Services.Database.Entities;
 using EcoChallenge.Services.Database;
 using EcoChallenge.Services.Interfeces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using EcoChallenge.Models.Enums;
+using Microsoft.Extensions.DependencyInjection;
 
 public class EventParticipantService : BaseCRUDService<EventParticipantResponse, EventParticipantSearchObject, EventParticipant, EventParticipantInsertRequest, EventParticipantUpdateRequest>, IEventParticipantService
 {
-    public EventParticipantService(EcoChallengeDbContext db, IMapper mapper) : base(db, mapper)
+    private readonly IServiceProvider _serviceProvider;
+    private readonly ILogger<EventParticipantService> _logger;
+    public EventParticipantService(EcoChallengeDbContext db, IMapper mapper, IServiceProvider serviceProvider, ILogger<EventParticipantService> logger) : base(db, mapper)
     {
+        _serviceProvider = serviceProvider;
+        _logger = logger;
     }
 
     protected override IQueryable<EventParticipant> ApplyFilter(IQueryable<EventParticipant> query, EventParticipantSearchObject s)
@@ -51,6 +58,7 @@ public class EventParticipantService : BaseCRUDService<EventParticipantResponse,
 
     protected override async Task BeforeUpdate(EventParticipant entity, EventParticipantUpdateRequest request, CancellationToken cancellationToken = default)
     {
+        var originalStatus = entity.Status;
         var oldEntity = await _context.EventParticipants.AsNoTracking().FirstOrDefaultAsync(x => x.Id == entity.Id, cancellationToken);
         if (oldEntity != null && oldEntity.EventId != entity.EventId)
         {
@@ -59,6 +67,23 @@ public class EventParticipantService : BaseCRUDService<EventParticipantResponse,
         }
 
         await base.BeforeUpdate(entity, request, cancellationToken);
+
+        if (request.Status.HasValue && request.Status.Value == AttendanceStatus.Attended &&
+       originalStatus != AttendanceStatus.Attended)
+        {
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    var badgeService = _serviceProvider.GetRequiredService<IBadgeManagementService>();
+                    await badgeService.CheckAndAwardBadgesAsync(entity.UserId);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to check badges for user {UserId} after event attendance", entity.UserId);
+                }
+            });
+        }
     }
 
     private async Task UpdateParticipantCount(int eventId, int delta, CancellationToken cancellationToken)

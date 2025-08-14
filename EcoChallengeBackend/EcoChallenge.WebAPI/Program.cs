@@ -54,7 +54,10 @@ builder.Services.AddScoped<IAzureVisionService, AzureVisionService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IMLPricingService, MLPricingService>();
 builder.Services.AddScoped<IBlobService, BlobService>();
+builder.Services.AddScoped<IBadgeManagementService, BadgeManagementService>();
+
 builder.Services.AddHostedService<MLTrainingBackgroundService>();
+builder.Services.AddHostedService<BadgeCheckBackgroundService>();
 
 builder.Services.AddSingleton<IRabbitMQService, RabbitMQService>();
 
