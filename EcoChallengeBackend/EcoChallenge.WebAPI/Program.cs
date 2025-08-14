@@ -24,7 +24,7 @@ builder.Services.AddAutoMapper(cfg => { }, typeof(UserProfile).Assembly, typeof(
     typeof(LocationProfile).Assembly, typeof(UserBadgeProfile).Assembly, typeof(WasteTypeProfile).Assembly,
     typeof(RewardProfile).Assembly, typeof(DonationProfile).Assembly, typeof(BalanceSettingProfile).Assembly,
     typeof(GalleryReactionProfile).Assembly, typeof(GalleryShowcaseProfile).Assembly, typeof(EventParticipantProfile).Assembly,
-    typeof(RequestParticipationProfile).Assembly);
+    typeof(RequestParticipationProfile).Assembly, typeof(NotificationProfile).Assembly);
 
 builder.Services.AddAuthentication("BasicAuthentication")
     .AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>("BasicAuthentication", null);
@@ -51,9 +51,12 @@ builder.Services.AddScoped<IBalanceSettingService, BalanceSettingService>();
 builder.Services.AddScoped<IRequestParticipationService, RequestParticipationService>();
 builder.Services.AddScoped<IStripeService, StripeService>();
 builder.Services.AddScoped<IAzureVisionService, AzureVisionService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IMLPricingService, MLPricingService>();
 builder.Services.AddScoped<IBlobService, BlobService>();
 builder.Services.AddHostedService<MLTrainingBackgroundService>();
+
+builder.Services.AddSingleton<IRabbitMQService, RabbitMQService>();
 
 builder.Services.AddControllers();
 

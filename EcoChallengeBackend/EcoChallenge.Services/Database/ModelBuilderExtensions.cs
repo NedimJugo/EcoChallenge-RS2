@@ -62,12 +62,9 @@ namespace EcoChallenge.Services.Database
 
             builder.Entity<RequestStatus>().HasData(
                 new RequestStatus { Id = 1, Name = "Pending" },
-                new RequestStatus { Id = 2, Name = "UnderReview" },
-                new RequestStatus { Id = 3, Name = "Approved" },
-                new RequestStatus { Id = 4, Name = "Rejected" },
-                new RequestStatus { Id = 5, Name = "InProgress" },
-                new RequestStatus { Id = 6, Name = "Completed" },
-                new RequestStatus { Id = 7, Name = "Cancelled " }
+                new RequestStatus { Id = 2, Name = "Approved" },
+                new RequestStatus { Id = 3, Name = "Rejected" },
+                new RequestStatus { Id = 4, Name = "Completed" }
             );
 
             builder.Entity<RewardType>().HasData(
@@ -345,7 +342,7 @@ namespace EcoChallenge.Services.Database
                      UrgencyLevel = UrgencyLevel.Medium,
                      WasteTypeId = 5,
                      EstimatedAmount = EstimatedAmount.Medium,
-                     StatusId = 6, // Completed
+                     StatusId = 4, // Completed
                      CreatedAt = new DateTime(2025, 6, 3),
                      UpdatedAt = new DateTime(2025, 6, 15),
                      AssignedAdminId = 1
@@ -359,7 +356,7 @@ namespace EcoChallenge.Services.Database
         UrgencyLevel = UrgencyLevel.Low,
         WasteTypeId = 7,
         EstimatedAmount = EstimatedAmount.Small,
-        StatusId = 6, // Completed
+        StatusId = 4, // Completed
         CreatedAt = new DateTime(2025, 6, 4),
         UpdatedAt = new DateTime(2025, 6, 20),
         AssignedAdminId = 1
