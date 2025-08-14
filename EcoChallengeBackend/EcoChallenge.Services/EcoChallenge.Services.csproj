@@ -28,6 +28,7 @@
 		</PackageReference>
 		<PackageReference Include="Microsoft.ML" Version="4.0.2" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+		<PackageReference Include="RabbitMQ.Client" Version="6.6.0" />
 		<PackageReference Include="Stripe.net" Version="48.4.0" />
 		<PackageReference Include="System.Linq.Dynamic.Core" Version="1.6.6" />
 	</ItemGroup>

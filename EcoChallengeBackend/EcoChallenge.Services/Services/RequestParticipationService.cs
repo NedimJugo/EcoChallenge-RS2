@@ -13,6 +13,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using EcoChallenge.Models.Messages;
 
 namespace EcoChallenge.Services.Services
 {
@@ -20,11 +22,17 @@ namespace EcoChallenge.Services.Services
     {
         private readonly EcoChallengeDbContext _db;
         private readonly IBlobService _blobService;
+        private readonly IRabbitMQService _rabbitMQService;
+        private readonly ILogger<RequestParticipationService> _logger;
 
-        public RequestParticipationService(EcoChallengeDbContext db, IMapper mapper, IBlobService blobService) : base(db, mapper)
+
+        public RequestParticipationService(EcoChallengeDbContext db, IMapper mapper, IBlobService blobService, IRabbitMQService rabbitMQService,
+            ILogger<RequestParticipationService> logger) : base(db, mapper)
         {
             _db = db;
             _blobService = blobService;
+            _rabbitMQService = rabbitMQService;
+            _logger = logger;
         }
 
         protected override IQueryable<RequestParticipation> ApplyFilter(IQueryable<RequestParticipation> query, RequestParticipationSearchObject search)
@@ -72,6 +80,8 @@ namespace EcoChallenge.Services.Services
 
         protected override async Task BeforeUpdate(RequestParticipation entity, RequestParticipationUpdateRequest request, CancellationToken cancellationToken = default)
         {
+            var originalStatus = entity.Status;
+
             if (request.Photos != null && request.Photos.Any())
             {
                 var existingPhotos = await _db.Photos
@@ -95,6 +105,79 @@ namespace EcoChallenge.Services.Services
             }
 
             await base.BeforeUpdate(entity, request, cancellationToken);
+            if (request.Status.HasValue && request.Status.Value != originalStatus)
+            {
+                var newStatus = request.Status.Value;
+
+                // Only publish for Approved or Denied status changes
+                if (newStatus == ParticipationStatus.Approved || newStatus == ParticipationStatus.Rejected)
+                {
+                    await PublishProofStatusChangedMessage(entity, originalStatus, newStatus, request, cancellationToken);
+                }
+            }
+        }
+
+        private async Task PublishProofStatusChangedMessage(
+           RequestParticipation entity,
+           ParticipationStatus originalStatus,
+           ParticipationStatus newStatus,
+           RequestParticipationUpdateRequest request,
+           CancellationToken cancellationToken)
+        {
+            try
+            {
+                // Get user and request information
+                var user = await _context.Users
+                    .FirstOrDefaultAsync(u => u.Id == entity.UserId, cancellationToken);
+
+                var requestEntity = await _context.Requests
+                    .FirstOrDefaultAsync(r => r.Id == entity.RequestId, cancellationToken);
+
+                // Get admin information if available
+                User? admin = null;
+                // You might need to add AdminId to RequestParticipationUpdateRequest or get it from context
+                // For now, we'll leave it null - you can modify based on your needs
+
+                var message = new ProofStatusChanged
+                {
+                    ParticipationId = entity.Id,
+                    RequestId = entity.RequestId,
+                    UserId = entity.UserId,
+                    UserEmail = user?.Email ?? string.Empty,
+                    UserName = $"{user?.FirstName} {user?.LastName}".Trim(),
+                    RequestTitle = requestEntity?.Title ?? "Untitled Request",
+                    OldStatus = originalStatus.ToString(),
+                    NewStatus = newStatus.ToString(),
+                    AdminNotes = request.AdminNotes,
+                    RejectionReason = request.RejectionReason,
+                    ChangedAt = DateTime.UtcNow,
+                    AdminId = admin?.Id,
+                    AdminName = admin != null ? $"{admin.FirstName} {admin.LastName}".Trim() : null,
+                    RewardPoints = request.RewardPoints,
+                    RewardMoney = request.RewardMoney,
+                    CardHolderName = request.CardHolderName,
+                    BankName = request.BankName,
+                    TransactionNumber = request.TransactionNumber
+                };
+
+                // Determine routing key based on new status
+                var routingKey = newStatus switch
+                {
+                    ParticipationStatus.Approved => "proof.status.approved",
+                    ParticipationStatus.Rejected => "proof.status.denied",
+                    _ => "proof.status.changed"
+                };
+
+                await _rabbitMQService.PublishAsync(message, routingKey);
+
+                _logger.LogInformation("Published ProofStatusChanged message for Participation {ParticipationId}, Status: {OldStatus} -> {NewStatus}",
+                    entity.Id, originalStatus, newStatus);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to publish ProofStatusChanged message for Participation {ParticipationId}", entity.Id);
+                // Don't throw - we don't want to fail the update operation because of messaging issues
+            }
         }
     }
 }

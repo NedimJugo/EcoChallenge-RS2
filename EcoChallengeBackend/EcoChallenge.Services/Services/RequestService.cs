@@ -2,6 +2,7 @@
 using AutoMapper.QueryableExtensions;
 using EcoChallenge.Models.AI_Models;
 using EcoChallenge.Models.Enums;
+using EcoChallenge.Models.Messages;
 using EcoChallenge.Models.Requests;
 using EcoChallenge.Models.Responses;
 using EcoChallenge.Models.SearchObjects;
@@ -26,16 +27,19 @@ namespace EcoChallenge.Services.Services
         private readonly IBlobService _blobService;
         private readonly IAzureVisionService _azureVisionService;
         private readonly IMLPricingService _mlPricingService;
+        private readonly IRabbitMQService _rabbitMQService;
         private readonly ILogger<RequestService> _logger;
 
         public RequestService(EcoChallengeDbContext db, IMapper mapper, IBlobService blobService, IAzureVisionService azureVisionService,
         IMLPricingService mlPricingService,
+        IRabbitMQService rabbitMQService,
         ILogger<RequestService> logger) : base(db, mapper)
         {
             _db = db;
             _blobService = blobService;
             _azureVisionService = azureVisionService;
             _mlPricingService = mlPricingService;
+            _rabbitMQService = rabbitMQService;
             _logger = logger;
         }
 
@@ -101,6 +105,7 @@ namespace EcoChallenge.Services.Services
         // Services/Services/RequestService.cs - Updated BeforeInsert method
         protected override async Task BeforeInsert(Request entity, RequestInsertRequest request, CancellationToken cancellationToken = default)
         {
+
             // Validate and set default StatusId if not provided or invalid
             if (entity.StatusId <= 0)
             {
@@ -285,6 +290,19 @@ namespace EcoChallenge.Services.Services
 
         protected override async Task BeforeUpdate(Request entity, RequestUpdateRequest request, CancellationToken cancellationToken = default)
         {
+            // Store original status for comparison
+            var originalStatusId = entity.StatusId;
+            string originalStatusName = string.Empty;
+            string newStatusName = string.Empty;
+
+            // Get original status name
+            if (originalStatusId > 0)
+            {
+                var originalStatus = await _context.RequestStatuses
+                    .FirstOrDefaultAsync(s => s.Id == originalStatusId, cancellationToken);
+                originalStatusName = originalStatus?.Name ?? "Unknown";
+            }
+
             if (request.Photos != null && request.Photos.Any())
             {
                 var existingPhotos = await _context.Photos
@@ -309,8 +327,81 @@ namespace EcoChallenge.Services.Services
             }
 
             await base.BeforeUpdate(entity, request, cancellationToken);
+
+            if (request.StatusId.HasValue && request.StatusId.Value != originalStatusId)
+            {
+                // Get new status name
+                var newStatus = await _context.RequestStatuses
+                    .FirstOrDefaultAsync(s => s.Id == request.StatusId.Value, cancellationToken);
+                newStatusName = newStatus?.Name ?? "Unknown";
+
+                // Only publish for Approved or Denied status changes
+                if (newStatusName.Equals("Approved", StringComparison.OrdinalIgnoreCase) ||
+                    newStatusName.Equals("Denied", StringComparison.OrdinalIgnoreCase))
+                {
+                    await PublishRequestStatusChangedMessage(entity, originalStatusName, newStatusName, request, cancellationToken);
+                }
+            }
         }
 
+        private async Task PublishRequestStatusChangedMessage(
+          Request entity,
+          string originalStatus,
+          string newStatus,
+          RequestUpdateRequest request,
+          CancellationToken cancellationToken)
+        {
+            try
+            {
+                // Get user information
+                var user = await _context.Users
+                    .FirstOrDefaultAsync(u => u.Id == entity.UserId, cancellationToken);
+
+                // Get admin information if available
+                User? admin = null;
+                if (request.AssignedAdminId.HasValue)
+                {
+                    admin = await _context.Users
+                        .FirstOrDefaultAsync(u => u.Id == request.AssignedAdminId.Value, cancellationToken);
+                }
+
+                var message = new RequestStatusChanged
+                {
+                    RequestId = entity.Id,
+                    UserId = entity.UserId,
+                    UserEmail = user?.Email ?? string.Empty,
+                    UserName = $"{user?.FirstName} {user?.LastName}".Trim(),
+                    RequestTitle = entity.Title ?? "Untitled Request",
+                    OldStatus = originalStatus,
+                    NewStatus = newStatus,
+                    AdminNotes = request.AdminNotes,
+                    RejectionReason = request.RejectionReason,
+                    ChangedAt = DateTime.UtcNow,
+                    AdminId = admin?.Id,
+                    AdminName = admin != null ? $"{admin.FirstName} {admin.LastName}".Trim() : null,
+                    ActualRewardPoints = request.ActualRewardPoints,
+                    ActualRewardMoney = request.ActualRewardMoney
+                };
+
+                // Determine routing key based on new status
+                var routingKey = newStatus.ToLower() switch
+                {
+                    "approved" => "request.status.approved",
+                    "denied" => "request.status.denied",
+                    _ => "request.status.changed"
+                };
+
+                await _rabbitMQService.PublishAsync(message, routingKey);
+
+                _logger.LogInformation("Published RequestStatusChanged message for Request {RequestId}, Status: {OldStatus} -> {NewStatus}",
+                    entity.Id, originalStatus, newStatus);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to publish RequestStatusChanged message for Request {RequestId}", entity.Id);
+                // Don't throw - we don't want to fail the update operation because of messaging issues
+            }
+        }
 
     }
 }
