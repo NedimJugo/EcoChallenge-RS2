@@ -11,6 +11,7 @@ using EcoChallenge.Services.Database;
 using EcoChallenge.Services.Database.Entities;
 using EcoChallenge.Services.Interfeces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
@@ -29,12 +30,14 @@ namespace EcoChallenge.Services.Services
         private readonly IMLPricingService _mlPricingService;
         private readonly IRabbitMQService _rabbitMQService;
         private readonly INotificationService _notificationService;
+        private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<RequestService> _logger;
 
         public RequestService(EcoChallengeDbContext db, IMapper mapper, IBlobService blobService, IAzureVisionService azureVisionService,
         IMLPricingService mlPricingService,
         IRabbitMQService rabbitMQService,
         INotificationService notificationService,
+        IServiceProvider serviceProvider,
         ILogger<RequestService> logger) : base(db, mapper)
         {
             _db = db;
@@ -43,6 +46,7 @@ namespace EcoChallenge.Services.Services
             _mlPricingService = mlPricingService;
             _rabbitMQService = rabbitMQService;
             _notificationService = notificationService;
+            _serviceProvider = serviceProvider;
             _logger = logger;
         }
 
@@ -243,6 +247,19 @@ namespace EcoChallenge.Services.Services
             }
 
             await base.BeforeInsert(entity, request, cancellationToken);
+
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    var badgeService = _serviceProvider.GetRequiredService<IBadgeManagementService>();
+                    await badgeService.CheckRequestsBadgesAsync(entity.UserId);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to check badges for user {UserId} after request creation", entity.UserId);
+                }
+            });
         }
 
         public async Task RetrainMLModelAsync()

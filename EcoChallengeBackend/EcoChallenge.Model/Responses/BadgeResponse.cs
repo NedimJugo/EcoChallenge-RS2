@@ -17,5 +17,7 @@ namespace EcoChallenge.Models.Responses
         public int CriteriaValue { get; set; }
         public bool IsActive { get; set; }
         public DateTime CreatedAt { get; set; }
+        public BadgeTypeResponse? BadgeType { get; set; }
+        public CriteriaTypeResponse? CriteriaType { get; set; }
     }
 }

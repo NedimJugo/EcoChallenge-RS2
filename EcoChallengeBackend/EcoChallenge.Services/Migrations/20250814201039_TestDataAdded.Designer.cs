@@ -4,6 +4,7 @@ using EcoChallenge.Services.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EcoChallenge.Services.Migrations
 {
     [DbContext(typeof(EcoChallengeDbContext))]
-    partial class EcoChallengeDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250814201039_TestDataAdded")]
+    partial class TestDataAdded
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -237,17 +240,6 @@ namespace EcoChallenge.Services.Migrations
                             CriteriaValue = 1,
                             IsActive = true,
                             Name = "Donation Star"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            BadgeTypeId = 2,
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            CriteriaTypeId = 2,
-                            CriteriaValue = 1000,
-                            Description = "Reached 1000 points",
-                            IsActive = true,
-                            Name = "Eco Warrior"
                         },
                         new
                         {

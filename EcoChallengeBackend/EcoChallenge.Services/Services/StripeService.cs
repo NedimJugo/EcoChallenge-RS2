@@ -17,6 +17,7 @@ namespace EcoChallenge.Services.Services
         private readonly EcoChallengeDbContext _context;
         private readonly IMapper _mapper;
         private readonly ILogger<StripeService> _logger;
+        private readonly IBadgeManagementService _badgeManagementService;
         private readonly string _stripeSecretKey;
         private readonly string _stripeWebhookSecret;
 
@@ -24,7 +25,8 @@ namespace EcoChallenge.Services.Services
             IConfiguration configuration,
             EcoChallengeDbContext context,
             IMapper mapper,
-            ILogger<StripeService> logger)
+            ILogger<StripeService> logger,
+            IBadgeManagementService badgeManagementService)
         {
             _configuration = configuration;
             _context = context;
@@ -34,6 +36,7 @@ namespace EcoChallenge.Services.Services
             _stripeWebhookSecret = _configuration["Stripe:WebhookSecret"] ?? throw new InvalidOperationException("Stripe WebhookSecret not configured");
 
             StripeConfiguration.ApiKey = _stripeSecretKey;
+            _badgeManagementService = badgeManagementService;
         }
 
         public async Task<StripePaymentResponse> CreatePaymentIntentAsync(StripePaymentRequest request, CancellationToken cancellationToken = default)
@@ -119,8 +122,19 @@ namespace EcoChallenge.Services.Services
                         donation.ProcessedAt = DateTime.UtcNow;
                         donation.PaymentReference = paymentIntent.Id;
                         donation.PointsEarned = CalculatePoints(donation.Amount);
+                        await _context.SaveChangesAsync(cancellationToken);
+                        // Trigger badge check after successful payment
+                        try
+                        {
+                            await _badgeManagementService.CheckAndAwardBadgesAsync(donation.UserId);
+                            _logger.LogInformation("Badge check triggered for user {UserId} after donation", donation.UserId);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Error checking badges after donation for user {UserId}", donation.UserId);
+                            // Don't fail the payment confirmation if badge check fails
+                        }
                     }
-                    await _context.SaveChangesAsync(cancellationToken);
                 }
 
                 return new StripePaymentResponse
@@ -163,6 +177,17 @@ namespace EcoChallenge.Services.Services
                             donation.PaymentReference = paymentIntent.Id;
                             donation.PointsEarned = CalculatePoints(donation.Amount);
                             await _context.SaveChangesAsync(cancellationToken);
+                            // Trigger badge check after successful webhook payment
+                            try
+                            {
+                                await _badgeManagementService.CheckAndAwardBadgesAsync(donation.UserId);
+                                _logger.LogInformation("Badge check triggered via webhook for user {UserId} after donation", donation.UserId);
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogError(ex, "Error checking badges via webhook after donation for user {UserId}", donation.UserId);
+                                // Don't fail the webhook processing if badge check fails
+                            }
                         }
                     }
                 }

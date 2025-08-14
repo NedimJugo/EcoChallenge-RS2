@@ -260,15 +260,15 @@ namespace EcoChallenge.Services.Database
 
             // 4) Badges
             builder.Entity<Badge>().HasData(
-                new Badge
-                {
-                    Id = 1,
-                    Name = "First Cleanup",
-                    CriteriaTypeId = 1,
-                    CriteriaValue = 1,
-                    BadgeTypeId = 3,
-                    CreatedAt = new DateTime(2025, 4, 1)
-                },
+                 new Badge
+                 {
+                     Id = 1,
+                     Name = "First Cleanup",
+                     CriteriaTypeId = 1,
+                     CriteriaValue = 1,
+                     BadgeTypeId = 3,
+                     CreatedAt = new DateTime(2025, 4, 1)
+                 },
                 new Badge
                 {
                     Id = 2,
@@ -277,7 +277,268 @@ namespace EcoChallenge.Services.Database
                     CriteriaValue = 1,
                     BadgeTypeId = 2,
                     CreatedAt = new DateTime(2025, 4, 2)
-                }
+                },
+                new Badge
+                {
+                    Id = 3,
+                    Name = "Eco Warrior",
+                    Description = "Reached 1000 points",
+                    BadgeTypeId = 2, // Achievement
+                    CriteriaTypeId = 2, // Points
+                    CriteriaValue = 1000,
+                    IsActive = true,
+                    CreatedAt = new DateTime(2025, 1, 1)
+                },
+                new Badge
+                {
+                    Id = 4,
+                    Name = "Environmental Champion",
+                    Description = "Earned 2500 points",
+                    BadgeTypeId = 2, // Achievement
+                    CriteriaTypeId = 2, // Points
+                    CriteriaValue = 2500,
+                    IsActive = true,
+                    CreatedAt = new DateTime(2025, 1, 1)
+                },
+    new Badge
+    {
+        Id = 5,
+        Name = "Green Legend",
+        Description = "Accumulated 5000 points",
+        BadgeTypeId = 2, // Achievement
+        CriteriaTypeId = 2, // Points
+        CriteriaValue = 5000,
+        IsActive = true,
+        CreatedAt = new DateTime(2025, 1, 1)
+    },
+
+    // Activity count badges (requests + participations)
+    new Badge
+    {
+        Id = 6,
+        Name = "First Cleanup",
+        Description = "Completed your first cleanup activity",
+        BadgeTypeId = 3, // Milestone
+        CriteriaTypeId = 1, // Count
+        CriteriaValue = 1,
+        IsActive = true,
+        CreatedAt = new DateTime(2025, 1, 1)
+    },
+    new Badge
+    {
+        Id = 7,
+        Name = "Getting Active",
+        Description = "Completed 3 cleanup activities",
+        BadgeTypeId = 1, // Participation
+        CriteriaTypeId = 1, // Count
+        CriteriaValue = 3,
+        IsActive = true,
+        CreatedAt = new DateTime(2025, 1, 1)
+    },
+    new Badge
+    {
+        Id = 8,
+        Name = "Active Member",
+        Description = "Completed 5 cleanup activities",
+        BadgeTypeId = 1, // Participation
+        CriteriaTypeId = 1, // Count
+        CriteriaValue = 5,
+        IsActive = true,
+        CreatedAt = new DateTime(2025, 1, 1)
+    },
+    new Badge
+    {
+        Id = 9,
+        Name = "Dedicated Volunteer",
+        Description = "Completed 10 cleanup activities",
+        BadgeTypeId = 2, // Achievement
+        CriteriaTypeId = 1, // Count
+        CriteriaValue = 10,
+        IsActive = true,
+        CreatedAt = new DateTime(2025, 1, 1)
+    },
+    new Badge
+    {
+        Id = 10,
+        Name = "Super Volunteer",
+        Description = "Completed 25 cleanup activities",
+        BadgeTypeId = 2, // Achievement
+        CriteriaTypeId = 1, // Count
+        CriteriaValue = 25,
+        IsActive = true,
+        CreatedAt = new DateTime(2025, 1, 1)
+    },
+    new Badge
+    {
+        Id = 11,
+        Name = "Cleanup Master",
+        Description = "Completed 50 cleanup activities",
+        BadgeTypeId = 2, // Achievement
+        CriteriaTypeId = 1, // Count
+        CriteriaValue = 50,
+        IsActive = true,
+        CreatedAt = new DateTime(2025, 1, 1)
+    },
+
+    // Event organization badges
+    new Badge
+    {
+        Id = 12,
+        Name = "Event Organizer",
+        Description = "Organized your first community event",
+        BadgeTypeId = 3, // Milestone
+        CriteriaTypeId = 3, // EventsOrganized
+        CriteriaValue = 1,
+        IsActive = true,
+        CreatedAt = new DateTime(2025, 1, 1)
+    },
+    new Badge
+    {
+        Id = 13,
+        Name = "Community Builder",
+        Description = "Organized 3 community events",
+        BadgeTypeId = 2, // Achievement
+        CriteriaTypeId = 3, // EventsOrganized
+        CriteriaValue = 3,
+        IsActive = true,
+        CreatedAt = new DateTime(2025, 1, 1)
+    },
+    new Badge
+    {
+        Id = 14,
+        Name = "Community Leader",
+        Description = "Organized 5 community events",
+        BadgeTypeId = 2, // Achievement
+        CriteriaTypeId = 3, // EventsOrganized
+        CriteriaValue = 5,
+        IsActive = true,
+        CreatedAt = new DateTime(2025, 1, 1)
+    },
+    new Badge
+    {
+        Id = 15,
+        Name = "Event Master",
+        Description = "Organized 10 community events",
+        BadgeTypeId = 2, // Achievement
+        CriteriaTypeId = 3, // EventsOrganized
+        CriteriaValue = 10,
+        IsActive = true,
+        CreatedAt = new DateTime(2025, 1, 1)
+    },
+
+    // Event participation badges
+    new Badge
+    {
+        Id = 16,
+        Name = "First Participant",
+        Description = "Attended your first event",
+        BadgeTypeId = 3, // Milestone
+        CriteriaTypeId = 1, // Count
+        CriteriaValue = 1,
+        IsActive = true,
+        CreatedAt = new DateTime(2025, 1, 1)
+    },
+    new Badge
+    {
+        Id = 17,
+        Name = "Team Player",
+        Description = "Participated in 3 events",
+        BadgeTypeId = 1, // Participation
+        CriteriaTypeId = 1, // Count
+        CriteriaValue = 3,
+        IsActive = true,
+        CreatedAt = new DateTime(2025, 1, 1)
+    },
+    new Badge
+    {
+        Id = 18,
+        Name = "Regular Participant",
+        Description = "Participated in 10 events",
+        BadgeTypeId = 1, // Participation
+        CriteriaTypeId = 1, // Count
+        CriteriaValue = 10,
+        IsActive = true,
+        CreatedAt = new DateTime(2025, 1, 1)
+    },
+    new Badge
+    {
+        Id = 19,
+        Name = "Event Enthusiast",
+        Description = "Participated in 20 events",
+        BadgeTypeId = 2, // Achievement
+        CriteriaTypeId = 1, // Count
+        CriteriaValue = 20,
+        IsActive = true,
+        CreatedAt = new DateTime(2025, 1, 1)
+    },
+
+    // Special/Milestone badges
+    new Badge
+    {
+        Id = 20,
+        Name = "Early Adopter",
+        Description = "One of the first users to join the platform",
+        BadgeTypeId = 4, // Special
+        CriteriaTypeId = 1, // Count
+        CriteriaValue = 1,
+        IsActive = true,
+        CreatedAt = new DateTime(2025, 1, 1)
+    },
+    new Badge
+    {
+        Id = 21,
+        Name = "Consistent Contributor",
+        Description = "Active for 30 consecutive days",
+        BadgeTypeId = 2, // Achievement
+        CriteriaTypeId = 5, // Days (if you have this criteria)
+        CriteriaValue = 30,
+        IsActive = true,
+        CreatedAt = new DateTime(2025, 1, 1)
+    },
+    new Badge
+    {
+        Id = 22,
+        Name = "Donation Star",
+        Description = "Made your first donation",
+        BadgeTypeId = 2, // Achievement
+        CriteriaTypeId = 4, // Donations (if you have this criteria)
+        CriteriaValue = 1,
+        IsActive = true,
+        CreatedAt = new DateTime(2025, 1, 1)
+    },
+    new Badge
+    {
+        Id = 23,
+        Name = "Generous Donor",
+        Description = "Made 5 donations",
+        BadgeTypeId = 2, // Achievement
+        CriteriaTypeId = 4, // Donations
+        CriteriaValue = 5,
+        IsActive = true,
+        CreatedAt = new DateTime(2025, 1, 1)
+    },
+    new Badge
+    {
+        Id = 24,
+        Name = "Community Helper",
+        Description = "Helped 10 different cleanup requests",
+        BadgeTypeId = 2, // Achievement
+        CriteriaTypeId = 1, // Count
+        CriteriaValue = 10,
+        IsActive = true,
+        CreatedAt = new DateTime(2025, 1, 1)
+    },
+    new Badge
+    {
+        Id = 25,
+        Name = "Weekend Warrior",
+        Description = "Completed 5 weekend activities",
+        BadgeTypeId = 1, // Participation
+        CriteriaTypeId = 1, // Count
+        CriteriaValue = 5,
+        IsActive = true,
+        CreatedAt = new DateTime(2025, 1, 1)
+    }
             );
 
             // 5) SystemSettings
