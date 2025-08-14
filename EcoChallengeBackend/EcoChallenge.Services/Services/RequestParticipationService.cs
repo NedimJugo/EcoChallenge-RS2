@@ -23,15 +23,18 @@ namespace EcoChallenge.Services.Services
         private readonly EcoChallengeDbContext _db;
         private readonly IBlobService _blobService;
         private readonly IRabbitMQService _rabbitMQService;
+        private readonly INotificationService _notificationService;
         private readonly ILogger<RequestParticipationService> _logger;
 
 
         public RequestParticipationService(EcoChallengeDbContext db, IMapper mapper, IBlobService blobService, IRabbitMQService rabbitMQService,
+            INotificationService notificationService,
             ILogger<RequestParticipationService> logger) : base(db, mapper)
         {
             _db = db;
             _blobService = blobService;
             _rabbitMQService = rabbitMQService;
+            _notificationService = notificationService;
             _logger = logger;
         }
 
@@ -109,11 +112,86 @@ namespace EcoChallenge.Services.Services
             {
                 var newStatus = request.Status.Value;
 
+                _ = Task.Run(async () =>
+                {
+                    await CreateParticipationStatusNotificationAsync(entity, originalStatus, newStatus, request);
+                });
+
                 // Only publish for Approved or Denied status changes
                 if (newStatus == ParticipationStatus.Approved || newStatus == ParticipationStatus.Rejected)
                 {
                     await PublishProofStatusChangedMessage(entity, originalStatus, newStatus, request, cancellationToken);
                 }
+            }
+        }
+
+        private async Task CreateParticipationStatusNotificationAsync(RequestParticipation entity, ParticipationStatus originalStatus, ParticipationStatus newStatus, RequestParticipationUpdateRequest request)
+        {
+            try
+            {
+                // Get request information for better notification context
+                var requestEntity = await _db.Requests
+                    .FirstOrDefaultAsync(r => r.Id == entity.RequestId);
+
+                string requestTitle = requestEntity?.Title ?? "Unknown Request";
+
+                NotificationType notificationType;
+                string title;
+                string message;
+
+                switch (newStatus)
+                {
+                    case ParticipationStatus.Approved:
+                        notificationType = NotificationType.RewardReceived;
+                        title = "Participation Approved! 🎉";
+                        message = $"Congratulations! Your participation in '{requestTitle}' has been approved";
+
+                        if (request.RewardPoints > 0 || request.RewardMoney > 0)
+                        {
+                            message += $" and you've earned {request.RewardPoints} points";
+                            if (request.RewardMoney > 0)
+                                message += $" and ${request.RewardMoney}";
+                            message += " as a reward";
+                        }
+                        message += ". Thank you for making a positive impact!";
+                        break;
+
+                    case ParticipationStatus.Rejected:
+                        notificationType = NotificationType.AdminMessage;
+                        title = "Participation Update";
+                        message = $"Your participation proof for '{requestTitle}' needs some adjustments.";
+
+                        if (!string.IsNullOrEmpty(request.RejectionReason))
+                            message += $" Feedback: {request.RejectionReason}";
+
+                        message += " You can resubmit your participation with updated proof.";
+                        break;
+
+                    default:
+                        notificationType = NotificationType.AdminMessage;
+                        title = "Participation Status Updated";
+                        message = $"Your participation status for '{requestTitle}' has been updated to {newStatus}.";
+                        break;
+                }
+
+                var notificationRequest = new NotificationInsertRequest
+                {
+                    UserId = entity.UserId,
+                    NotificationType = notificationType,
+                    Title = title,
+                    Message = message,
+                    IsPushed = false
+                };
+
+                await _notificationService.CreateAsync(notificationRequest);
+
+                _logger.LogInformation("Created notification for user {UserId} regarding participation {ParticipationId} status change to {NewStatus}",
+                    entity.UserId, entity.Id, newStatus);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to create notification for participation {ParticipationId} status change", entity.Id);
+                // Don't throw - we don't want to fail the main operation
             }
         }
 
