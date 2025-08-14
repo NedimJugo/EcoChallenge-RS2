@@ -1,17 +1,62 @@
 import 'package:ecochallenge_mobile/pages/leaderboard_page.dart';
 import 'package:ecochallenge_mobile/pages/my_events_page.dart';
+import 'package:ecochallenge_mobile/pages/notifications_page.dart';
 import 'package:ecochallenge_mobile/pages/request_tracking_page.dart';
 import 'package:ecochallenge_mobile/pages/user_profile_page.dart';
 import 'package:ecochallenge_mobile/pages/history_page.dart';
+import 'package:ecochallenge_mobile/providers/notification_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:ecochallenge_mobile/providers/auth_provider.dart';
 import 'package:ecochallenge_mobile/models/user.dart';
 
-class ProfilePanel extends StatelessWidget {
+class ProfilePanel extends StatefulWidget {
   final VoidCallback onClose;
 
   const ProfilePanel({super.key, required this.onClose});
+
+  @override
+  State<ProfilePanel> createState() => _ProfilePanelState();
+}
+
+class _ProfilePanelState extends State<ProfilePanel> {
+  int unreadCount = 0;
+  bool isLoading = true;
+  final NotificationProvider _notificationProvider = NotificationProvider();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUnreadNotificationCount();
+  }
+
+  Future<void> _loadUnreadNotificationCount() async {
+    try {
+      final userId = Provider.of<AuthProvider>(context, listen: false).currentUserId;
+      if (userId != null) {
+        final count = await _notificationProvider.getUnreadCount(userId);
+        if (mounted) {
+          setState(() {
+            unreadCount = count;
+            isLoading = false;
+          });
+        }
+      } else {
+        if (mounted) {
+          setState(() {
+            isLoading = false;
+          });
+        }
+      }
+    } catch (e) {
+      print('Error loading unread notification count: $e');
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +78,7 @@ class ProfilePanel extends StatelessWidget {
                 child: Row(
                   children: [
                     IconButton(
-                      onPressed: onClose,
+                      onPressed: widget.onClose,
                       icon: const Icon(
                         Icons.arrow_back,
                         color: Colors.black87,
@@ -106,7 +151,7 @@ class ProfilePanel extends StatelessWidget {
                           listen: false,
                         ).currentUserId;
                         if (userId != null) {
-                          onClose();
+                          widget.onClose();
                           Navigator.of(context).push(
                             MaterialPageRoute(
                               builder: (_) => UserProfilePage(userId: userId),
@@ -132,8 +177,8 @@ class ProfilePanel extends StatelessWidget {
                           ? '${user.totalEventsParticipated} participated'
                           : null,
                       onTap: () {
-                        onClose();
-                         Navigator.of(context).push(
+                        widget.onClose();
+                        Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (_) => const MyEventsScreen(),
                           ),
@@ -147,10 +192,11 @@ class ProfilePanel extends StatelessWidget {
                           ? '${user.totalCleanups} cleanups completed'
                           : null,
                       onTap: () {
-                        onClose(); // Close the profile panel first
+                        widget.onClose(); // Close the profile panel first
                         Navigator.of(context).push(
                           MaterialPageRoute(
-                            builder: (_) => HistoryPage(), // Navigate to HistoryPage
+                            builder: (_) =>
+                                HistoryPage(), // Navigate to HistoryPage
                           ),
                         );
                       },
@@ -162,7 +208,7 @@ class ProfilePanel extends StatelessWidget {
                           ? '${user.totalPoints} points'
                           : null,
                       onTap: () {
-                        onClose();
+                        widget.onClose();
                         Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (_) => const LeaderboardPage(),
@@ -174,10 +220,11 @@ class ProfilePanel extends StatelessWidget {
                       icon: Icons.assignment_outlined,
                       title: 'Requests',
                       onTap: () {
-                        onClose(); // Close the profile panel first
+                        widget.onClose(); // Close the profile panel first
                         Navigator.of(context).push(
                           MaterialPageRoute(
-                            builder: (_) => RequestsTrackingPage(), // Navigate to RequestsTrackingPage
+                            builder: (_) =>
+                                RequestsTrackingPage(), // Navigate to RequestsTrackingPage
                           ),
                         );
                       },
@@ -185,13 +232,19 @@ class ProfilePanel extends StatelessWidget {
                     _buildMenuItem(
                       icon: Icons.notifications_outlined,
                       title: 'Notifications',
+                      showBadge: true,
+                      badgeCount: unreadCount,
+                      isLoadingBadge: isLoading,
                       onTap: () {
-                        onClose();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Notifications page coming soon!'),
+                        widget.onClose();
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const NotificationsPage(),
                           ),
-                        );
+                        ).then((_) {
+                          // Refresh unread count when returning from notifications page
+                          _loadUnreadNotificationCount();
+                        });
                       },
                     ),
                     const SizedBox(height: 32),
@@ -271,6 +324,9 @@ class ProfilePanel extends StatelessWidget {
     required IconData icon,
     required String title,
     String? subtitle,
+    bool showBadge = false,
+    int badgeCount = 0,
+    bool isLoadingBadge = false,
     required VoidCallback onTap,
   }) {
     return Container(
@@ -288,7 +344,57 @@ class ProfilePanel extends StatelessWidget {
             ),
             child: Row(
               children: [
-                Icon(icon, color: Colors.black87, size: 24),
+                Stack(
+                  children: [
+                    Icon(icon, color: Colors.black87, size: 24),
+                    if (showBadge && !isLoadingBadge && badgeCount > 0)
+                      Positioned(
+                        right: -2,
+                        top: -2,
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: const BoxDecoration(
+                            color: Colors.red,
+                            shape: BoxShape.circle,
+                          ),
+                          constraints: const BoxConstraints(
+                            minWidth: 16,
+                            minHeight: 16,
+                          ),
+                          child: Text(
+                            badgeCount > 99 ? '99+' : badgeCount.toString(),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                    if (showBadge && isLoadingBadge)
+                      Positioned(
+                        right: -2,
+                        top: -2,
+                        child: Container(
+                          width: 16,
+                          height: 16,
+                          decoration: const BoxDecoration(
+                            color: Colors.grey,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const SizedBox(
+                            width: 8,
+                            height: 8,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 1.5,
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
                 const SizedBox(width: 16),
                 Expanded(
                   child: Column(

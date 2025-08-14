@@ -28,11 +28,13 @@ namespace EcoChallenge.Services.Services
         private readonly IAzureVisionService _azureVisionService;
         private readonly IMLPricingService _mlPricingService;
         private readonly IRabbitMQService _rabbitMQService;
+        private readonly INotificationService _notificationService;
         private readonly ILogger<RequestService> _logger;
 
         public RequestService(EcoChallengeDbContext db, IMapper mapper, IBlobService blobService, IAzureVisionService azureVisionService,
         IMLPricingService mlPricingService,
         IRabbitMQService rabbitMQService,
+        INotificationService notificationService,
         ILogger<RequestService> logger) : base(db, mapper)
         {
             _db = db;
@@ -40,6 +42,7 @@ namespace EcoChallenge.Services.Services
             _azureVisionService = azureVisionService;
             _mlPricingService = mlPricingService;
             _rabbitMQService = rabbitMQService;
+            _notificationService = notificationService;
             _logger = logger;
         }
 
@@ -335,12 +338,86 @@ namespace EcoChallenge.Services.Services
                     .FirstOrDefaultAsync(s => s.Id == request.StatusId.Value, cancellationToken);
                 newStatusName = newStatus?.Name ?? "Unknown";
 
+                _ = Task.Run(async () =>
+                {
+                    await CreateRequestStatusNotificationAsync(entity, originalStatusName, newStatusName, request);
+                });
+
                 // Only publish for Approved or Denied status changes
                 if (newStatusName.Equals("Approved", StringComparison.OrdinalIgnoreCase) ||
                     newStatusName.Equals("Denied", StringComparison.OrdinalIgnoreCase))
                 {
                     await PublishRequestStatusChangedMessage(entity, originalStatusName, newStatusName, request, cancellationToken);
                 }
+            }
+        }
+
+        private async Task CreateRequestStatusNotificationAsync(Request entity, string originalStatus, string newStatus, RequestUpdateRequest request)
+        {
+            try
+            {
+                NotificationType notificationType;
+                string title;
+                string message;
+
+                switch (newStatus.ToLower())
+                {
+                    case "approved":
+                        notificationType = NotificationType.RequestApproved;
+                        title = "Request Approved! 🎉";
+                        message = $"Great news! Your cleanup request '{entity.Title}' has been approved";
+
+                        if (request.ActualRewardPoints > 0 || request.ActualRewardMoney > 0)
+                        {
+                            message += $" with a reward of {request.ActualRewardPoints} points";
+                            if (request.ActualRewardMoney > 0)
+                                message += $" and ${request.ActualRewardMoney}";
+                        }
+                        message += ".";
+                        break;
+
+                    case "rejected":
+                    case "denied":
+                        notificationType = NotificationType.RequestRejected;
+                        title = "Request Update";
+                        message = $"Your cleanup request '{entity.Title}' has been declined.";
+
+                        if (!string.IsNullOrEmpty(request.RejectionReason))
+                            message += $" Reason: {request.RejectionReason}";
+                        break;
+
+                    case "completed":
+                        notificationType = NotificationType.RequestApproved; // Using approved for completed
+                        title = "Request Completed! ✅";
+                        message = $"Your cleanup request '{entity.Title}' has been marked as completed. Thank you for making a difference!";
+                        break;
+
+                    default:
+                        // For other status changes, create a general update notification
+                        notificationType = NotificationType.AdminMessage;
+                        title = "Request Status Updated";
+                        message = $"Your cleanup request '{entity.Title}' status has been updated to {newStatus}.";
+                        break;
+                }
+
+                var notificationRequest = new NotificationInsertRequest
+                {
+                    UserId = entity.UserId,
+                    NotificationType = notificationType,
+                    Title = title,
+                    Message = message,
+                    IsPushed = false
+                };
+
+                await _notificationService.CreateAsync(notificationRequest);
+
+                _logger.LogInformation("Created notification for user {UserId} regarding request {RequestId} status change to {NewStatus}",
+                    entity.UserId, entity.Id, newStatus);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to create notification for request {RequestId} status change", entity.Id);
+                // Don't throw - we don't want to fail the main operation
             }
         }
 
