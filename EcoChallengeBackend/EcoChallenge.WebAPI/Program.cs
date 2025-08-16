@@ -24,7 +24,9 @@ builder.Services.AddAutoMapper(cfg => { }, typeof(UserProfile).Assembly, typeof(
     typeof(LocationProfile).Assembly, typeof(UserBadgeProfile).Assembly, typeof(WasteTypeProfile).Assembly,
     typeof(RewardProfile).Assembly, typeof(DonationProfile).Assembly, typeof(BalanceSettingProfile).Assembly,
     typeof(GalleryReactionProfile).Assembly, typeof(GalleryShowcaseProfile).Assembly, typeof(EventParticipantProfile).Assembly,
-    typeof(RequestParticipationProfile).Assembly, typeof(NotificationProfile).Assembly);
+    typeof(RequestParticipationProfile).Assembly, typeof(NotificationProfile).Assembly, typeof(CriteriaTypeProfile).Assembly, typeof(BadgeTypeProfile).Assembly,
+    typeof(DonationStatusProfile).Assembly, typeof(EntityTypeProfile).Assembly, typeof(EventStatusProfile).Assembly, typeof(EventTypeProfile).Assembly,
+    typeof(RequestStatusProfile).Assembly);
 
 builder.Services.AddAuthentication("BasicAuthentication")
     .AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>("BasicAuthentication", null);
@@ -55,6 +57,13 @@ builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IMLPricingService, MLPricingService>();
 builder.Services.AddScoped<IBlobService, BlobService>();
 builder.Services.AddScoped<IBadgeManagementService, BadgeManagementService>();
+builder.Services.AddScoped<ICriteriaTypeService, CriteriaTypeService>();
+builder.Services.AddScoped<IBadgeTypeService, BadgeTypeService>();
+builder.Services.AddScoped<IDonationStatusService, DonationStatusService>();
+builder.Services.AddScoped<IEntityTypeService, EntityTypeService>();
+builder.Services.AddScoped<IEventStatusService, EventStatusService>();
+builder.Services.AddScoped<IEventTypeService, EventTypeService>();
+builder.Services.AddScoped<IRequestStatusService, RequestStatusService>();
 
 builder.Services.AddHostedService<MLTrainingBackgroundService>();
 builder.Services.AddHostedService<BadgeCheckBackgroundService>();
