@@ -17,6 +17,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using EcoChallenge.Services.BaseServices;
+using EcoChallenge.Models.Messages;
 
 namespace EcoChallenge.Services.Services
 {
@@ -25,17 +26,20 @@ namespace EcoChallenge.Services.Services
         private readonly IPasswordHasher _hasher;
         private readonly EcoChallengeDbContext _db;
         private readonly IBlobService _blobService;
+        private readonly IRabbitMQService _rabbitMQService;
 
         public UserService(
             EcoChallengeDbContext db,
             IMapper mapper,
             IPasswordHasher hasher,
-            IBlobService blobService
+            IBlobService blobService,
+            IRabbitMQService rabbitMQService
         ) : base(db, mapper)
         {
             _hasher = hasher;
             _db = db;
             _blobService = blobService;
+            _rabbitMQService = rabbitMQService;
         }
 
         public override async Task<PagedResult<UserResponse>> GetAsync(UserSearchObject search, CancellationToken cancellationToken = default)
@@ -239,6 +243,118 @@ namespace EcoChallenge.Services.Services
             await _db.SaveChangesAsync(ct);
 
             return _mapper.Map<UserResponse>(userEntity);
+        }
+
+        public async Task<ForgotPasswordResponse> RequestPasswordResetAsync(ForgotPasswordRequest request, CancellationToken ct = default)
+        {
+            var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == request.Email, ct);
+            if (user == null)
+            {
+                // Don't reveal that email doesn't exist for security
+                return new ForgotPasswordResponse
+                {
+                    Success = true,
+                    Message = "If the email exists, a reset code has been sent."
+                };
+            }
+
+            // Deactivate any existing reset codes for this user
+            var existingResets = await _db.PasswordResets
+                .Where(pr => pr.UserId == user.Id && !pr.IsUsed && pr.ExpiresAt > DateTime.UtcNow)
+                .ToListAsync(ct);
+
+            foreach (var reset in existingResets)
+            {
+                reset.IsUsed = true;
+                reset.UsedAt = DateTime.UtcNow;
+            }
+
+            // Generate 6-digit reset code
+            var resetCode = GenerateResetCode();
+            var expiresAt = DateTime.UtcNow.AddMinutes(15); // 15 minutes expiry
+
+            var passwordReset = new PasswordReset
+            {
+                UserId = user.Id,
+                Email = user.Email,
+                ResetCode = resetCode,
+                ExpiresAt = expiresAt
+            };
+
+            _db.PasswordResets.Add(passwordReset);
+            await _db.SaveChangesAsync(ct);
+
+            // Publish message to RabbitMQ for email sending
+            var message = new PasswordResetRequested
+            {
+                UserId = user.Id,
+                UserName = $"{user.FirstName} {user.LastName}",
+                UserEmail = user.Email,
+                ResetCode = resetCode,
+                RequestedAt = DateTime.UtcNow,
+                ExpiresAt = expiresAt
+            };
+
+            // Assuming you have IRabbitMQService injected
+            await _rabbitMQService.PublishAsync(message, "password.reset.requested");
+
+            return new ForgotPasswordResponse
+            {
+                Success = true,
+                Message = "Reset code has been sent to your email."
+            };
+        }
+
+        public async Task<ForgotPasswordResponse> ResetPasswordAsync(ResetPasswordRequest request, CancellationToken ct = default)
+        {
+            var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == request.Email, ct);
+            if (user == null)
+            {
+                return new ForgotPasswordResponse
+                {
+                    Success = false,
+                    Message = "Invalid reset code or email."
+                };
+            }
+
+            var passwordReset = await _db.PasswordResets
+                .FirstOrDefaultAsync(pr =>
+                    pr.UserId == user.Id &&
+                    pr.Email == request.Email &&
+                    pr.ResetCode == request.ResetCode &&
+                    !pr.IsUsed &&
+                    pr.ExpiresAt > DateTime.UtcNow, ct);
+
+            if (passwordReset == null)
+            {
+                return new ForgotPasswordResponse
+                {
+                    Success = false,
+                    Message = "Invalid or expired reset code."
+                };
+            }
+
+            // Update password
+            user.PasswordHash = _hasher.Hash(request.NewPassword);
+            user.UpdatedAt = DateTime.UtcNow;
+
+            // Mark reset code as used
+            passwordReset.IsUsed = true;
+            passwordReset.UsedAt = DateTime.UtcNow;
+
+            await _db.SaveChangesAsync(ct);
+
+            return new ForgotPasswordResponse
+            {
+                Success = true,
+                Message = "Password has been reset successfully."
+            };
+        }
+
+        private string GenerateResetCode()
+        {
+            var random = new Random();
+            return random.Next(100000, 999999).ToString(); // 6-digit code
         }
 
     }

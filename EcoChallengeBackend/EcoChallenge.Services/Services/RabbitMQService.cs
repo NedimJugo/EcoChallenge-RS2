@@ -78,10 +78,10 @@ namespace EcoChallenge.Services.Services
 
             // Bind to multiple routing keys for request status changes
             var requestRoutingKeys = new[] {
-        "request.status.approved",
-        "request.status.denied",
-        "request.status.changed"
-    };
+                "request.status.approved",
+                "request.status.denied",
+                "request.status.changed"
+            };
 
             foreach (var routingKey in requestRoutingKeys)
             {
@@ -98,19 +98,15 @@ namespace EcoChallenge.Services.Services
                 queue: proofQueueName,
                 durable: true,
                 exclusive: false,
-                autoDelete: false,
-                arguments: new Dictionary<string, object>
-    {
-        { "x-message-ttl", 3600000 } // 1 hour in ms
-    }
-            );
+                autoDelete: false
+             );
 
             // Bind to multiple routing keys for proof status changes
             var proofRoutingKeys = new[] {
-        "proof.status.approved",
-        "proof.status.denied",
-        "proof.status.changed"
-    };
+                "proof.status.approved",
+                "proof.status.denied",
+                "proof.status.changed"
+            };
 
             foreach (var routingKey in proofRoutingKeys)
             {
@@ -120,6 +116,20 @@ namespace EcoChallenge.Services.Services
                     routingKey: routingKey
                 );
             }
+
+            var passwordResetQueueName = "ecochallenge.password.reset.requested";
+            _channel.QueueDeclare(
+                queue: passwordResetQueueName,
+                durable: true,
+                exclusive: false,
+                autoDelete: false
+            );
+
+            _channel.QueueBind(
+                queue: passwordResetQueueName,
+                exchange: _exchangeName,
+                routingKey: "password.reset.requested"
+            );
         }
 
         public async Task PublishAsync<T>(T message, string routingKey) where T : class
