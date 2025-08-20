@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using EcoChallenge.Models.Messages;
 using Newtonsoft.Json;
+using RabbitMQ.Client.Exceptions;
 
 namespace EcoChallenge.Subscriber.Services
 {
@@ -85,6 +86,7 @@ namespace EcoChallenge.Subscriber.Services
                 // Setup consumers for both queues
                 SetupRequestStatusConsumer();
                 SetupProofStatusConsumer();
+                SetupPasswordResetConsumer();
 
                 _logger.LogInformation("Started consuming messages from RabbitMQ. Consumer tags: {ConsumerTags}",
                     string.Join(", ", _consumerTags));
@@ -205,24 +207,37 @@ namespace EcoChallenge.Subscriber.Services
         private void SetupProofStatusConsumer()
         {
             var queueName = "ecochallenge.proof.status.changed";
+            var arguments = new Dictionary<string, object>
+    {
+        {"x-message-ttl", 3600000}, // 1 hour TTL
+    };
 
-            _channel.QueueDeclare(
-                queue: queueName,
-                durable: true,
-                exclusive: false,
-                autoDelete: false,
-                arguments: new Dictionary<string, object>
-                {
-                    {"x-message-ttl", 3600000}, // 1 hour TTL
-                    {"x-max-retries", 3}
-                }
-            );
+            try
+            {
+                // First try passive declaration to check if queue exists
+                _channel.QueueDeclarePassive(queueName);
+
+                // If no exception, queue exists - just bind it
+                _logger.LogInformation("Queue {QueueName} already exists, skipping declaration", queueName);
+            }
+            catch (OperationInterruptedException)
+            {
+                // Queue doesn't exist, create it with desired parameters
+                _channel.QueueDeclare(
+                    queue: queueName,
+                    durable: true,
+                    exclusive: false,
+                    autoDelete: false,
+                    arguments: arguments
+                );
+                _logger.LogInformation("Created queue {QueueName} with TTL and retry settings", queueName);
+            }
 
             var proofRoutingKeys = new[] {
-                "proof.status.approved",
-                "proof.status.denied",
-                "proof.status.changed"
-            };
+        "proof.status.approved",
+        "proof.status.denied",
+        "proof.status.changed"
+    };
 
             foreach (var routingKey in proofRoutingKeys)
             {
@@ -297,7 +312,91 @@ namespace EcoChallenge.Subscriber.Services
             _logger.LogInformation("Started consuming from queue {QueueName} with consumer tag: {ConsumerTag}",
                 queueName, consumerTag);
         }
+        private void SetupPasswordResetConsumer()
+        {
+            var queueName = "ecochallenge.password.reset.requested";
 
+            // Declare queue
+            _channel.QueueDeclare(
+                queue: queueName,
+                durable: true,
+                exclusive: false,
+                autoDelete: false,
+                arguments: null
+            );
+
+            // Bind to routing key
+            _channel.QueueBind(
+                queue: queueName,
+                exchange: _exchangeName,
+                routingKey: "password.reset.requested"
+            );
+
+            _logger.LogInformation("Bound queue {QueueName} to routing key: password.reset.requested", queueName);
+
+            var consumer = new EventingBasicConsumer(_channel);
+            consumer.Received += async (model, ea) =>
+            {
+                var deliveryTag = ea.DeliveryTag;
+                var body = ea.Body.ToArray();
+                var message = Encoding.UTF8.GetString(body);
+                var routingKey = ea.RoutingKey;
+
+                _logger.LogInformation("Received password reset message with routing key: {RoutingKey}, DeliveryTag: {DeliveryTag}",
+                    routingKey, deliveryTag);
+                _logger.LogDebug("Message content: {Message}", message);
+
+                try
+                {
+                    var passwordResetRequested = JsonConvert.DeserializeObject<PasswordResetRequested>(message);
+                    if (passwordResetRequested != null)
+                    {
+                        _logger.LogInformation("Processing password reset for User {UserId}, Email: {UserEmail}",
+                            passwordResetRequested.UserId, passwordResetRequested.UserEmail);
+
+                        await _emailService.SendPasswordResetEmailAsync(passwordResetRequested);
+
+                        // Acknowledge the message
+                        _channel.BasicAck(deliveryTag: deliveryTag, multiple: false);
+
+                        _logger.LogInformation("Successfully processed and acknowledged password reset message for User {UserId}",
+                            passwordResetRequested.UserId);
+                    }
+                    else
+                    {
+                        _logger.LogWarning("Failed to deserialize password reset message - message was null");
+                        _channel.BasicNack(deliveryTag: deliveryTag, multiple: false, requeue: false);
+                    }
+                }
+                catch (JsonException jsonEx)
+                {
+                    _logger.LogError(jsonEx, "JSON deserialization error for password reset message: {Message}", message);
+                    _channel.BasicNack(deliveryTag: deliveryTag, multiple: false, requeue: false);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error processing password reset message: {Message}", message);
+
+                    var requeue = ShouldRequeue(ex);
+                    _channel.BasicNack(deliveryTag: deliveryTag, multiple: false, requeue: requeue);
+
+                    if (requeue)
+                    {
+                        _logger.LogInformation("Message requeued for retry");
+                    }
+                    else
+                    {
+                        _logger.LogWarning("Message discarded due to non-recoverable error");
+                    }
+                }
+            };
+
+            var consumerTag = _channel.BasicConsume(queue: queueName, autoAck: false, consumer: consumer);
+            _consumerTags.Add(consumerTag);
+
+            _logger.LogInformation("Started consuming from queue {QueueName} with consumer tag: {ConsumerTag}",
+                queueName, consumerTag);
+        }
         private bool ShouldRequeue(Exception ex)
         {
             // Don't requeue for certain types of exceptions

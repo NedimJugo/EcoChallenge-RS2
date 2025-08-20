@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:ecochallenge_mobile/models/password_reset.dart';
 import 'package:ecochallenge_mobile/models/user.dart';
 import 'package:ecochallenge_mobile/providers/auth_provider.dart';
 import 'package:ecochallenge_mobile/providers/base_provider.dart';
@@ -198,4 +199,81 @@ class UserProvider extends BaseProvider<UserResponse> {
     );
     return result.items ?? <UserResponse>[];
   }
+
+ Future<ForgotPasswordResponse> requestPasswordReset(String email) async {
+  var url = "$baseUrl/$endpoint/forgot-password";
+  print("POST Forgot Password URL: $url");
+  var uri = Uri.parse(url);
+  
+  // ADD Content-Type header
+  var headers = {
+    ...createHeaders(),
+    'Content-Type': 'application/json',
+  };
+
+  var request = ForgotPasswordRequest(email: email);
+  
+  try {
+    var response = await http.post(
+      uri, 
+      headers: headers, 
+      body: jsonEncode(request.toJson())
+    );
+    
+    print("Forgot password response status: ${response.statusCode}");
+    print("Forgot password response body: ${response.body}");
+    
+    if (response.statusCode == 200) {
+      var data = jsonDecode(response.body);
+      return ForgotPasswordResponse.fromJson(data);
+    } else {
+      throw Exception("Server error ${response.statusCode}: ${response.body}");
+    }
+  } catch (e) {
+    print("Forgot password request failed: $e");
+    throw Exception("Network error: $e");
+  }
+}
+
+Future<ForgotPasswordResponse> resetPassword(String email, String resetCode, String newPassword) async {
+  var url = "$baseUrl/$endpoint/reset-password";
+  print("POST Reset Password URL: $url");
+  var uri = Uri.parse(url);
+  
+  // ADD Content-Type header
+  var headers = {
+    ...createHeaders(),
+    'Content-Type': 'application/json',
+  };
+
+  var request = ResetPasswordRequest(
+    email: email,
+    resetCode: resetCode,
+    newPassword: newPassword,
+  );
+  
+  try {
+    var response = await http.post(
+      uri, 
+      headers: headers, 
+      body: jsonEncode(request.toJson())
+    );
+    
+    print("Reset password response status: ${response.statusCode}");
+    print("Reset password response body: ${response.body}");
+    
+    if (response.statusCode == 200) {
+      var data = jsonDecode(response.body);
+      return ForgotPasswordResponse.fromJson(data);
+    } else if (response.statusCode == 400) {
+      var data = jsonDecode(response.body);
+      return ForgotPasswordResponse.fromJson(data);
+    } else {
+      throw Exception("Server error ${response.statusCode}: ${response.body}");
+    }
+  } catch (e) {
+    print("Reset password request failed: $e");
+    throw Exception("Network error: $e");
+  }
+}
 }

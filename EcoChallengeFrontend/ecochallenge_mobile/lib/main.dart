@@ -1,5 +1,6 @@
 import 'package:ecochallenge_mobile/pages/cleanup_map_page.dart';
 import 'package:ecochallenge_mobile/pages/events_list_page.dart';
+import 'package:ecochallenge_mobile/pages/forgot_password_page.dart';
 import 'package:ecochallenge_mobile/pages/gallery_page.dart';
 import 'package:ecochallenge_mobile/pages/home_page.dart';
 import 'package:ecochallenge_mobile/pages/login_page.dart';
@@ -83,6 +84,7 @@ class MyApp extends StatelessWidget {
         '/gallery': (context) => GalleryPage(),
         '/cleanup-map': (context) => const CleanupMapPage(),
         '/events': (context) => EventsListPage(),
+        '/forgot-password': (context) => const ForgotPasswordPage(),
       },
     );
   }

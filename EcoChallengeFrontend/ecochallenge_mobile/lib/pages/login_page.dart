@@ -37,14 +37,16 @@ class LoginPage extends StatelessWidget {
                 Text(
                   "Login",
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFF333333),
-                      ),
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF333333),
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   'Welcome back, please login to your account',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 24),
@@ -92,14 +94,19 @@ class LoginPage extends StatelessWidget {
                           context: context,
                           builder: (_) => const AlertDialog(
                             title: Text("Error"),
-                            content: Text("Username and password are required."),
+                            content: Text(
+                              "Username and password are required.",
+                            ),
                           ),
                         );
                         return;
                       }
 
                       try {
-                        await Provider.of<AuthProvider>(context, listen: false).login(username, password);
+                        await Provider.of<AuthProvider>(
+                          context,
+                          listen: false,
+                        ).login(username, password);
                         Navigator.pushReplacementNamed(context, '/home');
                       } catch (e) {
                         showDialog(
@@ -108,7 +115,10 @@ class LoginPage extends StatelessWidget {
                             title: const Text("Login Failed"),
                             content: Text(e.toString()),
                             actions: [
-                              TextButton(onPressed: () => Navigator.pop(context), child: const Text("OK"))
+                              TextButton(
+                                onPressed: () => Navigator.pop(context),
+                                child: const Text("OK"),
+                              ),
                             ],
                           ),
                         );
@@ -121,17 +131,22 @@ class LoginPage extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: const Text(
-                      "Login",
-                      style: TextStyle(fontSize: 18),
-                    ),
+                    child: const Text("Login", style: TextStyle(fontSize: 18)),
                   ),
                 ),
                 const SizedBox(height: 16),
                 TextButton(
+                  onPressed: () =>
+                      Navigator.pushNamed(context, '/forgot-password'),
+                  child: const Text(
+                    "Forgot Password?",
+                    style: TextStyle(color: Color(0xFF4CAF50)),
+                  ),
+                ),
+                TextButton(
                   onPressed: () => Navigator.pushNamed(context, '/register'),
                   child: const Text("Don't have an account? Register here"),
-                )
+                ),
               ],
             ),
           ),

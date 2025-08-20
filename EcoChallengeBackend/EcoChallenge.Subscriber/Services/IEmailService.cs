@@ -11,5 +11,6 @@ namespace EcoChallenge.Subscriber.Services
     {
         Task SendRequestStatusChangedEmailAsync(RequestStatusChanged message);
         Task SendProofStatusChangedEmailAsync(ProofStatusChanged message);
+        Task SendPasswordResetEmailAsync(PasswordResetRequested message);
     }
 }

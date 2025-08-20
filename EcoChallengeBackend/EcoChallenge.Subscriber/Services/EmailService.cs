@@ -236,7 +236,111 @@ namespace EcoChallenge.Subscriber.Services
                 return false;
             }
         }
+        public async Task SendPasswordResetEmailAsync(PasswordResetRequested message)
+        {
+            try
+            {
+                _logger.LogInformation("Starting to send password reset email to {Email} for User {UserId}",
+                    message.UserEmail, message.UserId);
 
+                // Validate message data
+                if (string.IsNullOrEmpty(message.UserEmail))
+                {
+                    _logger.LogError("Cannot send email: UserEmail is null or empty for User {UserId}", message.UserId);
+                    return;
+                }
+
+                if (!IsValidEmail(message.UserEmail))
+                {
+                    _logger.LogError("Cannot send email: Invalid email format {Email} for User {UserId}",
+                        message.UserEmail, message.UserId);
+                    return;
+                }
+
+                var subject = "EcoChallenge: Password Reset Code";
+                var body = GeneratePasswordResetEmailBody(message);
+
+                _logger.LogInformation("Sending password reset email with subject: {Subject}", subject);
+
+                await SendEmailAsync(message.UserEmail, message.UserName, subject, body);
+
+                _logger.LogInformation("✅ Password reset email sent successfully to {Email} for User {UserId}",
+                    message.UserEmail, message.UserId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "❌ Failed to send password reset email to {Email} for User {UserId}",
+                    message.UserEmail, message.UserId);
+                throw;
+            }
+        }
+
+        private string GeneratePasswordResetEmailBody(PasswordResetRequested message)
+        {
+            return $@"
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <title>Password Reset</title>
+</head>
+<body style='font-family: Arial, sans-serif; line-height: 1.6; color: #333;'>
+    <div style='max-width: 600px; margin: 0 auto; padding: 20px;'>
+        <div style='background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;'>
+            <h1 style='color: #2c3e50; margin-bottom: 10px;'>
+                🔐 Password Reset Request
+            </h1>
+            <p style='font-size: 16px; margin: 0;'>
+                Hello {message.UserName},
+            </p>
+        </div>
+
+        <div style='background-color: white; padding: 20px; border: 1px solid #dee2e6; border-radius: 8px;'>
+            <h2 style='color: #007bff; margin-top: 0;'>
+                Password Reset Code
+            </h2>
+            
+            <p style='margin-bottom: 20px;'>
+                We received a request to reset your password for your EcoChallenge account. 
+                Use the code below to reset your password:
+            </p>
+            
+            <div style='background-color: #e9f7ef; padding: 20px; border-radius: 8px; text-align: center; margin: 20px 0;'>
+                <h1 style='color: #28a745; font-size: 36px; margin: 0; font-family: monospace; letter-spacing: 4px;'>
+                    {message.ResetCode}
+                </h1>
+            </div>
+
+            <div style='background-color: #fff3cd; padding: 15px; border-radius: 5px; margin: 15px 0; border-left: 4px solid #ffc107;'>
+                <p style='margin: 0; color: #856404;'>
+                    <strong>⚠️ Important:</strong> This code will expire in 15 minutes at {message.ExpiresAt:HH:mm} UTC.
+                </p>
+            </div>
+
+            <p style='margin-bottom: 15px;'>
+                If you didn't request a password reset, please ignore this email. Your password will remain unchanged.
+            </p>
+
+            <div style='margin-top: 20px; padding-top: 20px; border-top: 1px solid #dee2e6; font-size: 14px; color: #6c757d;'>
+                <p>Requested on: {message.RequestedAt:MMMM dd, yyyy 'at' HH:mm} UTC</p>
+                <p>This code is valid for 15 minutes only.</p>
+            </div>
+
+            <div style='background-color: #f8d7da; padding: 15px; border-radius: 5px; margin: 15px 0; border-left: 4px solid #dc3545;'>
+                <p style='margin: 0; color: #721c24;'>
+                    <strong>🛡️ Security Tip:</strong> Never share this code with anyone. EcoChallenge staff will never ask for your reset code.
+                </p>
+            </div>
+        </div>
+
+        <div style='margin-top: 20px; text-align: center; font-size: 14px; color: #6c757d;'>
+            <p>Thank you for being part of EcoChallenge!</p>
+            <p>Making the world greener, one challenge at a time. 🌱</p>
+        </div>
+    </div>
+</body>
+</html>";
+        }
         private string GenerateRequestStatusEmailBody(RequestStatusChanged message)
         {
             var statusColor = message.NewStatus.ToLower() == "approved" ? "#28a745" : "#dc3545";
