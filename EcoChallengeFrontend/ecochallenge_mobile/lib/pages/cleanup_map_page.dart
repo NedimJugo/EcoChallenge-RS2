@@ -10,7 +10,7 @@ import 'package:ecochallenge_mobile/models/request.dart';
 import 'package:ecochallenge_mobile/models/location.dart';
 import 'package:ecochallenge_mobile/providers/request_provider.dart';
 import 'package:ecochallenge_mobile/providers/location_provider.dart';
-
+import 'package:ecochallenge_mobile/pages/request_detail_page.dart'; // Import RequestDetailPage
 
 class CleanupMapPage extends StatefulWidget {
   const CleanupMapPage({Key? key}) : super(key: key);
@@ -43,22 +43,17 @@ class _CleanupMapPageState extends State<CleanupMapPage> {
       final requestProvider = Provider.of<RequestProvider>(context, listen: false);
       final locationProvider = Provider.of<LocationProvider>(context, listen: false);
 
-      // Create search filter for unresolved requests
       final searchFilter = RequestSearchObject(
+        status: 2, // Only show requests with status = 1
         retrieveAll: true,
       );
 
-      // Fetch all requests
+      // Fetch requests with status = 1
       final requestResult = await requestProvider.get(filter: searchFilter.toJson());
-      final allRequests = requestResult.items ?? [];
-
-      // Filter for unresolved requests (completedAt is null)
-      final unresolvedRequests = allRequests.where((request) {
-        return request.completedAt == null;
-      }).toList();
+      final statusOneRequests = requestResult.items ?? [];
 
       // Fetch location details for each request
-      final locationIds = unresolvedRequests.map((r) => r.locationId).toSet();
+      final locationIds = statusOneRequests.map((r) => r.locationId).toSet();
       final Map<int, LocationResponse> locationMap = {};
 
       for (final locationId in locationIds) {
@@ -77,7 +72,7 @@ class _CleanupMapPageState extends State<CleanupMapPage> {
       }
 
       setState(() {
-        _unresolvedRequests = unresolvedRequests;
+        _unresolvedRequests = statusOneRequests; // Use status = 1 requests
         _locations = locationMap;
         _isLoading = false;
       });
@@ -282,16 +277,16 @@ class _CleanupMapPageState extends State<CleanupMapPage> {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
-                    _showParticipationDialog();
+                    _navigateToRequestDetail();
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
+                    backgroundColor: const Color(0xFFD4A574), // Changed color to match app theme
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  child: const Text('Join Cleanup'),
+                  child: const Text('See More Detail'), // Changed button text
                 ),
               ),
             ],
@@ -301,32 +296,14 @@ class _CleanupMapPageState extends State<CleanupMapPage> {
     );
   }
 
-  void _showParticipationDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Join Cleanup'),
-        content: const Text('Would you like to participate in this cleanup activity?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Thank you for joining the cleanup!'),
-                  backgroundColor: Colors.green,
-                ),
-              );
-            },
-            child: const Text('Join'),
-          ),
-        ],
-      ),
-    );
+  void _navigateToRequestDetail() {
+    if (_selectedRequest != null) {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => RequestDetailPage(request: _selectedRequest!),
+        ),
+      );
+    }
   }
 
   Widget _buildMapContent() {
@@ -390,7 +367,7 @@ class _CleanupMapPageState extends State<CleanupMapPage> {
             ),
             SizedBox(height: 16),
             Text(
-              'No cleanup locations found',
+              'No pending cleanup requests', // Updated message to reflect status = 1 filtering
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w500,
@@ -398,7 +375,7 @@ class _CleanupMapPageState extends State<CleanupMapPage> {
             ),
             SizedBox(height: 8),
             Text(
-              'All locations have been cleaned up!',
+              'No requests are currently awaiting review!', // Updated subtitle
               style: TextStyle(
                 fontSize: 14,
                 color: Colors.grey,
@@ -466,7 +443,7 @@ class _CleanupMapPageState extends State<CleanupMapPage> {
         ],
       ),
       bottomNavigationBar: const SharedBottomNavigation(
-        currentIndex: 0, // Map is at index 0 (language/global icon)
+        currentIndex: 4, // Map is at index 0 (language/global icon)
       ),
     );
   }

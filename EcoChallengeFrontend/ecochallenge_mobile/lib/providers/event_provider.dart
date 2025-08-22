@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:ecochallenge_mobile/models/event.dart';
 import 'package:ecochallenge_mobile/providers/base_provider.dart';
 import 'package:http/http.dart' as http;
@@ -15,6 +17,33 @@ class EventProvider extends BaseProvider<EventResponse> {
     return await super.insert(event);
   }
 
+  Future<EventResponse?> getById(int eventId) async {
+    var baseUrl = this.baseUrl;
+    var endpoint = this.endpoint;
+    var url = "$baseUrl/$endpoint/$eventId";
+    
+    print("GET URL: $url");
+    var uri = Uri.parse(url);
+    var headers = createHeaders();
+    
+    try {
+      var response = await http.get(uri, headers: headers);
+      print("Get response status: ${response.statusCode}");
+      print("Get response body: ${response.body}");
+      
+      if (isValidResponse(response)) {
+        var data = jsonDecode(response.body);
+        return fromJson(data);
+      } else if (response.statusCode == 404) {
+        return null; // Event not found
+      } else {
+        throw Exception("Server error ${response.statusCode}: ${response.body}");
+      }
+    } catch (e) {
+      print("Get request failed: $e");
+      throw Exception("Network error: $e");
+    }
+  }
   // Delete event method
   Future<bool> deleteEvent(int eventId) async {
     var baseUrl = this.baseUrl;

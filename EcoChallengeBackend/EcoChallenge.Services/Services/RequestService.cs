@@ -90,9 +90,40 @@ namespace EcoChallenge.Services.Services
             if (s.AssignedAdminId.HasValue)
                 query = query.Where(r => r.AssignedAdminId == s.AssignedAdminId.Value);
 
+            if (!string.IsNullOrWhiteSpace(s.SortBy))
+            {
+                query = ApplySorting(query, s.SortBy, s.Desc);
+            }
+
             return query;
         }
 
+        private IQueryable<Request> ApplySorting(IQueryable<Request> query, string sortBy, bool desc)
+        {
+            // Normalize to avoid casing issues
+            sortBy = sortBy.Trim().ToLower();
+
+            return (sortBy, desc) switch
+            {
+                ("title", true) => query.OrderByDescending(r => r.Title),
+                ("title", false) => query.OrderBy(r => r.Title),
+
+                ("createdat", true) => query.OrderByDescending(r => r.CreatedAt),
+                ("createdat", false) => query.OrderBy(r => r.CreatedAt),
+
+                ("urgencylevel", true) => query.OrderByDescending(r => r.UrgencyLevel),
+                ("urgencylevel", false) => query.OrderBy(r => r.UrgencyLevel),
+
+                ("status", true) => query.OrderByDescending(r => r.Status.Name),
+                ("status", false) => query.OrderBy(r => r.Status.Name),
+
+                ("userid", true) => query.OrderByDescending(r => r.UserId),
+                ("userid", false) => query.OrderBy(r => r.UserId),
+
+                _ when desc => query.OrderByDescending(r => r.Id), // default fallback
+                _ => query.OrderBy(r => r.Id)
+            };
+        }
 
         public override async Task<RequestResponse?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
         {
@@ -252,7 +283,8 @@ namespace EcoChallenge.Services.Services
             {
                 try
                 {
-                    var badgeService = _serviceProvider.GetRequiredService<IBadgeManagementService>();
+                    using var scope = _serviceProvider.CreateScope();
+                    var badgeService = scope.ServiceProvider.GetRequiredService<IBadgeManagementService>();
                     await badgeService.CheckRequestsBadgesAsync(entity.UserId);
                 }
                 catch (Exception ex)

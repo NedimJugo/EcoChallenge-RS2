@@ -32,38 +32,68 @@ class SharedBottomNavigation extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            _buildNavItem(Icons.language, 0, context),
+            _buildNavItem(Icons.home, 0, context),
             _buildNavItem(Icons.image, 1, context),
-            _buildNavItem(Icons.home, 2, context),
+            _buildNavItem(Icons.add, 2, context),
             _buildNavItem(Icons.calendar_today, 3, context),
-            _buildNavItem(Icons.chat, 4, context),
+            _buildNavItem(Icons.language, 4, context),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildNavItem(IconData icon, int index, BuildContext context) {
-    final bool isSelected = index == currentIndex;
+Widget _buildNavItem(IconData icon, int index, BuildContext context) {
+  final bool isSelected = index == currentIndex;
+
+  // Middle button stays special
+  if (index == 2) {
     return GestureDetector(
       onTap: () => _handleNavigation(index, context),
       child: Container(
-        width: 50,
-        height: 50,
+        width: 60,
+        height: 60,
         decoration: BoxDecoration(
-          color: isSelected
-              ? const Color(0xFF8B4513)
-              : Colors.transparent,
+          color: const Color(0xFF2D5016),
           shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.2),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
-        child: Icon(
-          icon,
-          size: 28,
-          color: isSelected ? Colors.white : Colors.grey[400],
+        child: const Icon(
+          Icons.add,
+          size: 32,
+          color: Colors.white,
         ),
       ),
     );
   }
+
+  // Other items: circle outline instead of full background
+  return GestureDetector(
+    onTap: () => _handleNavigation(index, context),
+    child: Container(
+      width: 50,
+      height: 50,
+      decoration: BoxDecoration(
+  shape: BoxShape.circle,
+  color: isSelected ? const Color(0x228B4513) : Colors.transparent, // faint brown glow
+),
+      child: Icon(
+        icon,
+        size: 28,
+        color: isSelected ? const Color(0xFF8B4513) : Colors.grey[400],
+      ),
+    ),
+  );
+}
+
+
+
 
   void _handleNavigation(int index, BuildContext context) {
     // Don't navigate if already on the current page
@@ -71,7 +101,7 @@ class SharedBottomNavigation extends StatelessWidget {
 
     switch (index) {
       case 0:
-        Navigator.pushReplacementNamed(context, '/cleanup-map');
+        Navigator.pushReplacementNamed(context, '/home');
         break;
       case 1:
         // Navigate to Gallery
@@ -79,16 +109,14 @@ class SharedBottomNavigation extends StatelessWidget {
         break;
       case 2:
         // Navigate to Home
-        Navigator.pushReplacementNamed(context, '/home');
+        Navigator.pushReplacementNamed(context, '/send-request');
         break;
       case 3:
         // Navigate to Events (current screen)
         Navigator.pushReplacementNamed(context, '/events');
         break;
       case 4:
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Chat coming soon!')),
-        );
+        Navigator.pushReplacementNamed(context, '/cleanup-map');
         break;
     }
 

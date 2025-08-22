@@ -10,11 +10,16 @@ import 'package:provider/provider.dart';
 import 'package:ecochallenge_mobile/models/organization.dart';
 import 'package:ecochallenge_mobile/models/request.dart';
 import 'package:ecochallenge_mobile/models/event.dart';
+import 'package:ecochallenge_mobile/models/event_participant.dart';
+import 'package:ecochallenge_mobile/models/request_participation.dart';
 import 'package:ecochallenge_mobile/providers/organization_provider.dart';
 import 'package:ecochallenge_mobile/providers/request_provider.dart';
 import 'package:ecochallenge_mobile/providers/event_provider.dart';
+import 'package:ecochallenge_mobile/providers/event_participant_provider.dart';
+import 'package:ecochallenge_mobile/providers/request_participation_provider.dart';
 import 'package:ecochallenge_mobile/widgets/profile_panel.dart';
 import 'package:ecochallenge_mobile/providers/auth_provider.dart';
+import 'package:flutter/services.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -27,6 +32,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   List<Organization> organizations = [];
   List<RequestResponse> paidRequests = [];
   List<EventResponse> events = [];
+  List<int> _userParticipatedEventIds = [];
+  List<int> _userParticipatedRequestIds = [];
   bool isLoading = true;
   String? errorMessage;
 
@@ -83,6 +90,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         isLoading = true;
         errorMessage = null;
       });
+      
       final orgProvider = Provider.of<OrganizationProvider>(
         context,
         listen: false,
@@ -92,22 +100,77 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         listen: false,
       );
       final eventProvider = Provider.of<EventProvider>(context, listen: false);
+      final participantProvider = Provider.of<EventParticipantProvider>(context, listen: false);
+      final requestParticipationProvider = Provider.of<RequestParticipationProvider>(context, listen: false);
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+
+      // Get current user ID
+      final userId = authProvider.currentUserId;
+
+      // Load user participations first to filter out joined events/requests
+      if (userId != null) {
+        // Load event participations
+        final participantSearchObject = EventParticipantSearchObject(
+          userId: userId,
+          retrieveAll: true,
+        );
+        final participantsResult = await participantProvider.get(filter: participantSearchObject.toJson());
+        _userParticipatedEventIds = participantsResult.items?.map((p) => p.eventId).toList() ?? [];
+        
+        // Load request participations
+        final requestParticipationSearch = RequestParticipationSearchObject(
+          userId: userId,
+          retrieveAll: true,
+        );
+        final requestParticipations = await requestParticipationProvider.get(filter: requestParticipationSearch.toJson());
+        _userParticipatedRequestIds = requestParticipations.items?.map((p) => p.requestId).toList() ?? [];
+      } else {
+        _userParticipatedEventIds = [];
+        _userParticipatedRequestIds = [];
+      }
 
       // Load organizations for donations
       final orgResult = await orgProvider.get();
-      // Load last 3 paid cleanup requests
-      final requestResult = await requestProvider.get(
-        filter: {'isPaidRequest': true, 'take': 3, 'orderBy': 'createdAt desc'},
+      
+      // Load active events (status = 1) with filtering
+      final eventSearchObject = EventSearchObject(
+        status: 2, // Active status
+        pageSize: 10, // Load more than 3 to account for filtering
+        sortBy: 'eventDate',
+        desc: true,
       );
-      // Load last 3 events
-      final eventResult = await eventProvider.get(
-        filter: {'take': 3, 'orderBy': 'eventDate desc'},
+      final eventResult = await eventProvider.get(filter: eventSearchObject.toJson());
+      
+      // Load active paid cleanup requests (status = 2) with filtering
+      final requestSearchObject = RequestSearchObject(
+        status: 2, // Active status
+        pageSize: 10, // Load more than 3 to account for filtering
+        sortBy: 'createdAt',
+        desc: true,
       );
+      final requestResult = await requestProvider.get(filter: requestSearchObject.toJson());
+
+      // Filter events: exclude past events and events user has already joined
+      final allEvents = eventResult.items as List<EventResponse>;
+      final filteredEvents = allEvents.where((event) {
+        bool isParticipated = _userParticipatedEventIds.contains(event.id);
+        bool isPastEvent = event.eventDate.isBefore(DateTime.now());
+        return !isParticipated && !isPastEvent;
+      }).take(3).toList();
+
+      // Filter requests: exclude requests user has already participated in and show only paid requests
+      final allRequests = requestResult.items as List<RequestResponse>;
+      final filteredRequests = allRequests.where((request) {
+        bool isParticipated = _userParticipatedRequestIds.contains(request.id);
+        // Check if it's a paid request (you might need to adjust this logic based on your model)
+        bool isPaidRequest = request.suggestedRewardMoney >= 0;
+        return !isParticipated && isPaidRequest;
+      }).take(3).toList();
 
       setState(() {
         organizations = orgResult.items as List<Organization>;
-        paidRequests = requestResult.items as List<RequestResponse>;
-        events = eventResult.items as List<EventResponse>;
+        paidRequests = filteredRequests;
+        events = filteredEvents;
         isLoading = false;
       });
     } catch (e) {
@@ -122,12 +185,19 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color.fromARGB(
-        255,
-        255,
-        255,
-        255,
-      ), // Updated background color to match images better
+      appBar: PreferredSize(
+        preferredSize: Size.zero,
+        child: AppBar(
+          backgroundColor: darkBackground,
+          elevation: 0,
+          systemOverlayStyle: const SystemUiOverlayStyle(
+            statusBarColor: darkBackground,
+            statusBarIconBrightness: Brightness.light,
+            statusBarBrightness: Brightness.dark,
+          ),
+        ),
+      ),
+      backgroundColor: const Color.fromARGB(255, 255, 255, 255,), 
       body: Stack(
         children: [
           // Main content
@@ -149,11 +219,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                               _buildHeader(),
                               Padding(
                                 padding: const EdgeInsets.symmetric(
-                                  horizontal: 20.0,
+                                  horizontal: 40.0,
                                 ),
                                 child: Column(
                                   children: [
-                                    const SizedBox(height: 120),
+                                    const SizedBox(height: 222.5),
                                     _buildAddRequestButton(),
                                   ],
                                 ),
@@ -161,7 +231,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                             ],
                           ),
                           const SizedBox(
-                            height: 40,
+                            height: 10,
                           ), // More space to adjust for the button's overlap
                           Padding(
                             padding: const EdgeInsets.symmetric(
@@ -176,7 +246,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                 _buildPaidCleanupSection(),
                                 const SizedBox(height: 32),
                                 _buildEventsSection(),
-                                const SizedBox(height: 100),
+                                const SizedBox(height: 50),
                               ],
                             ),
                           ),
@@ -232,76 +302,97 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   Widget _buildHeader() {
-    final user = AuthProvider.userData;
-    final displayName = user?.firstName ?? AuthProvider.username ?? 'User';
-    return Container(
-      width: double.infinity,
-      decoration: const BoxDecoration(
-        color: darkBackground,
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(24),
-          bottomRight: Radius.circular(24),
-        ),
+  final user = AuthProvider.userData;
+  final displayName = user?.firstName ?? AuthProvider.username ?? 'User';
+
+  return Container(
+    width: double.infinity,
+    decoration: const BoxDecoration(
+      color: darkBackground,
+      borderRadius: BorderRadius.only(
+        bottomLeft: Radius.circular(24),
+        bottomRight: Radius.circular(24),
       ),
-      padding: const EdgeInsets.fromLTRB(20, 35, 20, 45),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Hi $displayName,',
-                style: const TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-              const SizedBox(height: 4),
-              const Text(
-                'Be active take the challenge',
-                style: TextStyle(fontSize: 16, color: Colors.white70),
-              ),
-            ],
-          ),
-          GestureDetector(
-            onTap: _toggleProfilePanel,
-            child: Container(
-              width: 45,
-              height: 45,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: user?.profileImageUrl != null
-                  ? ClipOval(
-                      child: Image.network(
-                        user!.profileImageUrl!,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return const Icon(
-                            Icons.person,
-                            color: Colors.grey,
-                            size: 24,
-                          );
-                        },
-                      ),
-                    )
-                  : const Icon(Icons.person, color: Colors.grey, size: 24),
+    ),
+    padding: const EdgeInsets.fromLTRB(20, 35, 20, 45),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start, // text goes left
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const SizedBox(width: 45), // balance left side
+
+            // Eco logo in the middle
+            Image.asset(
+              'assets/images/Eco-Light.png',
+              width: 100,
+              height: 100,
             ),
+
+            // Profile picture on the right
+            GestureDetector(
+              onTap: _toggleProfilePanel,
+              child: Container(
+                width: 45,
+                height: 45,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: user?.profileImageUrl != null
+                    ? ClipOval(
+                        child: Image.network(
+                          user!.profileImageUrl!,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return const Icon(
+                              Icons.person,
+                              color: Colors.grey,
+                              size: 24,
+                            );
+                          },
+                        ),
+                      )
+                    : const Icon(Icons.person, color: Colors.grey, size: 24),
+              ),
+            ),
+          ],
+        ),
+
+        const SizedBox(height: 12),
+
+        // Greeting text (aligned left now)
+        Text(
+          'Hi $displayName,',
+          style: const TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
           ),
-        ],
-      ),
-    );
-  }
+        ),
+        const SizedBox(height: 4),
+        const Text(
+          'Be active take the challenge',
+          style: TextStyle(
+            fontSize: 16,
+            color: Colors.white70,
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+
+  
 
   Widget _buildAddRequestButton() {
     return Container(
@@ -486,82 +577,46 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   Widget _buildPaidCleanupSection() {
-    // Show only first 3 requests
-    final displayRequests = paidRequests.take(3).toList();
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            _buildSectionTitle('Paid cleanup requests'),
-            if (paidRequests.length > 3)
-              TextButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          EventsListPage(initialFilter: 'Requests'),
-                    ),
-                  );
-                },
-                child: const Text(
-                  'View All',
-                  style: TextStyle(
-                    color: Color(0xFF2D5016),
-                    fontWeight: FontWeight.w600,
+            _buildSectionTitle('New paid cleanup requests'),
+            TextButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        EventsListPage(initialFilter: 'Requests'),
                   ),
+                );
+              },
+              child: const Text(
+                'View All',
+                style: TextStyle(
+                  color: Color(0xFF2D5016),
+                  fontWeight: FontWeight.w600,
                 ),
               ),
+            ),
           ],
         ),
         const SizedBox(height: 16),
-        displayRequests.isEmpty
+        paidRequests.isEmpty
             ? const Center(
                 child: Text(
-                  'No paid cleanup requests available',
+                  'No new paid cleanup requests available',
                   style: TextStyle(color: Colors.grey),
                 ),
               )
             : Column(
-                children: displayRequests
+                children: paidRequests
                     .map((request) => _buildRequestCard(request))
                     .toList(),
               ),
-        if (displayRequests.isNotEmpty && paidRequests.length > 3)
-          Padding(
-            padding: const EdgeInsets.only(top: 16),
-            child: Center(
-              child: OutlinedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          EventsListPage(initialFilter: 'Requests'),
-                    ),
-                  );
-                },
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: const Color(0xFF2D5016),
-                  side: const BorderSide(color: Color(0xFF2D5016)),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 12,
-                  ),
-                ),
-                child: Text(
-                  'View All Requests (${paidRequests.length})',
-                  style: const TextStyle(fontWeight: FontWeight.w600),
-                ),
-              ),
-            ),
-          ),
       ],
     );
   }
@@ -639,7 +694,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        '\$${request.suggestedRewardMoney.toStringAsFixed(0)}',
+                        '${request.suggestedRewardMoney.toStringAsFixed(0)}KM',
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
@@ -688,82 +743,46 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   Widget _buildEventsSection() {
-    // Show only first 3 events
-    final displayEvents = events.take(3).toList();
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            _buildSectionTitle('Events/Community'),
-            if (events.length > 3)
-              TextButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          EventsListPage(initialFilter: 'Events'),
-                    ),
-                  );
-                },
-                child: const Text(
-                  'View All',
-                  style: TextStyle(
-                    color: Color(0xFF2D5016),
-                    fontWeight: FontWeight.w600,
+            _buildSectionTitle('New events/Community'),
+            TextButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        EventsListPage(initialFilter: 'Events'),
                   ),
+                );
+              },
+              child: const Text(
+                'View All',
+                style: TextStyle(
+                  color: Color(0xFF2D5016),
+                  fontWeight: FontWeight.w600,
                 ),
               ),
+            ),
           ],
         ),
         const SizedBox(height: 16),
-        displayEvents.isEmpty
+        events.isEmpty
             ? const Center(
                 child: Text(
-                  'No events available',
+                  'No new events available',
                   style: TextStyle(color: Colors.grey),
                 ),
               )
             : Column(
-                children: displayEvents
+                children: events
                     .map((event) => _buildEventCard(event))
                     .toList(),
               ),
-        if (displayEvents.isNotEmpty && events.length > 3)
-          Padding(
-            padding: const EdgeInsets.only(top: 16),
-            child: Center(
-              child: OutlinedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          EventsListPage(initialFilter: 'Events'),
-                    ),
-                  );
-                },
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: const Color(0xFF2D5016),
-                  side: const BorderSide(color: Color(0xFF2D5016)),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 12,
-                  ),
-                ),
-                child: Text(
-                  'View All Events (${events.length})',
-                  style: const TextStyle(fontWeight: FontWeight.w600),
-                ),
-              ),
-            ),
-          ),
       ],
     );
   }
@@ -835,9 +854,20 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 8),
-                      Text(
-                        '${event.currentParticipants}/${event.maxParticipants} participants',
-                        style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                      Row(
+                        children: [
+                          Icon(Icons.calendar_today, size: 14, color: Colors.grey[500]),
+                          SizedBox(width: 4),
+                          Text(
+                            '${event.eventDate.day}/${event.eventDate.month}/${event.eventDate.year}',
+                            style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                          ),
+                          Spacer(),
+                          Text(
+                            '${event.currentParticipants}/${event.maxParticipants} participants',
+                            style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -881,7 +911,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   Widget _buildBottomNavigation() {
     return SharedBottomNavigation(
-      currentIndex: 2, // Home is at index 2
+      currentIndex: 0, // Home is at index 0
     );
   }
 }

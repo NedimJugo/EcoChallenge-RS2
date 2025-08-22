@@ -18,14 +18,16 @@ class _GalleryPageState extends State<GalleryPage> {
   late GalleryReactionProvider _reactionProvider;
   late AuthProvider _authProvider;
   
+  List<GalleryShowcaseResponse> _originalGalleryItems = []; // Store original items
   List<GalleryShowcaseResponse> _galleryItems = [];
   Map<int, GalleryReactionResponse?> _userReactions = {};
-  Set<int> _processingReactions = {}; // Track which items are being processed
+  Set<int> _processingReactions = {};
   bool _isLoading = true;
   String? _error;
   bool _showLikedOnly = false;
   DateTime? _fromDate;
   DateTime? _toDate;
+  String? _selectedFilter;
 
   @override
   void initState() {
@@ -44,24 +46,21 @@ class _GalleryPageState extends State<GalleryPage> {
     try {
       _authProvider = Provider.of<AuthProvider>(context, listen: false);
       
-      // Create search filter
       var searchFilter = GalleryShowcaseSearchObject(
         isApproved: true,
         pageSize: 50,
       );
 
-      // Load gallery items
       SearchResult<GalleryShowcaseResponse> result = 
           await _galleryProvider.get(filter: searchFilter.toJson());
       
-      _galleryItems = result.items ?? [];
+      _originalGalleryItems = result.items ?? [];
+      _galleryItems = List.from(_originalGalleryItems);
 
-      // Load user reactions for each gallery item
       if (_authProvider.currentUserId != null) {
         await _loadUserReactions();
       }
 
-      // Apply filters
       _applyFilters();
 
     } catch (e) {
@@ -76,36 +75,33 @@ class _GalleryPageState extends State<GalleryPage> {
   }
 
   Future<void> _loadUserReactions() async {
-  if (_authProvider.currentUserId == null) return;
+    if (_authProvider.currentUserId == null) return;
 
-  try {
-    _userReactions.clear();
-    
-    for (var item in _galleryItems) {
-      print('Loading reaction for item ${item.id}');
-      var reactionSearch = GalleryReactionSearchObject(
-        userId: _authProvider.currentUserId,
-        galleryShowcaseId: item.id,
-        pageSize: 1,
-      );
-
-      var reactionResult = await _reactionProvider.get(filter: reactionSearch.toJson());
+    try {
+      _userReactions.clear();
       
-      if (reactionResult.items != null && reactionResult.items!.isNotEmpty) {
-        print('Found reaction: ${reactionResult.items!.first.reactionType}');
-        _userReactions[item.id] = reactionResult.items!.first;
-      } else {
-        print('No reaction found');
-        _userReactions[item.id] = null;
+      for (var item in _originalGalleryItems) {
+        var reactionSearch = GalleryReactionSearchObject(
+          userId: _authProvider.currentUserId,
+          galleryShowcaseId: item.id,
+          pageSize: 1,
+        );
+
+        var reactionResult = await _reactionProvider.get(filter: reactionSearch.toJson());
+        
+        if (reactionResult.items != null && reactionResult.items!.isNotEmpty) {
+          _userReactions[item.id] = reactionResult.items!.first;
+        } else {
+          _userReactions[item.id] = null;
+        }
       }
+    } catch (e) {
+      print('Error loading user reactions: $e');
     }
-  } catch (e) {
-    print('Error loading user reactions: $e');
   }
-}
 
   void _applyFilters() {
-    List<GalleryShowcaseResponse> filteredItems = List.from(_galleryItems);
+    List<GalleryShowcaseResponse> filteredItems = List.from(_originalGalleryItems);
 
     // Filter by liked items
     if (_showLikedOnly && _authProvider.currentUserId != null) {
@@ -127,163 +123,139 @@ class _GalleryPageState extends State<GalleryPage> {
           item.createdAt.isBefore(_toDate!.add(Duration(days: 1)))).toList();
     }
 
+    // Apply additional filters
+    if (_selectedFilter == 'Featured') {
+      filteredItems = filteredItems.where((item) => item.isFeatured).toList();
+    } else if (_selectedFilter == 'Recent') {
+      filteredItems.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    }
+
     setState(() {
       _galleryItems = filteredItems;
     });
   }
 
-Future<void> _handleReaction(GalleryShowcaseResponse item, ReactionType reactionType) async {
-  print('=== REACTION DEBUG START ===');
-  print('Item ID: ${item.id}');
-  print('Requested reaction type: $reactionType');
-  
-  if (_authProvider.currentUserId == null) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Please login to react to posts')),
-    );
-    return;
+  void _clearFilters() {
+    setState(() {
+      _showLikedOnly = false;
+      _fromDate = null;
+      _toDate = null;
+      _selectedFilter = null;
+      _galleryItems = List.from(_originalGalleryItems);
+    });
   }
 
-  if (_processingReactions.contains(item.id)) {
-    print('Reaction already in progress for item ${item.id}');
-    return;
-  }
-
-  // Get current reaction state
-  var existingReaction = _userReactions[item.id];
-  print('Current existing reaction: ${existingReaction?.reactionType}');
-  print('Current like count: ${item.likesCount}');
-  print('Current dislike count: ${item.dislikesCount}');
-
-  setState(() {
-    _processingReactions.add(item.id);
-  });
-
-  try {
-    if (existingReaction == null) {
-      // Case 1: No existing reaction - create new one
-      print('Creating new reaction: $reactionType');
-      
-      var insertRequest = GalleryReactionInsertRequest(
-        galleryShowcaseId: item.id,
-        userId: _authProvider.currentUserId!,
-        reactionType: reactionType,
+  Future<void> _handleReaction(GalleryShowcaseResponse item, ReactionType reactionType) async {
+    if (_authProvider.currentUserId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Please login to react to posts')),
       );
+      return;
+    }
 
-      var newReaction = await _reactionProvider.addReaction(insertRequest);
-      print('New reaction created successfully: ${newReaction.reactionType}');
+    if (_processingReactions.contains(item.id)) {
+      return;
+    }
 
-      // Update local state
-      setState(() {
-        _userReactions[item.id] = newReaction;
-        _updateItemCounts(item.id, null, reactionType);
-      });
+    var existingReaction = _userReactions[item.id];
 
-    } else if (existingReaction.reactionType == reactionType) {
-      // Case 2: Clicking same reaction type - remove it (toggle off)
-      print('Removing existing $reactionType reaction (toggle off)');
-      
-      bool deleteSuccess = await _reactionProvider.delete(existingReaction.id);
-      if (deleteSuccess) {
-        print('Reaction deleted successfully');
-        
-        // Update local state
+    setState(() {
+      _processingReactions.add(item.id);
+    });
+
+    try {
+      if (existingReaction == null) {
+        var insertRequest = GalleryReactionInsertRequest(
+          galleryShowcaseId: item.id,
+          userId: _authProvider.currentUserId!,
+          reactionType: reactionType,
+        );
+
+        var newReaction = await _reactionProvider.addReaction(insertRequest);
         setState(() {
-          _userReactions[item.id] = null;
-          _updateItemCounts(item.id, reactionType, null);
+          _userReactions[item.id] = newReaction;
+          _updateItemCounts(item.id, null, reactionType);
+        });
+
+      } else if (existingReaction.reactionType == reactionType) {
+        bool deleteSuccess = await _reactionProvider.delete(existingReaction.id);
+        if (deleteSuccess) {
+          setState(() {
+            _userReactions[item.id] = null;
+            _updateItemCounts(item.id, reactionType, null);
+          });
+        }
+
+      } else {
+        var updateRequest = GalleryReactionUpdateRequest(
+          id: existingReaction.id,
+          reactionType: reactionType,
+        );
+
+        var updatedReaction = await _reactionProvider.updateReaction(updateRequest);
+        setState(() {
+          _userReactions[item.id] = updatedReaction;
+          _updateItemCounts(item.id, existingReaction.reactionType, reactionType);
         });
       }
 
-    } else {
-      // Case 3: Different reaction type - update existing reaction
-      print('Updating reaction from ${existingReaction.reactionType} to $reactionType');
-      
-      var updateRequest = GalleryReactionUpdateRequest(
-        id: existingReaction.id,
-        reactionType: reactionType,
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: ${e.toString()}')),
       );
-
-      var updatedReaction = await _reactionProvider.updateReaction(updateRequest);
-      print('Reaction updated successfully: ${updatedReaction.reactionType}');
-
-      // Update local state
+    } finally {
       setState(() {
-        _userReactions[item.id] = updatedReaction;
-        _updateItemCounts(item.id, existingReaction.reactionType, reactionType);
+        _processingReactions.remove(item.id);
       });
     }
+  }
 
-  } catch (e) {
-    print('ERROR in handleReaction: $e');
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Error: ${e.toString()}')),
+  void _updateItemCounts(int itemId, ReactionType? oldType, ReactionType? newType) {
+    int itemIndex = _originalGalleryItems.indexWhere((g) => g.id == itemId);
+    if (itemIndex == -1) return;
+
+    var currentItem = _originalGalleryItems[itemIndex];
+    int newLikesCount = currentItem.likesCount;
+    int newDislikesCount = currentItem.dislikesCount;
+
+    // Remove old reaction count
+    if (oldType == ReactionType.like) {
+      newLikesCount = (newLikesCount > 0) ? newLikesCount - 1 : 0;
+    } else if (oldType == ReactionType.dislike) {
+      newDislikesCount = (newDislikesCount > 0) ? newDislikesCount - 1 : 0;
+    }
+
+    // Add new reaction count
+    if (newType == ReactionType.like) {
+      newLikesCount++;
+    } else if (newType == ReactionType.dislike) {
+      newDislikesCount++;
+    }
+
+    // Update original item
+    _originalGalleryItems[itemIndex] = GalleryShowcaseResponse(
+      id: currentItem.id,
+      requestId: currentItem.requestId,
+      eventId: currentItem.eventId,
+      locationId: currentItem.locationId,
+      createdByAdminId: currentItem.createdByAdminId,
+      beforeImageUrl: currentItem.beforeImageUrl,
+      afterImageUrl: currentItem.afterImageUrl,
+      title: currentItem.title,
+      description: currentItem.description,
+      likesCount: newLikesCount,
+      dislikesCount: newDislikesCount,
+      isFeatured: currentItem.isFeatured,
+      isApproved: currentItem.isApproved,
+      isReported: currentItem.isReported,
+      reportCount: currentItem.reportCount,
+      createdAt: currentItem.createdAt,
     );
-  } finally {
-    setState(() {
-      _processingReactions.remove(item.id);
-    });
-    print('=== REACTION DEBUG END ===');
-  }
-}
 
-// Helper method to update counts in gallery items
-void _updateItemCounts(int itemId, ReactionType? oldType, ReactionType? newType) {
-  print('Updating counts for item $itemId: $oldType -> $newType');
-  
-  int itemIndex = _galleryItems.indexWhere((g) => g.id == itemId);
-  if (itemIndex == -1) {
-    print('ERROR: Item not found in gallery list');
-    return;
+    // Apply filters again to update displayed items
+    _applyFilters();
   }
 
-  var currentItem = _galleryItems[itemIndex];
-  int newLikesCount = currentItem.likesCount;
-  int newDislikesCount = currentItem.dislikesCount;
-
-  print('Current counts - Likes: $newLikesCount, Dislikes: $newDislikesCount');
-
-  // Remove old reaction count
-  if (oldType == ReactionType.like) {
-    newLikesCount = (newLikesCount > 0) ? newLikesCount - 1 : 0;
-    print('Removed like, new count: $newLikesCount');
-  } else if (oldType == ReactionType.dislike) {
-    newDislikesCount = (newDislikesCount > 0) ? newDislikesCount - 1 : 0;
-    print('Removed dislike, new count: $newDislikesCount');
-  }
-
-  // Add new reaction count
-  if (newType == ReactionType.like) {
-    newLikesCount++;
-    print('Added like, new count: $newLikesCount');
-  } else if (newType == ReactionType.dislike) {
-    newDislikesCount++;
-    print('Added dislike, new count: $newDislikesCount');
-  }
-
-  // Create updated item with new counts
-  _galleryItems[itemIndex] = GalleryShowcaseResponse(
-    id: currentItem.id,
-    requestId: currentItem.requestId,
-    eventId: currentItem.eventId,
-    locationId: currentItem.locationId,
-    createdByAdminId: currentItem.createdByAdminId,
-    beforeImageUrl: currentItem.beforeImageUrl,
-    afterImageUrl: currentItem.afterImageUrl,
-    title: currentItem.title,
-    description: currentItem.description,
-    likesCount: newLikesCount,
-    dislikesCount: newDislikesCount,
-    isFeatured: currentItem.isFeatured,
-    isApproved: currentItem.isApproved,
-    isReported: currentItem.isReported,
-    reportCount: currentItem.reportCount,
-    createdAt: currentItem.createdAt,
-  );
-
-  print('Final counts - Likes: $newLikesCount, Dislikes: $newDislikesCount');
-}
-
-  // Image viewer dialog
   void _showImageDialog(GalleryShowcaseResponse item) {
     showDialog(
       context: context,
@@ -291,15 +263,14 @@ void _updateItemCounts(int itemId, ReactionType? oldType, ReactionType? newType)
       builder: (BuildContext context) {
         return Dialog(
           backgroundColor: Colors.black,
+          insetPadding: EdgeInsets.all(16),
           child: Container(
-            width: double.infinity,
-            height: MediaQuery.of(context).size.height * 0.8,
+            constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.8),
             child: Stack(
               children: [
-                // Image content
                 Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Title
                     if (item.title != null)
                       Container(
                         width: double.infinity,
@@ -314,86 +285,14 @@ void _updateItemCounts(int itemId, ReactionType? oldType, ReactionType? newType)
                           textAlign: TextAlign.center,
                         ),
                       ),
-                    // Images
                     Expanded(
                       child: PageView(
                         children: [
-                          // Before image
-                          Container(
-                            child: Column(
-                              children: [
-                                Container(
-                                  padding: EdgeInsets.all(8),
-                                  child: Text(
-                                    'BEFORE',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                                Expanded(
-                                  child: InteractiveViewer(
-                                    child: Image.network(
-                                      item.beforeImageUrl,
-                                      fit: BoxFit.contain,
-                                      errorBuilder: (context, error, stackTrace) {
-                                        return Container(
-                                          color: Colors.grey[800],
-                                          child: Icon(
-                                            Icons.image_not_supported,
-                                            color: Colors.white,
-                                            size: 64,
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          // After image
-                          Container(
-                            child: Column(
-                              children: [
-                                Container(
-                                  padding: EdgeInsets.all(8),
-                                  child: Text(
-                                    'AFTER',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                                Expanded(
-                                  child: InteractiveViewer(
-                                    child: Image.network(
-                                      item.afterImageUrl,
-                                      fit: BoxFit.contain,
-                                      errorBuilder: (context, error, stackTrace) {
-                                        return Container(
-                                          color: Colors.grey[800],
-                                          child: Icon(
-                                            Icons.image_not_supported,
-                                            color: Colors.white,
-                                            size: 64,
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
+                          _buildImageWithLabel(item.beforeImageUrl, 'BEFORE'),
+                          _buildImageWithLabel(item.afterImageUrl, 'AFTER'),
                         ],
                       ),
                     ),
-                    // Swipe indicator
                     Container(
                       padding: EdgeInsets.all(16),
                       child: Text(
@@ -406,7 +305,6 @@ void _updateItemCounts(int itemId, ReactionType? oldType, ReactionType? newType)
                     ),
                   ],
                 ),
-                // Close button
                 Positioned(
                   top: 16,
                   right: 16,
@@ -434,6 +332,44 @@ void _updateItemCounts(int itemId, ReactionType? oldType, ReactionType? newType)
     );
   }
 
+  Widget _buildImageWithLabel(String imageUrl, String label) {
+    return Container(
+      child: Column(
+        children: [
+          Container(
+            padding: EdgeInsets.all(8),
+            child: Text(
+              label,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          Expanded(
+            child: InteractiveViewer(
+              child: Image.network(
+                imageUrl,
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    color: Colors.grey[800],
+                    child: Icon(
+                      Icons.image_not_supported,
+                      color: Colors.white,
+                      size: 64,
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -458,59 +394,74 @@ void _updateItemCounts(int itemId, ReactionType? oldType, ReactionType? newType)
         ],
       ),
       bottomNavigationBar: SharedBottomNavigation(
-        currentIndex: 1, // Gallery is at index 1
+        currentIndex: 1,
       ),
     );
   }
 
   Widget _buildFilterSection() {
+    bool hasActiveFilters = _showLikedOnly || _fromDate != null || _toDate != null || _selectedFilter != null;
+    
     return Container(
       padding: EdgeInsets.all(16),
       color: Colors.white,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Filter by',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Filter by',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              if (hasActiveFilters)
+                TextButton(
+                  onPressed: _clearFilters,
+                  child: Text(
+                    'Clear Filters',
+                    style: TextStyle(
+                      color: Color(0xFFD4A574),
+                    ),
+                  ),
+                ),
+            ],
           ),
           SizedBox(height: 12),
           Row(
             children: [
               Expanded(
                 child: DropdownButtonFormField<String>(
+                  value: _selectedFilter,
                   decoration: InputDecoration(
-                    labelText: 'All',
+                    labelText: 'Filter',
                     border: OutlineInputBorder(),
                     contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   ),
                   items: ['All', 'Featured', 'Recent'].map((String value) {
                     return DropdownMenuItem<String>(
-                      value: value,
+                      value: value == 'All' ? null : value,
                       child: Text(value),
                     );
                   }).toList(),
                   onChanged: (value) {
-                    // Implement filter logic
+                    setState(() {
+                      _selectedFilter = value;
+                    });
+                    _applyFilters();
                   },
                 ),
               ),
               SizedBox(width: 12),
               Expanded(
-                child: TextFormField(
-                  decoration: InputDecoration(
-                    labelText: 'From',
-                    border: OutlineInputBorder(),
-                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  ),
-                  readOnly: true,
+                child: InkWell(
                   onTap: () async {
                     final date = await showDatePicker(
                       context: context,
-                      initialDate: DateTime.now(),
+                      initialDate: _fromDate ?? DateTime.now(),
                       firstDate: DateTime(2020),
                       lastDate: DateTime.now(),
                     );
@@ -518,24 +469,37 @@ void _updateItemCounts(int itemId, ReactionType? oldType, ReactionType? newType)
                       setState(() {
                         _fromDate = date;
                       });
-                      _loadGalleryData();
+                      _applyFilters();
                     }
                   },
+                  child: InputDecorator(
+                    decoration: InputDecoration(
+                      labelText: 'From',
+                      border: OutlineInputBorder(),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          _fromDate != null 
+                            ? '${_fromDate!.day}/${_fromDate!.month}/${_fromDate!.year}'
+                            : 'Select date',
+                          style: TextStyle(fontSize: 14),
+                        ),
+                        Icon(Icons.calendar_today, size: 20),
+                      ],
+                    ),
+                  ),
                 ),
               ),
               SizedBox(width: 12),
               Expanded(
-                child: TextFormField(
-                  decoration: InputDecoration(
-                    labelText: 'To',
-                    border: OutlineInputBorder(),
-                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  ),
-                  readOnly: true,
+                child: InkWell(
                   onTap: () async {
                     final date = await showDatePicker(
                       context: context,
-                      initialDate: DateTime.now(),
+                      initialDate: _toDate ?? DateTime.now(),
                       firstDate: DateTime(2020),
                       lastDate: DateTime.now(),
                     );
@@ -543,9 +507,28 @@ void _updateItemCounts(int itemId, ReactionType? oldType, ReactionType? newType)
                       setState(() {
                         _toDate = date;
                       });
-                      _loadGalleryData();
+                      _applyFilters();
                     }
                   },
+                  child: InputDecorator(
+                    decoration: InputDecoration(
+                      labelText: 'To',
+                      border: OutlineInputBorder(),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          _toDate != null 
+                            ? '${_toDate!.day}/${_toDate!.month}/${_toDate!.year}'
+                            : 'Select date',
+                          style: TextStyle(fontSize: 14),
+                        ),
+                        Icon(Icons.calendar_today, size: 20),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -562,7 +545,7 @@ void _updateItemCounts(int itemId, ReactionType? oldType, ReactionType? newType)
                   _applyFilters();
                 },
               ),
-              Text('Liked'),
+              Text('Show liked only'),
             ],
           ),
         ],
@@ -602,6 +585,7 @@ void _updateItemCounts(int itemId, ReactionType? oldType, ReactionType? newType)
               child: Text('Retry'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Color(0xFFD4A574),
+                foregroundColor: Colors.white,
               ),
             ),
           ],
@@ -624,6 +608,15 @@ void _updateItemCounts(int itemId, ReactionType? oldType, ReactionType? newType)
             Text(
               'Try adjusting your filters',
               style: TextStyle(color: Colors.grey[600]),
+            ),
+            SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _clearFilters,
+              child: Text('Clear Filters'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Color(0xFFD4A574),
+                foregroundColor: Colors.white,
+              ),
             ),
           ],
         ),
@@ -650,235 +643,220 @@ void _updateItemCounts(int itemId, ReactionType? oldType, ReactionType? newType)
   }
 
   Widget _buildGalleryItem(GalleryShowcaseResponse item) {
-  var userReaction = _userReactions[item.id];
-  bool hasLiked = userReaction?.reactionType == ReactionType.like;
-  bool hasDisliked = userReaction?.reactionType == ReactionType.dislike;
-  bool isProcessing = _processingReactions.contains(item.id);
+    var userReaction = _userReactions[item.id];
+    bool hasLiked = userReaction?.reactionType == ReactionType.like;
+    bool hasDisliked = userReaction?.reactionType == ReactionType.dislike;
+    bool isProcessing = _processingReactions.contains(item.id);
 
-  // Debug print for UI state
-  print('UI DEBUG - Item ${item.id}:');
-  print('  User reaction: ${userReaction?.reactionType}');
-  print('  Has liked: $hasLiked');
-  print('  Has disliked: $hasDisliked');
-  print('  Like count: ${item.likesCount}');
-  print('  Dislike count: ${item.dislikesCount}');
-
-  return GestureDetector(
-    onTap: () => _showImageDialog(item),
-    child: Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Expanded(
-            child: ClipRRect(
-              borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
-              child: Stack(
-                children: [
-                  // Before/After images side by side
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Image.network(
-                          item.beforeImageUrl,
-                          fit: BoxFit.cover,
-                          height: double.infinity,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Container(
-                              color: Colors.grey[300],
-                              child: Icon(Icons.image_not_supported),
-                            );
-                          },
-                        ),
-                      ),
-                      Container(width: 1, color: Colors.white),
-                      Expanded(
-                        child: Image.network(
-                          item.afterImageUrl,
-                          fit: BoxFit.cover,
-                          height: double.infinity,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Container(
-                              color: Colors.grey[300],
-                              child: Icon(Icons.image_not_supported),
-                            );
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                  // Before/After labels
-                  Positioned(
-                    top: 8,
-                    left: 8,
-                    child: Container(
-                      padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: Colors.black54,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        'Before',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 10,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    top: 8,
-                    right: 8,
-                    child: Container(
-                      padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: Colors.black54,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        'After',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 10,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                  ),
-                  // Tap to view indicator
-                  Positioned(
-                    bottom: 8,
-                    right: 8,
-                    child: Container(
-                      padding: EdgeInsets.all(4),
-                      decoration: BoxDecoration(
-                        color: Colors.black54,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Icon(
-                        Icons.zoom_in,
-                        color: Colors.white,
-                        size: 16,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          Padding(
-            padding: EdgeInsets.all(8),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (item.title != null)
-                  Text(
-                    item.title!,
-                    style: TextStyle(
-                      fontWeight: FontWeight.w500,
-                      fontSize: 12,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                SizedBox(height: 4),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+    return GestureDetector(
+      onTap: () => _showImageDialog(item),
+      child: Card(
+        elevation: 2,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Expanded(
+              child: ClipRRect(
+                borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+                child: Stack(
                   children: [
-                    // Like button
-                    GestureDetector(
-                      onTap: isProcessing ? null : () {
-                        print('LIKE BUTTON CLICKED for item ${item.id}');
-                        _handleReaction(item, ReactionType.like);
-                      },
-                      child: Container(
-                        padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: hasLiked ? Colors.green.withOpacity(0.1) : Colors.transparent,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: hasLiked ? Colors.green : Colors.grey[300]!,
-                            width: 1,
+                    // Before/After images side by side
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Image.network(
+                            item.beforeImageUrl,
+                            fit: BoxFit.cover,
+                            height: double.infinity,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                color: Colors.grey[300],
+                                child: Icon(Icons.image_not_supported),
+                              );
+                            },
                           ),
                         ),
-                        child: Opacity(
-                          opacity: isProcessing ? 0.5 : 1.0,
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                hasLiked ? Icons.thumb_up : Icons.thumb_up_outlined,
-                                size: 16,
-                                color: hasLiked ? Colors.green : Colors.grey[600],
-                              ),
-                              SizedBox(width: 4),
-                              Text(
-                                '${item.likesCount}',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: hasLiked ? FontWeight.bold : FontWeight.normal,
-                                  color: hasLiked ? Colors.green : Colors.grey[600],
-                                ),
-                              ),
-                            ],
+                        Container(width: 1, color: Colors.white),
+                        Expanded(
+                          child: Image.network(
+                            item.afterImageUrl,
+                            fit: BoxFit.cover,
+                            height: double.infinity,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                color: Colors.grey[300],
+                                child: Icon(Icons.image_not_supported),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    // Before/After labels
+                    Positioned(
+                      top: 8,
+                      left: 8,
+                      child: Container(
+                        padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.black54,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          'Before',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
                       ),
                     ),
-                    SizedBox(width: 8),
-                    // Dislike button
-                    GestureDetector(
-                      onTap: isProcessing ? null : () {
-                        print('DISLIKE BUTTON CLICKED for item ${item.id}');
-                        _handleReaction(item, ReactionType.dislike);
-                      },
+                    Positioned(
+                      top: 8,
+                      right: 8,
                       child: Container(
-                        padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
-                          color: hasDisliked ? Colors.red.withOpacity(0.1) : Colors.transparent,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: hasDisliked ? Colors.red : Colors.grey[300]!,
-                            width: 1,
+                          color: Colors.black54,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          'After',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
-                        child: Opacity(
-                          opacity: isProcessing ? 0.5 : 1.0,
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                hasDisliked ? Icons.thumb_down : Icons.thumb_down_outlined,
-                                size: 16,
-                                color: hasDisliked ? Colors.red : Colors.grey[600],
-                              ),
-                              SizedBox(width: 4),
-                              Text(
-                                '${item.dislikesCount}',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: hasDisliked ? FontWeight.bold : FontWeight.normal,
-                                  color: hasDisliked ? Colors.red : Colors.grey[600],
-                                ),
-                              ),
-                            ],
-                          ),
+                      ),
+                    ),
+                    // Tap to view indicator
+                    Positioned(
+                      bottom: 8,
+                      right: 8,
+                      child: Container(
+                        padding: EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: Colors.black54,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Icon(
+                          Icons.zoom_in,
+                          color: Colors.white,
+                          size: 16,
                         ),
                       ),
                     ),
                   ],
-                )
-              ],
+                ),
+              ),
             ),
-          ),
-        ],
+            Padding(
+              padding: EdgeInsets.all(8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (item.title != null)
+                    Text(
+                      item.title!,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w500,
+                        fontSize: 12,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  SizedBox(height: 4),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      // Like button
+                      GestureDetector(
+                        onTap: isProcessing ? null : () => _handleReaction(item, ReactionType.like),
+                        child: Container(
+                          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: hasLiked ? Colors.green.withOpacity(0.1) : Colors.transparent,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: hasLiked ? Colors.green : Colors.grey[300]!,
+                              width: 1,
+                            ),
+                          ),
+                          child: Opacity(
+                            opacity: isProcessing ? 0.5 : 1.0,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  hasLiked ? Icons.thumb_up : Icons.thumb_up_outlined,
+                                  size: 16,
+                                  color: hasLiked ? Colors.green : Colors.grey[600],
+                                ),
+                                SizedBox(width: 4),
+                                Text(
+                                  '${item.likesCount}',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: hasLiked ? FontWeight.bold : FontWeight.normal,
+                                    color: hasLiked ? Colors.green : Colors.grey[600],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 8),
+                      // Dislike button
+                      GestureDetector(
+                        onTap: isProcessing ? null : () => _handleReaction(item, ReactionType.dislike),
+                        child: Container(
+                          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: hasDisliked ? Colors.red.withOpacity(0.1) : Colors.transparent,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: hasDisliked ? Colors.red : Colors.grey[300]!,
+                              width: 1,
+                            ),
+                          ),
+                          child: Opacity(
+                            opacity: isProcessing ? 0.5 : 1.0,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  hasDisliked ? Icons.thumb_down : Icons.thumb_down_outlined,
+                                  size: 16,
+                                  color: hasDisliked ? Colors.red : Colors.grey[600],
+                                ),
+                                SizedBox(width: 4),
+                                Text(
+                                  '${item.dislikesCount}',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: hasDisliked ? FontWeight.bold : FontWeight.normal,
+                                    color: hasDisliked ? Colors.red : Colors.grey[600],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  )
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
-    ),
-  );
-}
-
+    );
+  }
 }
