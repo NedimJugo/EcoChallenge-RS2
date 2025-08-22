@@ -405,8 +405,6 @@ class _RequestsTrackingPageState extends State<RequestsTrackingPage> {
                             children: [
                               _buildStatusSection(1), // To be reviewed
                               SizedBox(height: 24),
-                              _buildStatusSection(2), // In review
-                              SizedBox(height: 24),
                               _buildStatusSection(3), // Accepted
                               SizedBox(height: 24),
                               _buildStatusSection(4), // Denied

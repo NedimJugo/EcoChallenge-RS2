@@ -183,30 +183,7 @@ class _EventManagementScreenState extends State<EventManagementScreen> {
                           ],
                         ),
                         const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            Icon(
-                              widget.event.adminApproved
-                                  ? Icons.check_circle
-                                  : Icons.pending,
-                              size: 16,
-                              color: widget.event.adminApproved
-                                  ? Colors.green
-                                  : Colors.orange,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              widget.event.adminApproved
-                                  ? 'Approved'
-                                  : 'Pending Approval',
-                              style: TextStyle(
-                                color: widget.event.adminApproved
-                                    ? Colors.green
-                                    : Colors.orange,
-                              ),
-                            ),
-                          ],
-                        ),
+                      
                       ],
                     ),
                   ),

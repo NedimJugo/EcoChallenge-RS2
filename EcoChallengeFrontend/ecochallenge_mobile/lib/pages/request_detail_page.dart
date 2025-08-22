@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../models/request.dart';
 import '../models/location.dart';
@@ -21,6 +20,8 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
   bool _isSigningUp = false;
   LocationResponse? _location;
   bool _isLoadingLocation = true;
+  final PageController _pageController = PageController();
+  int _currentPage = 0;
 
   @override
   void initState() {
@@ -28,9 +29,15 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
     _loadLocation();
   }
 
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
   Future<void> _loadLocation() async {
     try {
-      final locationProvider = Provider.of<LocationProvider>(context, listen: false);
+      final locationProvider = context.read<LocationProvider>();
       final result = await locationProvider.get();
       final locations = result.items ?? [];
       
@@ -48,17 +55,18 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
       
       setState(() => _isLoadingLocation = false);
     } catch (e) {
-      print('Error loading location: $e');
+      debugPrint('Error loading location: $e');
       setState(() => _isLoadingLocation = false);
     }
   }
 
-  
-
   Future<void> _openMapView() async {
     if (_location == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Location not available')),
+        SnackBar(
+          content: Text('Location not available'),
+          backgroundColor: Colors.orange,
+        ),
       );
       return;
     }
@@ -72,96 +80,167 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
   }
 
   Widget _buildImageCarousel() {
-  return Container(
-    height: 250,
-    child: widget.request.photoUrls?.isNotEmpty == true
-        ? PageView.builder(
-            itemCount: widget.request.photoUrls!.length,
-            itemBuilder: (context, index) {
-              return Container(
-                width: double.infinity,
-                child: Image.network(
-                  widget.request.photoUrls![index],
-                  fit: BoxFit.cover,
-                  loadingBuilder: (context, child, loadingProgress) {
-                    if (loadingProgress == null) return child;
-                    return Container(
-                      color: Colors.grey[300],
-                      child: Center(
-                        child: CircularProgressIndicator(
-                          value: loadingProgress.expectedTotalBytes != null
-                              ? loadingProgress.cumulativeBytesLoaded /
-                                  loadingProgress.expectedTotalBytes!
-                              : null,
-                        ),
-                      ),
-                    );
+    final photoUrls = widget.request.photoUrls;
+    final hasPhotos = photoUrls?.isNotEmpty == true;
+    final imageCount = photoUrls?.length ?? 0;
+
+    return Stack(
+      children: [
+        Container(
+          height: 300,
+          child: hasPhotos
+              ? PageView.builder(
+                  controller: _pageController,
+                  itemCount: imageCount,
+                  onPageChanged: (index) {
+                    setState(() => _currentPage = index);
                   },
-                  errorBuilder: (context, error, stackTrace) {
-                    print('Image load error: $error');
-                    return Container(
-                      color: Colors.grey[300],
-                      child: Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.cleaning_services, size: 60, color: Colors.grey[600]),
-                            SizedBox(height: 8),
-                            Text(
-                              'Image not available',
-                              style: TextStyle(color: Colors.grey[600], fontSize: 12),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              );
-            },
-          )
-        : Container(
-            color: Colors.grey[300],
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.cleaning_services, size: 80, color: Colors.grey[600]),
-                  SizedBox(height: 8),
-                  Text(
-                    'No images available',
-                    style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                  itemBuilder: (context, index) => _buildImageItem(photoUrls![index]),
+                )
+              : _buildNoImagesPlaceholder(),
+        ),
+        if (hasPhotos && imageCount > 1)
+          Positioned(
+            bottom: 16,
+            left: 0,
+            right: 0,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(imageCount, (index) {
+                return Container(
+                  width: 8,
+                  height: 8,
+                  margin: EdgeInsets.symmetric(horizontal: 4),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: _currentPage == index 
+                        ? Colors.white 
+                        : Colors.white.withOpacity(0.5),
                   ),
-                ],
-              ),
+                );
+              }),
             ),
           ),
-  );
-}
+      ],
+    );
+  }
+
+  Widget _buildImageItem(String imageUrl) {
+    return Hero(
+      tag: 'request-image-${widget.request.id}',
+      child: Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Colors.black.withOpacity(0.3), Colors.transparent],
+          ),
+        ),
+        child: Image.network(
+          imageUrl,
+          fit: BoxFit.cover,
+          loadingBuilder: (context, child, loadingProgress) {
+            if (loadingProgress == null) return child;
+            return Container(
+              color: Colors.grey[100],
+              child: Center(
+                child: CircularProgressIndicator(
+                  value: loadingProgress.expectedTotalBytes != null
+                      ? loadingProgress.cumulativeBytesLoaded /
+                          loadingProgress.expectedTotalBytes!
+                      : null,
+                  color: Color(0xFF4CAF50),
+                ),
+              ),
+            );
+          },
+          errorBuilder: (context, error, stackTrace) {
+            debugPrint('Image load error: $error');
+            return _buildImageErrorPlaceholder();
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNoImagesPlaceholder() {
+    return Container(
+      color: Colors.grey[100],
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.cleaning_services, size: 80, color: Colors.grey[400]),
+            SizedBox(height: 12),
+            Text(
+              'No images available',
+              style: TextStyle(
+                color: Colors.grey[600],
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildImageErrorPlaceholder() {
+    return Container(
+      color: Colors.grey[100],
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.error_outline, size: 60, color: Colors.grey[400]),
+            SizedBox(height: 8),
+            Text(
+              'Image not available',
+              style: TextStyle(
+                color: Colors.grey[600],
+                fontSize: 14,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[100],
-      appBar: AppBar(
-        backgroundColor: Color(0xFFD4A574),
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildImageCarousel(),
-            _buildRequestInfo(),
-            _buildLocationSection(),
-            _buildDetailsSection(),
-            _buildSignUpButton(),
-          ],
-        ),
+      backgroundColor: Colors.grey[50],
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            expandedHeight: 300,
+            floating: false,
+            pinned: true,
+            backgroundColor: Color(0xFF4CAF50),
+            leading: IconButton(
+              icon: Icon(Icons.arrow_back, color: Colors.white),
+              onPressed: () => Navigator.pop(context),
+            ),
+            flexibleSpace: FlexibleSpaceBar(
+              background: _buildImageCarousel(),
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildRequestInfo(),
+                _buildLocationSection(),
+                _buildDetailsSection(),
+                _buildSignUpButton(),
+                SizedBox(height: 20),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -169,34 +248,36 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
   Widget _buildRequestInfo() {
     return Container(
       color: Colors.white,
-      padding: EdgeInsets.all(20),
+      padding: EdgeInsets.all(24),
+      margin: EdgeInsets.only(bottom: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             widget.request.title ?? 'Untitled Request',
             style: TextStyle(
-              fontSize: 24,
+              fontSize: 28,
               fontWeight: FontWeight.bold,
-              color: Colors.grey[800],
+              color: Colors.grey[900],
+              height: 1.3,
             ),
           ),
           SizedBox(height: 16),
-          Text(
-            'Details:',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey[700],
+          Container(
+            width: double.infinity,
+            padding: EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.green[50],
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.green[100]!),
             ),
-          ),
-          SizedBox(height: 8),
-          Text(
-            widget.request.description ?? 'No description available',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey[600],
-              height: 1.5,
+            child: Text(
+              widget.request.description ?? 'No description available',
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey[700],
+                height: 1.6,
+              ),
             ),
           ),
         ],
@@ -207,79 +288,79 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
   Widget _buildLocationSection() {
     return Container(
       color: Colors.white,
-      margin: EdgeInsets.only(top: 8),
-      padding: EdgeInsets.all(20),
+      padding: EdgeInsets.all(24),
+      margin: EdgeInsets.only(bottom: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Location:',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey[700],
-            ),
-          ),
-          SizedBox(height: 8),
-          if (_isLoadingLocation)
-            CircularProgressIndicator()
-          else if (_location != null) ...[
-            Text(
-              _location!.name ?? 'Unknown Location',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-                color: Colors.grey[800],
-              ),
-            ),
-            if (_location!.address != null) ...[
-              SizedBox(height: 4),
+          Row(
+            children: [
+              Icon(Icons.location_on, color: Color(0xFF4CAF50), size: 20),
+              SizedBox(width: 8),
               Text(
-                _location!.address!,
+                'Location Details',
                 style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey[600],
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey[800],
                 ),
               ),
             ],
-            if (_location!.city != null) ...[
-              SizedBox(height: 4),
-              Row(
-                children: [
-                  Icon(Icons.location_city, size: 16, color: Colors.grey[500]),
-                  SizedBox(width: 4),
-                  Text(
-                    _location!.city!,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                ],
+          ),
+          SizedBox(height: 16),
+          if (_isLoadingLocation)
+            Center(child: CircularProgressIndicator(color: Color(0xFF4CAF50)))
+          else if (_location != null) ...[
+            _buildLocationCard(),
+            SizedBox(height: 20),
+            _buildTerrainMap(),
+          ]
+          else
+            Text(
+              'Location information not available',
+              style: TextStyle(color: Colors.grey[600]),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLocationCard() {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              _location!.name ?? 'Unknown Location',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey[800],
               ),
-            ],
+            ),
             SizedBox(height: 8),
+            if (_location!.address != null)
+              _buildLocationDetail(Icons.place, _location!.address!),
+            if (_location!.city != null)
+              _buildLocationDetail(Icons.location_city, _location!.city!),
+            SizedBox(height: 12),
             Row(
               children: [
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: _getLocationTypeColor(_location!.locationType),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
+                Chip(
+                  backgroundColor: _getLocationTypeColor(_location!.locationType),
+                  label: Text(
                     _location!.locationType.displayName,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                    ),
+                    style: TextStyle(color: Colors.white),
                   ),
                 ),
                 Spacer(),
                 if (_location!.latitude != 0.0 && _location!.longitude != 0.0)
                   Text(
-                    'Lat: ${_location!.latitude.toStringAsFixed(4)}, Lng: ${_location!.longitude.toStringAsFixed(4)}',
+                    '${_location!.latitude.toStringAsFixed(4)}, ${_location!.longitude.toStringAsFixed(4)}',
                     style: TextStyle(
                       fontSize: 12,
                       color: Colors.grey[500],
@@ -288,181 +369,199 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
               ],
             ),
           ],
-          SizedBox(height: 12),
-          _buildTerrainMap(),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLocationDetail(IconData icon, String text) {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          Icon(icon, size: 16, color: Colors.grey[600]),
+          SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              text,
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[600],
+              ),
+            ),
+          ),
         ],
       ),
     );
   }
 
   Widget _buildTerrainMap() {
-    if (_location == null) {
-      return Container(
-        height: 120,
-        decoration: BoxDecoration(
-          color: Colors.grey[200],
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.grey[300]!),
-        ),
-        child: Center(
-          child: Text(
-            'Location not available',
-            style: TextStyle(color: Colors.grey[600]),
-          ),
-        ),
-      );
-    }
+    final hasValidCoordinates = _location != null && 
+        _location!.latitude != 0.0 && 
+        _location!.longitude != 0.0;
 
-    final hasValidCoordinates = _location!.latitude != 0.0 && _location!.longitude != 0.0;
-    
     return GestureDetector(
       onTap: _openMapView,
       child: Container(
-        height: 120,
+        height: 140,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.grey[300]!),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 8,
+              offset: Offset(0, 4),
+            ),
+          ],
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(16),
           child: Stack(
             children: [
-              // Terrain-like background
+              // Modern gradient background
               Container(
                 decoration: BoxDecoration(
-                  gradient: RadialGradient(
-                    center: Alignment.center,
-                    radius: 1.0,
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                     colors: [
                       Colors.green[100]!,
-                      Colors.green[200]!,
+                      Colors.blue[100]!,
                       Colors.brown[100]!,
-                      Colors.brown[200]!,
                     ],
-                    stops: [0.0, 0.3, 0.7, 1.0],
                   ),
                 ),
               ),
               // Terrain pattern
               CustomPaint(
-                size: Size(double.infinity, 120),
+                size: Size(double.infinity, 140),
                 painter: TerrainPainter(),
               ),
-              // Location marker
               if (hasValidCoordinates)
                 Positioned(
                   left: 60,
-                  top: 40,
+                  top: 50,
                   child: Container(
-                    width: 30,
-                    height: 30,
+                    width: 32,
+                    height: 32,
                     decoration: BoxDecoration(
                       color: Colors.red,
                       shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 2),
+                      border: Border.all(color: Colors.white, width: 3),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withOpacity(0.3),
-                          blurRadius: 4,
-                          offset: Offset(0, 2),
+                          blurRadius: 6,
+                          offset: Offset(0, 3),
                         ),
                       ],
                     ),
                     child: Icon(
                       Icons.location_on,
                       color: Colors.white,
-                      size: 16,
+                      size: 18,
                     ),
                   ),
                 ),
-              // Location info overlay
-              Positioned(
-                bottom: 8,
-                left: 8,
-                right: 8,
+              // Overlay
+              Positioned.fill(
                 child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.7),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        _location!.name ?? 'Unknown Location',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      if (hasValidCoordinates)
-                        Text(
-                          '${_location!.latitude.toStringAsFixed(4)}, ${_location!.longitude.toStringAsFixed(4)}',
-                          style: TextStyle(
-                            color: Colors.white70,
-                            fontSize: 10,
-                          ),
-                        ),
-                    ],
+                    gradient: LinearGradient(
+                      begin: Alignment.bottomCenter,
+                      end: Alignment.topCenter,
+                      colors: [
+                        Colors.black.withOpacity(0.7),
+                        Colors.transparent,
+                        Colors.transparent,
+                      ],
+                    ),
                   ),
                 ),
               ),
-              // View map button
               Positioned(
-                top: 8,
-                right: 8,
+                bottom: 12,
+                left: 12,
+                right: 12,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _location!.name ?? 'Unknown Location',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    if (hasValidCoordinates)
+                      Text(
+                        '${_location!.latitude.toStringAsFixed(4)}, ${_location!.longitude.toStringAsFixed(4)}',
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 11,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              Positioned(
+                top: 12,
+                right: 12,
                 child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: Color(0xFF8B4513),
-                    borderRadius: BorderRadius.circular(12),
+                    color: Color(0xFF4CAF50),
+                    borderRadius: BorderRadius.circular(20),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withOpacity(0.2),
-                        blurRadius: 2,
-                        offset: Offset(0, 1),
+                        blurRadius: 4,
+                        offset: Offset(0, 2),
                       ),
                     ],
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.map, size: 12, color: Colors.white),
-                      SizedBox(width: 4),
+                      Icon(Icons.map, size: 14, color: Colors.white),
+                      SizedBox(width: 6),
                       Text(
                         'View Map',
                         style: TextStyle(
                           color: Colors.white,
-                          fontSize: 10,
-                          fontWeight: FontWeight.w500,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ],
                   ),
                 ),
               ),
-              // No coordinates overlay
               if (!hasValidCoordinates)
                 Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.location_off, size: 32, color: Colors.grey[500]),
-                      SizedBox(height: 4),
-                      Text(
-                        'Location coordinates\nnot available',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.grey[600],
-                          fontSize: 12,
+                  child: Container(
+                    padding: EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.black54,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.location_off, size: 32, color: Colors.white70),
+                        SizedBox(height: 8),
+                        Text(
+                          'Coordinates not available',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
             ],
@@ -475,84 +574,177 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
   Widget _buildDetailsSection() {
     return Container(
       color: Colors.white,
-      margin: EdgeInsets.only(top: 8),
-      padding: EdgeInsets.all(20),
+      padding: EdgeInsets.all(24),
+      margin: EdgeInsets.only(bottom: 8),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (widget.request.proposedDate != null)
-            _buildDetailRow('Proposed Date:', _formatDate(widget.request.proposedDate!)),
-          if (widget.request.proposedTime != null)
-            _buildDetailRow('Proposed Time:', widget.request.proposedTime!),
-          _buildDetailRow('Urgency:', widget.request.urgencyLevel.displayName),
-          _buildDetailRow('Estimated Amount:', widget.request.estimatedAmount.displayName),
-          if (widget.request.estimatedCleanupTime != null)
-            _buildDetailRow('Estimated Time:', '${widget.request.estimatedCleanupTime} minutes'),
-          _buildDetailRow('Reward Points:', '${widget.request.suggestedRewardPoints}'),
-          if (widget.request.suggestedRewardMoney > 0)
-            _buildDetailRow('Money Reward:', '\$${widget.request.suggestedRewardMoney.toStringAsFixed(2)}'),
+          Row(
+            children: [
+              Icon(Icons.info_outline, color: Color(0xFF4CAF50), size: 20),
+              SizedBox(width: 8),
+              Text(
+                'Request Details',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey[800],
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 16),
+          ..._buildDetailItems(),
         ],
       ),
     );
   }
 
-  Widget _buildDetailRow(String label, String value) {
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 120,
-            child: Text(
-              label,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: Colors.grey[700],
+  List<Widget> _buildDetailItems() {
+    final items = <Widget>[];
+    
+    if (widget.request.proposedDate != null) {
+      items.add(_buildDetailCard(
+        Icons.calendar_today,
+        'Proposed Date',
+        _formatDate(widget.request.proposedDate!),
+      ));
+    }
+    
+    if (widget.request.proposedTime != null) {
+      items.add(_buildDetailCard(
+        Icons.access_time,
+        'Proposed Time',
+        widget.request.proposedTime!,
+      ));
+    }
+    
+    items.addAll([
+      _buildDetailCard(
+        Icons.warning,
+        'Urgency Level',
+        widget.request.urgencyLevel.displayName,
+      ),
+      _buildDetailCard(
+        Icons.clean_hands,
+        'Estimated Amount',
+        widget.request.estimatedAmount.displayName,
+      ),
+      if (widget.request.estimatedCleanupTime != null)
+        _buildDetailCard(
+          Icons.timer,
+          'Estimated Time',
+          '${widget.request.estimatedCleanupTime} minutes',
+        ),
+      _buildDetailCard(
+        Icons.star,
+        'Reward Points',
+        '${widget.request.suggestedRewardPoints}',
+      ),
+      if (widget.request.suggestedRewardMoney > 0)
+        _buildDetailCard(
+          Icons.attach_money,
+          'Money Reward',
+          '\$${widget.request.suggestedRewardMoney.toStringAsFixed(2)}',
+        ),
+    ]);
+
+    return items;
+  }
+
+  Widget _buildDetailCard(IconData icon, String title, String value) {
+    return Card(
+      margin: EdgeInsets.only(bottom: 12),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevation: 1,
+      child: Padding(
+        padding: EdgeInsets.all(16),
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: Color(0xFF4CAF50).withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: Color(0xFF4CAF50), size: 20),
+            ),
+            SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey[600],
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  SizedBox(height: 2),
+                  Text(
+                    value,
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey[800],
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
               ),
             ),
-          ),
-          Expanded(
-            child: Text(
-              value,
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[600],
-              ),
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildSignUpButton() {
+    final hasMoneyReward = widget.request.suggestedRewardMoney > 0;
+    
     return Container(
       color: Colors.white,
-      margin: EdgeInsets.only(top: 8),
-      padding: EdgeInsets.all(20),
+      padding: EdgeInsets.all(24),
       child: SizedBox(
         width: double.infinity,
-        height: 50,
+        height: 56,
         child: ElevatedButton(
           onPressed: _isSigningUp ? null : _navigateToProofSubmission,
           style: ElevatedButton.styleFrom(
-            backgroundColor: Color(0xFF8B4513),
+            backgroundColor: Color(0xFF4CAF50),
+            foregroundColor: Colors.white,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(25),
+              borderRadius: BorderRadius.circular(16),
             ),
+            elevation: 4,
+            padding: EdgeInsets.symmetric(horizontal: 24),
           ),
           child: _isSigningUp
-              ? CircularProgressIndicator(color: Colors.white)
-              : Text(
-                  widget.request.suggestedRewardMoney > 0 
-                      ? 'Submit Proof & Get Reward'
-                      : 'Submit Cleanup Proof',
-                  style: TextStyle(
+              ? SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(
                     color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
+                    strokeWidth: 2,
                   ),
+                )
+              : Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.photo_camera, size: 20),
+                    SizedBox(width: 12),
+                    Text(
+                      hasMoneyReward
+                          ? 'Submit Proof & Get Reward'
+                          : 'Submit Cleanup Proof',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
                 ),
         ),
       ),
@@ -566,25 +758,28 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
   Color _getLocationTypeColor(LocationType type) {
     switch (type) {
       case LocationType.park:
-        return Colors.green;
+        return Color(0xFF4CAF50);
       case LocationType.beach:
-        return Colors.blue;
+        return Color(0xFF2196F3);
       case LocationType.forest:
-        return Colors.brown;
+        return Color(0xFF795548);
       case LocationType.urban:
-        return Colors.grey;
+        return Color(0xFF607D8B);
       case LocationType.other:
-        return Colors.orange;
+        return Color(0xFFFF9800);
     }
   }
 
   void _navigateToProofSubmission() {
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final authProvider = context.read<AuthProvider>();
     final userId = authProvider.currentUserId;
     
     if (userId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please log in to submit proof')),
+        SnackBar(
+          content: Text('Please log in to submit proof'),
+          backgroundColor: Colors.orange,
+        ),
       );
       return;
     }
@@ -599,51 +794,68 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
   }
 }
 
-// Custom painter for terrain-like appearance (reused from event detail page)
 class TerrainPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..strokeWidth = 1.0
-      ..style = PaintingStyle.stroke;
+      ..strokeWidth = 1.5
+      ..style = PaintingStyle.stroke
+      ..color = Colors.brown.withOpacity(0.2);
 
-    // Draw terrain contour lines
-    paint.color = Colors.brown.withOpacity(0.3);
-    
-    // Draw some curved contour lines to simulate terrain
-    final path1 = Path();
-    path1.moveTo(0, size.height * 0.3);
-    path1.quadraticBezierTo(size.width * 0.3, size.height * 0.2, size.width * 0.6, size.height * 0.4);
-    path1.quadraticBezierTo(size.width * 0.8, size.height * 0.5, size.width, size.height * 0.3);
-    canvas.drawPath(path1, paint);
+    // Draw smooth contour lines
+    _drawContourLine(canvas, size, 0.3, 0.2, 0.6, 0.4, 0.8, 0.5, paint);
+    _drawContourLine(canvas, size, 0.6, 0.5, 0.7, 0.7, 0.9, 0.8, paint);
+    _drawContourLine(canvas, size, 0.8, 0.7, 0.5, 0.9, 0.8, 0.95, paint);
 
-    final path2 = Path();
-    path2.moveTo(0, size.height * 0.6);
-    path2.quadraticBezierTo(size.width * 0.4, size.height * 0.5, size.width * 0.7, size.height * 0.7);
-    path2.quadraticBezierTo(size.width * 0.9, size.height * 0.8, size.width, size.height * 0.6);
-    canvas.drawPath(path2, paint);
+    // Add subtle vegetation
+    _drawVegetation(canvas, size);
+  }
 
-    final path3 = Path();
-    path3.moveTo(0, size.height * 0.8);
-    path2.quadraticBezierTo(size.width * 0.2, size.height * 0.7, size.width * 0.5, size.height * 0.9);
-    path3.quadraticBezierTo(size.width * 0.8, size.height * 0.95, size.width, size.height * 0.8);
-    canvas.drawPath(path3, paint);
+  void _drawContourLine(
+    Canvas canvas,
+    Size size,
+    double startY,
+    double cp1x,
+    double cp1y,
+    double cp2x,
+    double cp2y,
+    double endY,
+    Paint paint,
+  ) {
+    final path = Path();
+    path.moveTo(0, size.height * startY);
+    path.cubicTo(
+      size.width * cp1x,
+      size.height * cp1y,
+      size.width * cp2x,
+      size.height * cp2y,
+      size.width,
+      size.height * endY,
+    );
+    canvas.drawPath(path, paint);
+  }
 
-    // Add some vegetation dots
-    paint.style = PaintingStyle.fill;
-    paint.color = Colors.green.withOpacity(0.4);
-    
-    // Random vegetation spots
-    final spots = [
-      Offset(size.width * 0.2, size.height * 0.4),
-      Offset(size.width * 0.4, size.height * 0.6),
-      Offset(size.width * 0.7, size.height * 0.3),
-      Offset(size.width * 0.8, size.height * 0.7),
-      Offset(size.width * 0.3, size.height * 0.8),
+  void _drawVegetation(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..style = PaintingStyle.fill
+      ..color = Colors.green.withOpacity(0.3);
+
+    const spots = [
+      Offset(0.2, 0.4),
+      Offset(0.4, 0.6),
+      Offset(0.7, 0.3),
+      Offset(0.8, 0.7),
+      Offset(0.3, 0.8),
+      Offset(0.6, 0.5),
+      Offset(0.9, 0.6),
     ];
-    
+
     for (final spot in spots) {
-      canvas.drawCircle(spot, 3, paint);
+      canvas.drawCircle(
+        Offset(size.width * spot.dx, size.height * spot.dy),
+        4 + spot.dx * 2, // Vary size for natural look
+        paint,
+      );
     }
   }
 

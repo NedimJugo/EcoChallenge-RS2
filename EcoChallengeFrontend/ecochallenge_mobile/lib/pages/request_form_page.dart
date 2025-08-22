@@ -26,6 +26,11 @@ class _RequestFormPageState extends State<RequestFormPage> {
   final _descriptionController = TextEditingController();
   final _addressController = TextEditingController();
 
+  String? _titleError;
+  String? _descriptionError;
+  String? _addressError;
+  String? _locationError;
+
   // Form data
   UrgencyLevel _selectedUrgency = UrgencyLevel.low;
   EstimatedAmount _selectedAmount = EstimatedAmount.small;
@@ -35,6 +40,62 @@ class _RequestFormPageState extends State<RequestFormPage> {
   double? _selectedLng;
   bool _isCreatingLocation = false;
 
+  bool _validateCurrentPage() {
+    setState(() {
+      _titleError = null;
+      _descriptionError = null;
+      _addressError = null;
+      _locationError = null;
+    });
+
+    bool isValid = true;
+
+    if (_currentPage == 0) {
+      if (_titleController.text.trim().isEmpty) {
+        _titleError = 'Title is required';
+        isValid = false;
+      } else if (_titleController.text.trim().length < 3) {
+        _titleError = 'Title must be at least 3 characters';
+        isValid = false;
+      } else if (_titleController.text.trim().length > 100) {
+        _titleError = 'Title must be less than 100 characters';
+        isValid = false;
+      }
+
+      if (_descriptionController.text.trim().isEmpty) {
+        _descriptionError = 'Description is required';
+        isValid = false;
+      } else if (_descriptionController.text.trim().length < 10) {
+        _descriptionError = 'Description must be at least 10 characters';
+        isValid = false;
+      } else if (_descriptionController.text.trim().length > 500) {
+        _descriptionError = 'Description must be less than 500 characters';
+        isValid = false;
+      }
+    } else if (_currentPage == 1) {
+      if (_addressController.text.trim().isEmpty) {
+        _addressError = 'Address is required';
+        isValid = false;
+      }
+      if (_selectedLat == null || _selectedLng == null) {
+        _locationError = 'Please select a location on the map';
+        isValid = false;
+      }
+    }
+
+    setState(() {});
+    return isValid;
+  }
+
+  void _nextPage() {
+    if (_validateCurrentPage()) {
+      _pageController.nextPage(
+        duration: Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -42,23 +103,70 @@ class _RequestFormPageState extends State<RequestFormPage> {
         child: SafeArea(
           child: Column(
             children: [
-              // Top bar
-              Padding(
+              Container(
                 padding: const EdgeInsets.all(16.0),
-                child: Row(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Color(0xFF2D5016), Color(0xFF4A7C59)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 4,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Column(
                   children: [
-                    IconButton(
-                      icon: Icon(Icons.arrow_back, color: Colors.black),
-                      onPressed: () {
-                        if (_currentPage > 0) {
-                          _pageController.previousPage(
-                            duration: Duration(milliseconds: 300),
-                            curve: Curves.easeInOut,
-                          );
-                        } else {
-                          Navigator.pop(context);
-                        }
-                      },
+                    Row(
+                      children: [
+                        IconButton(
+                          icon: Icon(Icons.arrow_back, color: Colors.white),
+                          onPressed: () {
+                            if (_currentPage > 0) {
+                              _pageController.previousPage(
+                                duration: Duration(milliseconds: 300),
+                                curve: Curves.easeInOut,
+                              );
+                            } else {
+                              Navigator.pop(context);
+                            }
+                          },
+                        ),
+                        Expanded(
+                          child: Text(
+                            _getPageTitle(),
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                        SizedBox(width: 48), // Balance the back button
+                      ],
+                    ),
+                    SizedBox(height: 12),
+                    // Progress indicator
+                    Row(
+                      children: List.generate(5, (index) {
+                        return Expanded(
+                          child: Container(
+                            margin: EdgeInsets.symmetric(horizontal: 2),
+                            height: 4,
+                            decoration: BoxDecoration(
+                              color: index <= _currentPage 
+                                  ? Colors.white 
+                                  : Colors.white.withOpacity(0.3),
+                              borderRadius: BorderRadius.circular(2),
+                            ),
+                          ),
+                        );
+                      }),
                     ),
                   ],
                 ),
@@ -81,27 +189,24 @@ class _RequestFormPageState extends State<RequestFormPage> {
                   ],
                 ),
               ),
-              
-              // Bottom navigation
-              Container(
-                height: 60,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Icon(Icons.language, color: Colors.black54),
-                    Icon(Icons.image, color: Colors.black54),
-                    Icon(Icons.home, color: Colors.black54),
-                    Icon(Icons.calendar_today, color: Colors.black54),
-                    Icon(Icons.chat_bubble_outline, color: Colors.black54),
-                  ],
-                ),
-              ),
             ],
           ),
         ),
       ),
     );
   }
+
+  String _getPageTitle() {
+    switch (_currentPage) {
+      case 0: return 'Request Info';
+      case 1: return 'Location';
+      case 2: return 'Details';
+      case 3: return 'Photos';
+      case 4: return 'Review';
+      default: return 'Request Form';
+    }
+  }
+
 
   Widget _buildRequestInfoPage() {
     return Padding(
@@ -110,19 +215,37 @@ class _RequestFormPageState extends State<RequestFormPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            padding: EdgeInsets.all(16),
+            padding: EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.9),
-              borderRadius: BorderRadius.circular(12),
+              gradient: LinearGradient(
+                colors: [Colors.white, Colors.green.shade50],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 8,
+                  offset: Offset(0, 4),
+                ),
+              ],
             ),
             child: Column(
               children: [
+                Icon(
+                  Icons.cleaning_services,
+                  size: 48,
+                  color: Color(0xFF2D5016),
+                ),
+                SizedBox(height: 12),
                 Text(
                   'Every good cleanup\nhas a name!',
                   style: TextStyle(
-                    fontSize: 20,
+                    fontSize: 22,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black,
+                    color: Color(0xFF2D5016),
+                    height: 1.3,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -130,8 +253,9 @@ class _RequestFormPageState extends State<RequestFormPage> {
                 Text(
                   'What\'s the scoop? Be as detailed as your grandma\'s stew recipe.',
                   style: TextStyle(
-                    fontSize: 14,
+                    fontSize: 15,
                     color: Colors.black87,
+                    height: 1.4,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -139,50 +263,111 @@ class _RequestFormPageState extends State<RequestFormPage> {
             ),
           ),
           
-          SizedBox(height: 20),
+          SizedBox(height: 24),
           
           Text(
-            'Title:',
+            'Title *',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: Colors.black,
+              color: Color(0xFF2D5016),
             ),
           ),
           SizedBox(height: 8),
-          TextField(
-            controller: _titleController,
-            decoration: InputDecoration(
-              filled: true,
-              fillColor: Colors.white.withOpacity(0.8),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide.none,
+          Container(
+            decoration: BoxDecoration(
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 4,
+                  offset: Offset(0, 2),
+                ),
+              ],
+            ),
+            child: TextField(
+              controller: _titleController,
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: Colors.white,
+                prefixIcon: Icon(Icons.title, color: Color(0xFF2D5016)),
+                hintText: 'Enter cleanup title...',
+                errorText: _titleError,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.grey.shade300),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Color(0xFF2D5016), width: 2),
+                ),
+                errorBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.red, width: 2),
+                ),
               ),
+              onChanged: (value) {
+                if (_titleError != null) {
+                  setState(() {
+                    _titleError = null;
+                  });
+                }
+              },
             ),
           ),
           
           SizedBox(height: 20),
           
           Text(
-            'Description:',
+            'Description *',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: Colors.black,
+              color: Color(0xFF2D5016),
             ),
           ),
           SizedBox(height: 8),
-          TextField(
-            controller: _descriptionController,
-            maxLines: 3,
-            decoration: InputDecoration(
-              filled: true,
-              fillColor: Colors.white.withOpacity(0.8),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide.none,
+          Container(
+            decoration: BoxDecoration(
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 4,
+                  offset: Offset(0, 2),
+                ),
+              ],
+            ),
+            child: TextField(
+              controller: _descriptionController,
+              maxLines: 4,
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: Colors.white,
+                prefixIcon: Padding(
+                  padding: EdgeInsets.only(bottom: 60),
+                  child: Icon(Icons.description, color: Color(0xFF2D5016)),
+                ),
+                hintText: 'Describe the cleanup area and what needs to be done...',
+                errorText: _descriptionError,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.grey.shade300),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Color(0xFF2D5016), width: 2),
+                ),
+                errorBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.red, width: 2),
+                ),
               ),
+              onChanged: (value) {
+                if (_descriptionError != null) {
+                  setState(() {
+                    _descriptionError = null;
+                  });
+                }
+              },
             ),
           ),
           
@@ -190,27 +375,40 @@ class _RequestFormPageState extends State<RequestFormPage> {
           
           Center(
             child: Container(
-              width: 120,
-              height: 40,
+              width: 160,
+              height: 50,
+              decoration: BoxDecoration(
+                boxShadow: [
+                  BoxShadow(
+                    color: Color(0xFF2D5016).withOpacity(0.3),
+                    blurRadius: 8,
+                    offset: Offset(0, 4),
+                  ),
+                ],
+              ),
               child: ElevatedButton(
-                onPressed: () {
-                  _pageController.nextPage(
-                    duration: Duration(milliseconds: 300),
-                    curve: Curves.easeInOut,
-                  );
-                },
+                onPressed: _nextPage,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Color(0xFF2D5016),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(25),
                   ),
+                  elevation: 0,
                 ),
-                child: Text(
-                  'Next',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Next',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    SizedBox(width: 8),
+                    Icon(Icons.arrow_forward, color: Colors.white, size: 20),
+                  ],
                 ),
               ),
             ),
@@ -226,34 +424,84 @@ class _RequestFormPageState extends State<RequestFormPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Request Location',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.black,
+          Container(
+            padding: EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.blue.shade50, Colors.white],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.blue.shade200),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.location_on, color: Colors.blue.shade700, size: 32),
+                SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Pin the exact location for cleanup',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.blue.shade700,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
+          
           SizedBox(height: 20),
           
           Text(
-            'Address:',
+            'Address *',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: Colors.black,
+              color: Color(0xFF2D5016),
             ),
           ),
           SizedBox(height: 8),
-          TextField(
-            controller: _addressController,
-            decoration: InputDecoration(
-              filled: true,
-              fillColor: Colors.white.withOpacity(0.8),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide.none,
+          Container(
+            decoration: BoxDecoration(
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 4,
+                  offset: Offset(0, 2),
+                ),
+              ],
+            ),
+            child: TextField(
+              controller: _addressController,
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: Colors.white,
+                prefixIcon: Icon(Icons.location_city, color: Color(0xFF2D5016)),
+                hintText: 'Enter address or location name...',
+                errorText: _addressError,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.grey.shade300),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Color(0xFF2D5016), width: 2),
+                ),
+                errorBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.red, width: 2),
+                ),
               ),
+              onChanged: (value) {
+                if (_addressError != null) {
+                  setState(() {
+                    _addressError = null;
+                  });
+                }
+              },
             ),
           ),
           
@@ -262,37 +510,57 @@ class _RequestFormPageState extends State<RequestFormPage> {
           Row(
             children: [
               Text(
-                'Map:',
+                'Map Location *',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: Colors.black,
+                  color: Color(0xFF2D5016),
                 ),
               ),
               Spacer(),
-              TextButton.icon(
-                onPressed: () async {
-                  final result = await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => MapSelectionPage(
-                        initialLat: _selectedLat,
-                        initialLng: _selectedLng,
-                      ),
+              Container(
+                decoration: BoxDecoration(
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 4,
+                      offset: Offset(0, 2),
                     ),
-                  );
-                  if (result != null) {
-                    setState(() {
-                      _selectedLat = result['lat'];
-                      _selectedLng = result['lng'];
-                      _addressController.text = result['address'];
-                    });
-                  }
-                },
-                icon: Icon(Icons.fullscreen, color: Color(0xFF2D5016)),
-                label: Text(
-                  'Full Screen',
-                  style: TextStyle(color: Color(0xFF2D5016)),
+                  ],
+                ),
+                child: TextButton.icon(
+                  onPressed: () async {
+                    final result = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => MapSelectionPage(
+                          initialLat: _selectedLat,
+                          initialLng: _selectedLng,
+                        ),
+                      ),
+                    );
+                    if (result != null) {
+                      setState(() {
+                        _selectedLat = result['lat'];
+                        _selectedLng = result['lng'];
+                        _addressController.text = result['address'];
+                        _locationError = null;
+                      });
+                    }
+                  },
+                  style: TextButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      side: BorderSide(color: Color(0xFF2D5016)),
+                    ),
+                  ),
+                  icon: Icon(Icons.fullscreen, color: Color(0xFF2D5016)),
+                  label: Text(
+                    'Full Screen',
+                    style: TextStyle(color: Color(0xFF2D5016), fontWeight: FontWeight.w600),
+                  ),
                 ),
               ),
             ],
@@ -300,35 +568,77 @@ class _RequestFormPageState extends State<RequestFormPage> {
           SizedBox(height: 8),
           
           Container(
-            height: 150,
-            child: _buildMapWidget(),
+            height: 180,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: _locationError != null ? Colors.red : Colors.grey.shade300,
+                width: _locationError != null ? 2 : 1,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 4,
+                  offset: Offset(0, 2),
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: _buildMapWidget(),
+            ),
           ),
+          
+          if (_locationError != null)
+            Padding(
+              padding: EdgeInsets.only(top: 8, left: 12),
+              child: Text(
+                _locationError!,
+                style: TextStyle(
+                  color: Colors.red,
+                  fontSize: 12,
+                ),
+              ),
+            ),
           
           Spacer(),
           
           Center(
             child: Container(
-              width: 120,
-              height: 40,
+              width: 160,
+              height: 50,
+              decoration: BoxDecoration(
+                boxShadow: [
+                  BoxShadow(
+                    color: Color(0xFF2D5016).withOpacity(0.3),
+                    blurRadius: 8,
+                    offset: Offset(0, 4),
+                  ),
+                ],
+              ),
               child: ElevatedButton(
-                onPressed: () {
-                  _pageController.nextPage(
-                    duration: Duration(milliseconds: 300),
-                    curve: Curves.easeInOut,
-                  );
-                },
+                onPressed: _nextPage,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Color(0xFF2D5016),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(25),
                   ),
+                  elevation: 0,
                 ),
-                child: Text(
-                  'Next',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Next',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    SizedBox(width: 8),
+                    Icon(Icons.arrow_forward, color: Colors.white, size: 20),
+                  ],
                 ),
               ),
             ),
@@ -417,120 +727,147 @@ class _RequestFormPageState extends State<RequestFormPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Request Details',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.black,
-            ),
-          ),
-          SizedBox(height: 20),
-          
-          Text(
-            'Urgency Level:',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.black,
-            ),
-          ),
-          SizedBox(height: 8),
           Container(
-            padding: EdgeInsets.symmetric(horizontal: 12),
+            padding: EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.8),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.grey.shade300),
+              gradient: LinearGradient(
+                colors: [Colors.orange.shade50, Colors.white],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.orange.shade200),
             ),
-            child: DropdownButton<UrgencyLevel>(
-              value: _selectedUrgency,
-              isExpanded: true,
-              underline: SizedBox(),
-              items: [
-                DropdownMenuItem(value: UrgencyLevel.low, child: Text('Low')),
-                DropdownMenuItem(value: UrgencyLevel.medium, child: Text('Medium')),
-                DropdownMenuItem(value: UrgencyLevel.high, child: Text('High')),
-                DropdownMenuItem(value: UrgencyLevel.critical, child: Text('Critical')),
+            child: Row(
+              children: [
+                Icon(Icons.settings, color: Colors.orange.shade700, size: 32),
+                SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Help us understand the cleanup requirements',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.orange.shade700,
+                    ),
+                  ),
+                ),
               ],
-              onChanged: (value) {
-                setState(() {
-                  _selectedUrgency = value ?? UrgencyLevel.low;
-                });
-              },
             ),
           ),
           
-          SizedBox(height: 20),
+          SizedBox(height: 24),
           
-          Text(
-            'Estimated Amount:',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.black,
-            ),
-          ),
-          SizedBox(height: 8),
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 12),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.8),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.grey.shade300),
-            ),
-            child: DropdownButton<EstimatedAmount>(
-              value: _selectedAmount,
-              isExpanded: true,
-              underline: SizedBox(),
-              items: [
-                DropdownMenuItem(value: EstimatedAmount.small, child: Text('Small (1-5 bags)')),
-                DropdownMenuItem(value: EstimatedAmount.medium, child: Text('Medium (6-15 bags)')),
-                DropdownMenuItem(value: EstimatedAmount.large, child: Text('Large (16+ bags)')),
-                DropdownMenuItem(value: EstimatedAmount.huge, child: Text('Huge (30+ bags)')),
-              ],
-              onChanged: (value) {
-                setState(() {
-                  _selectedAmount = value ?? EstimatedAmount.small;
-                });
-              },
+          _buildEnhancedDropdown(
+            'Urgency Level',
+            Icons.priority_high,
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey.shade300),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 4,
+                    offset: Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: DropdownButton<UrgencyLevel>(
+                value: _selectedUrgency,
+                isExpanded: true,
+                underline: SizedBox(),
+                items: [
+                  DropdownMenuItem(value: UrgencyLevel.low, child: Text('🟢 Low')),
+                  DropdownMenuItem(value: UrgencyLevel.medium, child: Text('🟡 Medium')),
+                  DropdownMenuItem(value: UrgencyLevel.high, child: Text('🟠 High')),
+                  DropdownMenuItem(value: UrgencyLevel.critical, child: Text('🔴 Critical')),
+                ],
+                onChanged: (value) {
+                  setState(() {
+                    _selectedUrgency = value ?? UrgencyLevel.low;
+                  });
+                },
+              ),
             ),
           ),
           
           SizedBox(height: 20),
           
-          Text(
-            'Estimated Time (minutes):',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.black,
+          _buildEnhancedDropdown(
+            'Estimated Amount',
+            Icons.delete_outline,
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey.shade300),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 4,
+                    offset: Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: DropdownButton<EstimatedAmount>(
+                value: _selectedAmount,
+                isExpanded: true,
+                underline: SizedBox(),
+                items: [
+                  DropdownMenuItem(value: EstimatedAmount.small, child: Text('🗑️ Small (1-5 bags)')),
+                  DropdownMenuItem(value: EstimatedAmount.medium, child: Text('🗑️🗑️ Medium (6-15 bags)')),
+                  DropdownMenuItem(value: EstimatedAmount.large, child: Text('🗑️🗑️🗑️ Large (16+ bags)')),
+                  DropdownMenuItem(value: EstimatedAmount.huge, child: Text('🗑️🗑️🗑️🗑️ Huge (30+ bags)')),
+                ],
+                onChanged: (value) {
+                  setState(() {
+                    _selectedAmount = value ?? EstimatedAmount.small;
+                  });
+                },
+              ),
             ),
           ),
-          SizedBox(height: 8),
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 12),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.8),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.grey.shade300),
-            ),
-            child: DropdownButton<int>(
-              value: _estimatedTime,
-              isExpanded: true,
-              underline: SizedBox(),
-              items: [
-                DropdownMenuItem(value: 15, child: Text('15 minutes')),
-                DropdownMenuItem(value: 30, child: Text('30 minutes')),
-                DropdownMenuItem(value: 60, child: Text('1 hour')),
-                DropdownMenuItem(value: 120, child: Text('2 hours')),
-                DropdownMenuItem(value: 240, child: Text('4+ hours')),
-              ],
-              onChanged: (value) {
-                setState(() {
-                  _estimatedTime = value ?? 30;
-                });
-              },
+          
+          SizedBox(height: 20),
+          
+          _buildEnhancedDropdown(
+            'Estimated Time',
+            Icons.access_time,
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey.shade300),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 4,
+                    offset: Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: DropdownButton<int>(
+                value: _estimatedTime,
+                isExpanded: true,
+                underline: SizedBox(),
+                items: [
+                  DropdownMenuItem(value: 15, child: Text('⏱️ 15 minutes')),
+                  DropdownMenuItem(value: 30, child: Text('⏱️ 30 minutes')),
+                  DropdownMenuItem(value: 60, child: Text('⏱️ 1 hour')),
+                  DropdownMenuItem(value: 120, child: Text('⏱️ 2 hours')),
+                  DropdownMenuItem(value: 240, child: Text('⏱️ 4+ hours')),
+                ],
+                onChanged: (value) {
+                  setState(() {
+                    _estimatedTime = value ?? 30;
+                  });
+                },
+              ),
             ),
           ),
           
@@ -538,27 +875,40 @@ class _RequestFormPageState extends State<RequestFormPage> {
           
           Center(
             child: Container(
-              width: 120,
-              height: 40,
+              width: 160,
+              height: 50,
+              decoration: BoxDecoration(
+                boxShadow: [
+                  BoxShadow(
+                    color: Color(0xFF2D5016).withOpacity(0.3),
+                    blurRadius: 8,
+                    offset: Offset(0, 4),
+                  ),
+                ],
+              ),
               child: ElevatedButton(
-                onPressed: () {
-                  _pageController.nextPage(
-                    duration: Duration(milliseconds: 300),
-                    curve: Curves.easeInOut,
-                  );
-                },
+                onPressed: _nextPage,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Color(0xFF2D5016),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(25),
                   ),
+                  elevation: 0,
                 ),
-                child: Text(
-                  'Next',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Next',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    SizedBox(width: 8),
+                    Icon(Icons.arrow_forward, color: Colors.white, size: 20),
+                  ],
                 ),
               ),
             ),
@@ -568,148 +918,280 @@ class _RequestFormPageState extends State<RequestFormPage> {
     );
   }
 
+  Widget _buildEnhancedDropdown(String label, IconData icon, Widget dropdown) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(icon, color: Color(0xFF2D5016), size: 20),
+            SizedBox(width: 8),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF2D5016),
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: 8),
+        dropdown,
+      ],
+    );
+  }
+
   Widget _buildPhotosPage() {
     return Padding(
       padding: const EdgeInsets.all(20.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Request Photos',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.black,
+          Container(
+            padding: EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.purple.shade50, Colors.white],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.purple.shade200),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.camera_alt, color: Colors.purple.shade700, size: 32),
+                SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Show us the cleanup area',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.purple.shade700,
+                        ),
+                      ),
+                      Text(
+                        'Photos help volunteers understand the task better',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.purple.shade600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
-          SizedBox(height: 20),
           
-          Text(
-            'Add photos to show the cleanup area:',
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.black87,
-            ),
-          ),
           SizedBox(height: 20),
           
           GestureDetector(
             onTap: _pickImages,
             child: Container(
-              height: 300,
+              height: 320,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.8),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.grey.shade300),
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: Colors.grey.shade300,
+                  style: BorderStyle.solid,
+                  width: 2,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 8,
+                    offset: Offset(0, 4),
+                  ),
+                ],
               ),
               child: _selectedImages.isEmpty
                   ? Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.add_a_photo, size: 50, color: Colors.grey),
+                          Container(
+                            padding: EdgeInsets.all(20),
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade100,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.add_a_photo, 
+                              size: 48, 
+                              color: Color(0xFF2D5016),
+                            ),
+                          ),
+                          SizedBox(height: 16),
+                          Text(
+                            'Add Photos',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF2D5016),
+                            ),
+                          ),
                           SizedBox(height: 8),
                           Text(
-                            'Tap to add photos',
-                            style: TextStyle(color: Colors.grey.shade600),
+                            'Tap to capture or select photos\nfrom your gallery',
+                            style: TextStyle(
+                              color: Colors.grey.shade600,
+                              fontSize: 14,
+                            ),
+                            textAlign: TextAlign.center,
                           ),
                         ],
                       ),
                     )
-                  : GridView.builder(
-                      padding: EdgeInsets.all(8),
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 3,
-                        crossAxisSpacing: 4,
-                        mainAxisSpacing: 4,
-                      ),
-                      itemCount: _selectedImages.length + 1,
-                      itemBuilder: (context, index) {
-                        if (index == _selectedImages.length) {
-                          // Add more button
-                          return GestureDetector(
-                            onTap: _pickImages,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Colors.grey.shade200,
-                                borderRadius: BorderRadius.circular(4),
-                                border: Border.all(color: Colors.grey.shade300),
-                              ),
-                              child: Icon(
-                                Icons.add,
-                                color: Colors.grey.shade600,
-                                size: 30,
-                              ),
-                            ),
-                          );
-                        }
-                        
-                        return Stack(
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(4),
-                              child: Image.file(
-                                _selectedImages[index],
-                                fit: BoxFit.cover,
-                                width: double.infinity,
-                                height: double.infinity,
-                              ),
-                            ),
-                            Positioned(
-                              top: 4,
-                              right: 4,
-                              child: GestureDetector(
-                                onTap: () {
-                                  setState(() {
-                                    _selectedImages.removeAt(index);
-                                  });
-                                },
-                                child: Container(
-                                  padding: EdgeInsets.all(2),
-                                  decoration: BoxDecoration(
-                                    color: Colors.red,
-                                    shape: BoxShape.circle,
+                  : Padding(
+                      padding: EdgeInsets.all(12),
+                      child: GridView.builder(
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 3,
+                          crossAxisSpacing: 8,
+                          mainAxisSpacing: 8,
+                        ),
+                        itemCount: _selectedImages.length + 1,
+                        itemBuilder: (context, index) {
+                          if (index == _selectedImages.length) {
+                            return GestureDetector(
+                              onTap: _pickImages,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.grey.shade100,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: Color(0xFF2D5016),
+                                    style: BorderStyle.solid,
+                                    width: 2,
                                   ),
-                                  child: Icon(
-                                    Icons.close,
-                                    color: Colors.white,
-                                    size: 16,
+                                ),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.add,
+                                      color: Color(0xFF2D5016),
+                                      size: 32,
+                                    ),
+                                    SizedBox(height: 4),
+                                    Text(
+                                      'Add More',
+                                      style: TextStyle(
+                                        color: Color(0xFF2D5016),
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          }
+                          
+                          return Stack(
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(12),
+                                child: Image.file(
+                                  _selectedImages[index],
+                                  fit: BoxFit.cover,
+                                  width: double.infinity,
+                                  height: double.infinity,
+                                ),
+                              ),
+                              Positioned(
+                                top: 4,
+                                right: 4,
+                                child: GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      _selectedImages.removeAt(index);
+                                    });
+                                  },
+                                  child: Container(
+                                    padding: EdgeInsets.all(4),
+                                    decoration: BoxDecoration(
+                                      color: Colors.red,
+                                      shape: BoxShape.circle,
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.3),
+                                          blurRadius: 4,
+                                          offset: Offset(0, 2),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Icon(
+                                      Icons.close,
+                                      color: Colors.white,
+                                      size: 16,
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
-                          ],
-                        );
-                      },
+                            ],
+                          );
+                        },
+                      ),
                     ),
             ),
+          ),
+          
+          SizedBox(height: 12),
+          Text(
+            '${_selectedImages.length} photo${_selectedImages.length != 1 ? 's' : ''} selected',
+            style: TextStyle(
+              color: Colors.grey.shade600,
+              fontSize: 14,
+            ),
+            textAlign: TextAlign.center,
           ),
           
           Spacer(),
           
           Center(
             child: Container(
-              width: 120,
-              height: 40,
+              width: 160,
+              height: 50,
+              decoration: BoxDecoration(
+                boxShadow: [
+                  BoxShadow(
+                    color: Color(0xFF2D5016).withOpacity(0.3),
+                    blurRadius: 8,
+                    offset: Offset(0, 4),
+                  ),
+                ],
+              ),
               child: ElevatedButton(
-                onPressed: () {
-                  _pageController.nextPage(
-                    duration: Duration(milliseconds: 300),
-                    curve: Curves.easeInOut,
-                  );
-                },
+                onPressed: _nextPage,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Color(0xFF2D5016),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(25),
                   ),
+                  elevation: 0,
                 ),
-                child: Text(
-                  'Next',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Next',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    SizedBox(width: 8),
+                    Icon(Icons.arrow_forward, color: Colors.white, size: 20),
+                  ],
                 ),
               ),
             ),
@@ -724,45 +1206,96 @@ class _RequestFormPageState extends State<RequestFormPage> {
       padding: const EdgeInsets.all(20.0),
       child: Column(
         children: [
-          Text(
-            'Review Your Request',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.black,
+          Container(
+            padding: EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.green.shade50, Colors.white],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.green.shade200),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.check_circle_outline, color: Colors.green.shade700, size: 32),
+                SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Review your cleanup request',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.green.shade700,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
+          
           SizedBox(height: 20),
           
           Expanded(
             child: Container(
-              padding: EdgeInsets.all(16),
+              padding: EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.9),
-                borderRadius: BorderRadius.circular(12),
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 8,
+                    offset: Offset(0, 4),
+                  ),
+                ],
               ),
               child: SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildReviewItem('Title', _titleController.text),
-                    _buildReviewItem('Description', _descriptionController.text),
-                    _buildReviewItem('Address', _addressController.text),
-                    _buildReviewItem('Urgency', _getUrgencyText(_selectedUrgency)),
-                    _buildReviewItem('Amount', _getAmountText(_selectedAmount)),
-                    _buildReviewItem('Estimated Time', '$_estimatedTime minutes'),
-                    _buildReviewItem('Photos', '${_selectedImages.length} selected'),
+                    _buildEnhancedReviewItem('Title', _titleController.text, Icons.title),
+                    _buildEnhancedReviewItem('Description', _descriptionController.text, Icons.description),
+                    _buildEnhancedReviewItem('Address', _addressController.text, Icons.location_city),
+                    _buildEnhancedReviewItem('Urgency', _getUrgencyText(_selectedUrgency), Icons.priority_high),
+                    _buildEnhancedReviewItem('Amount', _getAmountText(_selectedAmount), Icons.delete_outline),
+                    _buildEnhancedReviewItem('Estimated Time', '$_estimatedTime minutes', Icons.access_time),
+                    _buildEnhancedReviewItem('Photos', '${_selectedImages.length} selected', Icons.camera_alt),
                     
                     if (_selectedLat != null && _selectedLng != null) ...[
-                      SizedBox(height: 16),
-                      Text(
-                        'Location Preview:',
-                        style: TextStyle(fontWeight: FontWeight.bold),
+                      SizedBox(height: 20),
+                      Row(
+                        children: [
+                          Icon(Icons.map, color: Color(0xFF2D5016), size: 20),
+                          SizedBox(width: 8),
+                          Text(
+                            'Location Preview:',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                              color: Color(0xFF2D5016),
+                            ),
+                          ),
+                        ],
                       ),
-                      SizedBox(height: 8),
+                      SizedBox(height: 12),
                       Container(
                         height: 150,
-                        child: _buildMapWidget(),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 4,
+                              offset: Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: _buildMapWidget(),
+                        ),
                       ),
                     ],
                   ],
@@ -775,28 +1308,38 @@ class _RequestFormPageState extends State<RequestFormPage> {
           
           Container(
             width: double.infinity,
-            height: 50,
+            height: 56,
+            decoration: BoxDecoration(
+              boxShadow: [
+                BoxShadow(
+                  color: Color(0xFF2D5016).withOpacity(0.3),
+                  blurRadius: 12,
+                  offset: Offset(0, 6),
+                ),
+              ],
+            ),
             child: ElevatedButton(
               onPressed: _isCreatingLocation ? null : _submitRequest,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Color(0xFF2D5016),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(25),
+                  borderRadius: BorderRadius.circular(28),
                 ),
+                elevation: 0,
               ),
               child: _isCreatingLocation
                   ? Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         SizedBox(
-                          width: 20,
-                          height: 20,
+                          width: 24,
+                          height: 24,
                           child: CircularProgressIndicator(
                             color: Colors.white,
                             strokeWidth: 2,
                           ),
                         ),
-                        SizedBox(width: 10),
+                        SizedBox(width: 12),
                         Text(
                           'Creating Location...',
                           style: TextStyle(
@@ -807,13 +1350,20 @@ class _RequestFormPageState extends State<RequestFormPage> {
                         ),
                       ],
                     )
-                  : Text(
-                      'Submit Request',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
+                  : Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.send, color: Colors.white, size: 20),
+                        SizedBox(width: 8),
+                        Text(
+                          'Submit Request',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
                     ),
             ),
           ),
@@ -822,22 +1372,42 @@ class _RequestFormPageState extends State<RequestFormPage> {
     );
   }
 
-  Widget _buildReviewItem(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8.0),
+  Widget _buildEnhancedReviewItem(String label, String value, IconData icon) {
+    return Container(
+      margin: EdgeInsets.only(bottom: 16),
+      padding: EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            '$label: ',
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
+          Icon(icon, color: Color(0xFF2D5016), size: 18),
+          SizedBox(width: 12),
           Expanded(
-            child: Text(
-              value.isEmpty ? 'Not specified' : value,
-              style: TextStyle(
-                color: value.isEmpty ? Colors.grey : Colors.black,
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                    color: Color(0xFF2D5016),
+                  ),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  value.isEmpty ? 'Not specified' : value,
+                  style: TextStyle(
+                    color: value.isEmpty ? Colors.grey : Colors.black87,
+                    fontSize: 14,
+                    height: 1.3,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -906,23 +1476,23 @@ class _RequestFormPageState extends State<RequestFormPage> {
   }
 
   Future<void> _submitRequest() async {
-    if (_titleController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Please enter a title'),
-          backgroundColor: Colors.orange,
-        ),
-      );
+    if (_titleController.text.trim().isEmpty) {
+      _showErrorSnackBar('Please enter a title');
+      return;
+    }
+
+    if (_descriptionController.text.trim().isEmpty) {
+      _showErrorSnackBar('Please enter a description');
+      return;
+    }
+
+    if (_addressController.text.trim().isEmpty) {
+      _showErrorSnackBar('Please enter an address');
       return;
     }
 
     if (_selectedLat == null || _selectedLng == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Please select a location on the map'),
-          backgroundColor: Colors.orange,
-        ),
-      );
+      _showErrorSnackBar('Please select a location on the map');
       return;
     }
 
@@ -931,7 +1501,6 @@ class _RequestFormPageState extends State<RequestFormPage> {
         _isCreatingLocation = true;
       });
 
-      // Get current user ID
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final currentUserId = authProvider.currentUserId;
       
@@ -939,7 +1508,6 @@ class _RequestFormPageState extends State<RequestFormPage> {
         throw Exception('User not logged in');
       }
 
-      // Create or get location
       final locationProvider = Provider.of<LocationProvider>(context, listen: false);
       
       final location = await locationProvider.getOrCreateLocation(
@@ -953,16 +1521,15 @@ class _RequestFormPageState extends State<RequestFormPage> {
         _isCreatingLocation = false;
       });
 
-      // Now create the request
       final requestProvider = Provider.of<RequestProvider>(context, listen: false);
       
       final request = RequestInsertRequest(
-        userId: currentUserId, // Use actual user ID
-        locationId: location.id, // Use the created/found location ID
-        title: _titleController.text,
-        description: _descriptionController.text,
+        userId: currentUserId,
+        locationId: location.id,
+        title: _titleController.text.trim(),
+        description: _descriptionController.text.trim(),
         urgencyLevel: _selectedUrgency,
-        wasteTypeId: 1, // You might want to make this selectable too
+        wasteTypeId: 1,
         estimatedAmount: _selectedAmount,
         statusId: 1,
         suggestedRewardPoints: 100,
@@ -970,29 +1537,53 @@ class _RequestFormPageState extends State<RequestFormPage> {
         estimatedCleanupTime: _estimatedTime,
       );
       
-      // Use the method that handles multipart/form-data
       await requestProvider.insertWithFiles(request, files: _selectedImages);
       
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Request submitted successfully!'),
-          backgroundColor: Colors.green,
-        ),
-      );
-      
+      _showSuccessSnackBar('Request submitted successfully!');
       Navigator.pop(context);
     } catch (e) {
       print("Submit error: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error submitting request: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      _showErrorSnackBar('Error submitting request: $e');
     } finally {
       setState(() {
         _isCreatingLocation = false;
       });
     }
+  }
+
+  void _showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(Icons.error_outline, color: Colors.white),
+            SizedBox(width: 8),
+            Expanded(child: Text(message)),
+          ],
+        ),
+        backgroundColor: Colors.red.shade600,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        margin: EdgeInsets.all(16),
+      ),
+    );
+  }
+
+  void _showSuccessSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(Icons.check_circle_outline, color: Colors.white),
+            SizedBox(width: 8),
+            Expanded(child: Text(message)),
+          ],
+        ),
+        backgroundColor: Colors.green.shade600,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        margin: EdgeInsets.all(16),
+      ),
+    );
   }
 }

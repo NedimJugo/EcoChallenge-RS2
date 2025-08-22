@@ -114,13 +114,13 @@ class _EventsListPageState extends State<EventsListPage> {
     
     // Load active events (status = 1)
     final eventSearchObject = EventSearchObject(
-      status: 1, // Active status
+      status: 2, // Active status
       retrieveAll: true,
     );
     
     // Load active requests (status = 1)
     final requestSearchObject = RequestSearchObject(
-      status: 1, // Active status
+      status: 2, // Active status
       retrieveAll: true,
     );
     
@@ -143,6 +143,10 @@ class _EventsListPageState extends State<EventsListPage> {
       );
     }
   }
+}
+
+Future<void> _handleRefresh() async {
+  await _loadData();
 }
 
 List<dynamic> get _filteredItems {
@@ -229,42 +233,12 @@ List<dynamic> get _filteredItems {
         backgroundColor: Color(0xFFD4A574),
         elevation: 0,
         centerTitle: true,
-        actions: [
-          IconButton(
-            onPressed: () {
-              print('DEBUG: Refresh button pressed');
-              _hasInitialized = false;
-              _loadData();
-            },
-            icon: Icon(Icons.refresh, color: Colors.white),
-          ),
-          // Add debug button to show participated events
-          IconButton(
-            onPressed: () {
-              _showDebugInfo();
-            },
-            icon: Icon(Icons.bug_report, color: Colors.white),
-          ),
-        ],
       ),
       body: Column(
         children: [
           _buildFilterSection(),
           // Add debug info section
-          if (_userParticipatedEventIds.isNotEmpty)
-            Container(
-              padding: EdgeInsets.all(8),
-              margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.blue[50],
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.blue[200]!),
-              ),
-              child: Text(
-                'DEBUG: You are registered for ${_userParticipatedEventIds.length} events: ${_userParticipatedEventIds.join(", ")}',
-                style: TextStyle(fontSize: 12, color: Colors.blue[800]),
-              ),
-            ),
+          
           Expanded(
             child: _isLoading
                 ? Center(child: CircularProgressIndicator())
@@ -276,38 +250,6 @@ List<dynamic> get _filteredItems {
     );
   }
 
-  void _showDebugInfo() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Debug Info'),
-        content: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('User ID: ${Provider.of<AuthProvider>(context, listen: false).currentUserId}'),
-              SizedBox(height: 8),
-              Text('Participated Event IDs: $_userParticipatedEventIds'),
-              SizedBox(height: 8),
-              Text('Total Events: ${_events.length}'),
-              SizedBox(height: 8),
-              Text('Filtered Events: ${_filteredItems.where((item) => item is EventResponse).length}'),
-              SizedBox(height: 8),
-              Text('All Event IDs:'),
-              ..._events.map((e) => Text('  - ${e.id}: ${e.title}')),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Close'),
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildFilterSection() {
     return Container(
@@ -531,18 +473,21 @@ List<dynamic> get _filteredItems {
           ),
         ),
         Expanded(
-          child: ListView.builder(
-            padding: EdgeInsets.symmetric(horizontal: 16),
-            itemCount: items.length,
-            itemBuilder: (context, index) {
-              final item = items[index];
-              if (item is EventResponse) {
-                return _buildEventCard(item);
-              } else if (item is RequestResponse) {
-                return _buildRequestCard(item);
-              }
-              return SizedBox.shrink();
-            },
+          child: RefreshIndicator(
+            onRefresh: _handleRefresh,
+            child: ListView.builder(
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              itemCount: items.length,
+              itemBuilder: (context, index) {
+                final item = items[index];
+                if (item is EventResponse) {
+                  return _buildEventCard(item);
+                } else if (item is RequestResponse) {
+                  return _buildRequestCard(item);
+                }
+                return SizedBox.shrink();
+              },
+            ),
           ),
         ),
       ],
@@ -609,14 +554,6 @@ List<dynamic> get _filteredItems {
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                             color: Colors.grey[800],
-                          ),
-                        ),
-                        SizedBox(height: 4),
-                        Text(
-                          'Event ID: ${event.id}', // Add event ID for debugging
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.blue[600],
                           ),
                         ),
                         SizedBox(height: 4),
@@ -798,7 +735,7 @@ List<dynamic> get _filteredItems {
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
-                          'Participate',
+                          'See Details',
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 12,

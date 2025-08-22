@@ -1,3 +1,4 @@
+import 'package:ecochallenge_mobile/pages/home_page.dart';
 import 'package:flutter/material.dart';
 import 'request_form_page.dart';
 import 'event_form_page.dart';
@@ -18,7 +19,13 @@ class SelectionPage extends StatelessWidget {
                   children: [
                     IconButton(
                       icon: Icon(Icons.arrow_back, color: Colors.black),
-                      onPressed: () => Navigator.pop(context),
+                      onPressed: () {
+                      Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(builder: (context) => HomePage()),
+                        (route) => false, // removes all previous routes
+                      );
+                      },
                     ),
                   ],
                 ),
@@ -115,21 +122,6 @@ class SelectionPage extends StatelessWidget {
                       ),
                     ],
                   ),
-                ),
-              ),
-              
-              // Bottom navigation
-              Container(
-                height: 60,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Icon(Icons.language, color: Colors.black54),
-                    Icon(Icons.image, color: Colors.black54),
-                    Icon(Icons.home, color: Colors.black54),
-                    Icon(Icons.calendar_today, color: Colors.black54),
-                    Icon(Icons.chat_bubble_outline, color: Colors.black54),
-                  ],
                 ),
               ),
             ],

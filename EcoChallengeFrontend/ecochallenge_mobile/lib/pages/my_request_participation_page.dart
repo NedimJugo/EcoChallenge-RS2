@@ -106,7 +106,7 @@ class _MyRequestParticipationPageState extends State<MyRequestParticipationPage>
       case ParticipationStatus.approved:
         return 'Verified';
       case ParticipationStatus.rejected:
-        return 'Under Review';
+        return 'Rejected';
     }
   }
 

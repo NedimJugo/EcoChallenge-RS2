@@ -1,3 +1,4 @@
+import 'package:ecochallenge_mobile/layouts/constants.dart';
 import 'package:ecochallenge_mobile/pages/cleanup_map_page.dart';
 import 'package:ecochallenge_mobile/pages/events_list_page.dart';
 import 'package:ecochallenge_mobile/pages/forgot_password_page.dart';
@@ -5,6 +6,7 @@ import 'package:ecochallenge_mobile/pages/gallery_page.dart';
 import 'package:ecochallenge_mobile/pages/home_page.dart';
 import 'package:ecochallenge_mobile/pages/login_page.dart';
 import 'package:ecochallenge_mobile/pages/register_page.dart';
+import 'package:ecochallenge_mobile/pages/selection_page.dart';
 import 'package:ecochallenge_mobile/providers/badge_provider.dart';
 import 'package:ecochallenge_mobile/providers/event_participant_provider.dart';
 import 'package:ecochallenge_mobile/providers/event_provider.dart';
@@ -19,12 +21,22 @@ import 'package:ecochallenge_mobile/providers/stripe_provider.dart';
 import 'package:ecochallenge_mobile/providers/user_badge_provider.dart';
 import 'package:ecochallenge_mobile/providers/user_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import 'providers/auth_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: darkBackground, // Match your dark header color
+      statusBarIconBrightness: Brightness.light, // Light icons on dark background
+      statusBarBrightness: Brightness.dark, // For iOS
+    ),
+  );
+  
   final authProvider = AuthProvider();
   await authProvider.loadCredentials();
 
@@ -85,6 +97,7 @@ class MyApp extends StatelessWidget {
         '/cleanup-map': (context) => const CleanupMapPage(),
         '/events': (context) => EventsListPage(),
         '/forgot-password': (context) => const ForgotPasswordPage(),
+        '/send-request': (context) => SelectionPage(),
       },
     );
   }

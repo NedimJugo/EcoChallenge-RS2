@@ -110,7 +110,8 @@ namespace EcoChallenge.Services.Services
             {
                 try
                 {
-                    var badgeService = _serviceProvider.GetRequiredService<IBadgeManagementService>();
+                    using var scope = _serviceProvider.CreateScope();
+                    var badgeService = scope.ServiceProvider.GetRequiredService<IBadgeManagementService>();
                     await badgeService.CheckEventsBadgesAsync(entity.CreatorUserId);
                 }
                 catch (Exception ex)

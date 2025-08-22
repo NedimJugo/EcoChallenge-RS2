@@ -16,7 +16,6 @@ class _NotificationsPageState extends State<NotificationsPage> {
   List<NotificationResponse> _notifications = [];
   List<NotificationResponse> _filteredNotifications = [];
   bool _isLoading = true;
-  bool _isRefreshing = false;
   late NotificationProvider _notificationProvider;
   late AuthProvider _authProvider;
   
@@ -90,10 +89,6 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
   Future<void> _refreshNotifications() async {
     if (!mounted) return;
-    
-    setState(() {
-      _isRefreshing = true;
-    });
 
     try {
       final userId = _authProvider.currentUserId;
@@ -103,16 +98,12 @@ class _NotificationsPageState extends State<NotificationsPage> {
           setState(() {
             _notifications = notifications;
             _filteredNotifications = notifications;
-            _isRefreshing = false;
           });
           _onSearchChanged(); // Reapply search filter
         }
       }
     } catch (e) {
       if (mounted) {
-        setState(() {
-          _isRefreshing = false;
-        });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to refresh notifications: $e'),
@@ -325,39 +316,6 @@ class _NotificationsPageState extends State<NotificationsPage> {
     );
   }
 
-  void _navigateToNotificationTarget(NotificationResponse notification) {
-    // Mark as read when navigating
-    if (!notification.isRead) {
-      _markAsRead(notification);
-    }
-    
-    // Navigate based on notification type (placeholder navigation)
-    String message = 'Opened ${notification.notificationType.displayName}';
-    switch (notification.notificationType) {
-      case NotificationType.RequestApproved:
-      case NotificationType.RequestRejected:
-        message = 'Navigate to requests page';
-        break;
-      case NotificationType.EventReminder:
-        message = 'Navigate to events page';
-        break;
-      case NotificationType.RewardReceived:
-      case NotificationType.BadgeEarned:
-        message = 'Navigate to rewards page';
-        break;
-      case NotificationType.ChatMessage:
-        message = 'Navigate to chat';
-        break;
-      case NotificationType.AdminMessage:
-        message = 'Admin message opened';
-        break;
-    }
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
-  }
-
   String _formatTimestamp(DateTime timestamp) {
     final now = DateTime.now();
     final difference = now.difference(timestamp);
@@ -383,9 +341,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
     return _filteredNotifications.where((n) => n.isRead).toList();
   }
 
-  int get _unreadCount {
-    return _notifications.where((n) => !n.isRead).length;
-  }
+
 
   @override
   Widget build(BuildContext context) {
