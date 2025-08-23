@@ -1,5 +1,4 @@
 // badge_type_provider.dart
-import 'dart:convert';
 import 'package:ecochallenge_desktop/models/badge_type.dart';
 import 'package:http/http.dart' as http;
 import '../providers/base_provider.dart';

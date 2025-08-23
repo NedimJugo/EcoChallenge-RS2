@@ -1,4 +1,4 @@
-import 'dart:convert';
+
 import 'package:ecochallenge_desktop/models/criteria_type.dart';
 import 'package:http/http.dart' as http;
 

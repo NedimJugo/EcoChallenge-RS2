@@ -1,6 +1,4 @@
 // event_type_provider.dart
-import 'dart:convert';
-
 import 'package:ecochallenge_desktop/models/event_type.dart';
 import 'package:http/http.dart' as http;
 import '../providers/base_provider.dart';

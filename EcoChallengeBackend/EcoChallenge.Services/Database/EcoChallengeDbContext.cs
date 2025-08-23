@@ -28,7 +28,6 @@ namespace EcoChallenge.Services.Database
         public DbSet<EventParticipant> EventParticipants { get; set; }
         public DbSet<DonationStatus> DonationStatuses { get; set; }
         public DbSet<Donation> Donations { get; set; }
-        public DbSet<Reward> Rewards { get; set; }
         public DbSet<Badge> Badges { get; set; }
         public DbSet<UserBadge> UserBadges { get; set; }
         public DbSet<GalleryReaction> GalleryReactions { get; set; }
@@ -38,7 +37,6 @@ namespace EcoChallenge.Services.Database
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<BadgeType> BadgeTypes { get; set; }
         public DbSet<EventType> EventTypes { get; set; }
-        public DbSet<RewardType> RewardTypes { get; set; }
         public DbSet<TargetEntityType> TargetEntityTypes { get; set; }
         public DbSet<UserType> UserTypes { get; set; }
         public DbSet<WasteType> WasteTypes { get; set; }
@@ -65,9 +63,6 @@ namespace EcoChallenge.Services.Database
 
             // Configure Donation relationships
             ConfigureDonationRelationships(modelBuilder);
-
-            // Configure Reward relationships
-            ConfigureRewardRelationships(modelBuilder);
 
             // Configure Badge relationships
             ConfigureBadgeRelationships(modelBuilder);
@@ -170,50 +165,7 @@ namespace EcoChallenge.Services.Database
                 .OnDelete(DeleteBehavior.Restrict);
         }
 
-        private void ConfigureRewardRelationships(ModelBuilder modelBuilder)
-        {
-            // Reward -> User
-            modelBuilder.Entity<Reward>()
-                .HasOne(r => r.User)
-                .WithMany(u => u.Rewards)
-                .HasForeignKey(r => r.UserId)
-                .OnDelete(DeleteBehavior.Restrict);
 
-            // Reward -> Request
-            modelBuilder.Entity<Reward>()
-                .HasOne(r => r.Request)
-                .WithMany(req => req.Rewards)
-                .HasForeignKey(r => r.RequestId)
-                .OnDelete(DeleteBehavior.SetNull);
-
-            // Reward -> Event
-            modelBuilder.Entity<Reward>()
-                .HasOne(r => r.Event)
-                .WithMany(e => e.Rewards)
-                .HasForeignKey(r => r.EventId)
-                .OnDelete(DeleteBehavior.SetNull);
-
-            // Reward -> Donation
-            modelBuilder.Entity<Reward>()
-                .HasOne(r => r.Donation)
-                .WithMany(d => d.Rewards)
-                .HasForeignKey(r => r.DonationId)
-                .OnDelete(DeleteBehavior.SetNull);
-
-            // Reward -> Badge
-            modelBuilder.Entity<Reward>()
-                .HasOne(r => r.Badge)
-                .WithMany(b => b.Rewards)
-                .HasForeignKey(r => r.BadgeId)
-                .OnDelete(DeleteBehavior.SetNull);
-
-            // Reward -> User (Approved By)
-            modelBuilder.Entity<Reward>()
-                .HasOne(r => r.ApprovedBy)
-                .WithMany()
-                .HasForeignKey(r => r.ApprovedByAdminId)
-                .OnDelete(DeleteBehavior.SetNull);
-        }
 
         private void ConfigureBadgeRelationships(ModelBuilder modelBuilder)
         {

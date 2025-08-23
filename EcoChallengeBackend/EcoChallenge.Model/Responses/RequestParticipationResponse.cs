@@ -32,5 +32,9 @@ namespace EcoChallenge.Models.Responses
         public string? BankName { get; set; }
         public string? TransactionNumber { get; set; }
         public string? RejectionReason { get; set; }
+        public FinanceStatus FinanceStatus { get; set; }
+        public string? FinanceNotes { get; set; }
+        public int? FinanceManagerId { get; set; }
+        public DateTime? FinanceProcessedAt { get; set; }
     }
 }

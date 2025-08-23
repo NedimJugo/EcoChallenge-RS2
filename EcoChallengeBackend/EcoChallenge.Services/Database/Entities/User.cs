@@ -64,7 +64,6 @@ namespace EcoChallenge.Services.Database.Entities
         public ICollection<Event>? CreatedEvents { get; set; }
         public ICollection<EventParticipant>? EventParticipants { get; set; }
         public ICollection<Donation>? Donations { get; set; }
-        public ICollection<Reward>? Rewards { get; set; }
         public ICollection<UserBadge>? UserBadges { get; set; }
         public ICollection<Photo>? Photos { get; set; }
         public ICollection<GalleryShowcase>? CreatedGalleryShowcases { get; set; }

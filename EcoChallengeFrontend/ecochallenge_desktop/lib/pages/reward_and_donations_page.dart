@@ -1,27 +1,42 @@
+import 'dart:io';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:ecochallenge_desktop/models/reward.dart';
-import 'package:ecochallenge_desktop/models/donation.dart';
-import 'package:ecochallenge_desktop/providers/reward_provider.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:ecochallenge_desktop/models/request_participation.dart';
+import 'package:ecochallenge_desktop/providers/request_participation_provider.dart';
 import 'package:ecochallenge_desktop/providers/donation_provider.dart';
+import 'package:ecochallenge_desktop/models/donation.dart';
+
+enum FinanceFilter {
+  all,
+  pending,
+  processed,
+}
 
 class RewardsPage extends StatefulWidget {
+  final int? currentUserId; // Finance manager ID
+  
+  const RewardsPage({Key? key, this.currentUserId}) : super(key: key);
+
   @override
   _RewardsPageState createState() => _RewardsPageState();
 }
 
 class _RewardsPageState extends State<RewardsPage> {
-  final RewardProvider _rewardProvider = RewardProvider();
+  final RequestParticipationProvider _requestParticipationProvider = RequestParticipationProvider();
   final DonationProvider _donationProvider = DonationProvider();
 
-  // Rewards data
-  List<RewardResponse> _rewards = [];
-  int _rewardsCurrentPage = 0;
-  int _rewardsPageSize = 5;
-  int _rewardsTotalCount = 0;
-  int _rewardsTotalPages = 0;
-  bool _rewardsLoading = false;
-  String _rewardsSortBy = 'Amount';
-  bool _rewardsSortDesc = true;
+  // Request Participations data
+  List<RequestParticipationResponse> _requestParticipations = [];
+  int _requestParticipationsCurrentPage = 0;
+  int _requestParticipationsPageSize = 10;
+  int _requestParticipationsTotalCount = 0;
+  int _requestParticipationsTotalPages = 0;
+  bool _requestParticipationsLoading = false;
+  String _requestParticipationsSortBy = "submittedAt";
+  bool _requestParticipationsSortDesc = true;
+  FinanceFilter _financeFilter = FinanceFilter.pending;
 
   // Donations data
   List<DonationResponse> _donations = [];
@@ -33,50 +48,52 @@ class _RewardsPageState extends State<RewardsPage> {
   String _donationsSortBy = 'Amount';
   bool _donationsSortDesc = true;
 
-  // Filter controllers
-  final TextEditingController _rewardsFilterController = TextEditingController();
-  final TextEditingController _donationsFilterController = TextEditingController();
+  // Selected participations for download
+  Set<int> _selectedParticipations = Set<int>();
+
+  // Controllers for finance processing modal
+  final TextEditingController _financeNotesController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _loadRewards();
+    _loadRequestParticipations();
     _loadDonations();
   }
 
-  @override
-  void dispose() {
-    _rewardsFilterController.dispose();
-    _donationsFilterController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _loadRewards() async {
+  Future<void> _loadRequestParticipations() async {
     setState(() {
-      _rewardsLoading = true;
+      _requestParticipationsLoading = true;
     });
 
     try {
-      final searchObject = RewardSearchObject(
-        page: _rewardsCurrentPage,
-        pageSize: _rewardsPageSize,
-        sortBy: _rewardsSortBy,
-        desc: _rewardsSortDesc,
+      final searchObject = RequestParticipationSearchObject(
+        page: _requestParticipationsCurrentPage,
+        pageSize: _requestParticipationsPageSize,
+        sortBy: _requestParticipationsSortBy,
+        desc: _requestParticipationsSortDesc,
+        status: ParticipationStatus.approved, // Only load approved ones
+        financeStatus: _financeFilter == FinanceFilter.all 
+            ? null 
+            : _financeFilter == FinanceFilter.pending 
+                ? FinanceStatus.pending 
+                : FinanceStatus.processed,
       );
 
-      final result = await _rewardProvider.getRewards(searchObject: searchObject);
+      final result = await _requestParticipationProvider.get(filter: searchObject.toJson());
       
       setState(() {
-        _rewards = result.items ?? [];
-        _rewardsTotalCount = result.totalCount ?? 0;
-        _rewardsTotalPages = (_rewardsTotalCount / _rewardsPageSize).ceil();
-        _rewardsLoading = false;
+        _requestParticipations = result.items ?? [];
+        _requestParticipationsTotalCount = result.totalCount ?? 0;
+        _requestParticipationsTotalPages = (_requestParticipationsTotalCount / _requestParticipationsPageSize).ceil();
+        _requestParticipationsLoading = false;
+        _selectedParticipations.clear();
       });
     } catch (e) {
       setState(() {
-        _rewardsLoading = false;
+        _requestParticipationsLoading = false;
       });
-      _showErrorSnackBar('Failed to load rewards: $e');
+      _showErrorSnackBar('Failed to load request participations: $e');
     }
   }
 
@@ -109,6 +126,266 @@ class _RewardsPageState extends State<RewardsPage> {
     }
   }
 
+  Future<void> _processSelectedFinance(String notes) async {
+    if (_selectedParticipations.isEmpty) {
+      _showErrorSnackBar('Please select at least one participation to process');
+      return;
+    }
+
+    try {
+      // Process finance for selected participations
+      for (var id in _selectedParticipations) {
+        // Get the current participation data to preserve existing values
+        final currentParticipation = _requestParticipations.firstWhere((p) => p.id == id);
+        
+        final updateRequest = RequestParticipationUpdateRequest(
+          id: id,
+          // Preserve existing values
+          status: currentParticipation.status,
+          rewardPoints: currentParticipation.rewardPoints,
+          rewardMoney: currentParticipation.rewardMoney,
+          adminNotes: currentParticipation.adminNotes,
+          cardHolderName: currentParticipation.cardHolderName,
+          bankName: currentParticipation.bankName,
+          transactionNumber: currentParticipation.transactionNumber,
+          // Only update finance-related fields
+          financeStatus: FinanceStatus.processed,
+          financeNotes: notes.isNotEmpty ? notes : null,
+          financeManagerId: widget.currentUserId,
+          financeProcessedAt: DateTime.now(),
+        );
+        await _requestParticipationProvider.updateWithFormData(id, updateRequest);
+      }
+
+      // Reload data to reflect status changes
+      _loadRequestParticipations();
+      _financeNotesController.clear();
+      
+      _showSuccessSnackBar('${_selectedParticipations.length} participations processed successfully');
+    } catch (e) {
+      _showErrorSnackBar('Failed to process finance: $e');
+    }
+  }
+
+  Future<void> _generatePdfReport() async {
+    if (_selectedParticipations.isEmpty) {
+      _showErrorSnackBar('Please select at least one participation to generate PDF');
+      return;
+    }
+
+    try {
+      final pdf = pw.Document();
+      final selectedData = _requestParticipations
+          .where((p) => _selectedParticipations.contains(p.id))
+          .toList();
+
+      double totalAmount = selectedData.fold(0.0, (sum, p) => sum + p.rewardMoney);
+
+      pdf.addPage(
+        pw.MultiPage(
+          pageFormat: PdfPageFormat.a4,
+          margin: pw.EdgeInsets.all(32),
+          header: (context) => pw.Container(
+            alignment: pw.Alignment.centerRight,
+            margin: pw.EdgeInsets.only(bottom: 20),
+            child: pw.Text(
+              'EcoChallenge Finance Report',
+              style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold),
+            ),
+          ),
+          footer: (context) => pw.Container(
+            alignment: pw.Alignment.centerRight,
+            margin: pw.EdgeInsets.only(top: 20),
+            child: pw.Text(
+              'Generated on: ${DateTime.now().toLocal().toString().split('.')[0]}',
+              style: pw.TextStyle(fontSize: 10),
+            ),
+          ),
+          build: (context) => [
+            pw.Container(
+              margin: pw.EdgeInsets.only(bottom: 20),
+              child: pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  pw.Text(
+                    'BANK PAYMENT REQUEST',
+                    style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold),
+                  ),
+                  pw.SizedBox(height: 10),
+                  pw.Text('Date: ${DateTime.now().toLocal().toString().split(' ')[0]}'),
+                  pw.Text('Total Participants: ${selectedData.length}'),
+                  pw.Text('Total Amount: ${totalAmount.toStringAsFixed(2)} BAM'),
+                  pw.SizedBox(height: 20),
+                  pw.Divider(),
+                ],
+              ),
+            ),
+            pw.Table(
+              border: pw.TableBorder.all(),
+              columnWidths: {
+                0: pw.FixedColumnWidth(40),
+                1: pw.FlexColumnWidth(3),
+                2: pw.FlexColumnWidth(2),
+                3: pw.FlexColumnWidth(2),
+                4: pw.FlexColumnWidth(1.5),
+                5: pw.FlexColumnWidth(2),
+              },
+              children: [
+                pw.TableRow(
+                  decoration: pw.BoxDecoration(color: PdfColors.grey200),
+                  children: [
+                    pw.Padding(
+                      padding: pw.EdgeInsets.all(8),
+                      child: pw.Text('No.', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                    ),
+                    pw.Padding(
+                      padding: pw.EdgeInsets.all(8),
+                      child: pw.Text('Card Holder Name', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                    ),
+                    pw.Padding(
+                      padding: pw.EdgeInsets.all(8),
+                      child: pw.Text('Bank Name', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                    ),
+                    pw.Padding(
+                      padding: pw.EdgeInsets.all(8),
+                      child: pw.Text('Account/Transaction', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                    ),
+                    pw.Padding(
+                      padding: pw.EdgeInsets.all(8),
+                      child: pw.Text('Amount (BAM)', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                    ),
+                    pw.Padding(
+                      padding: pw.EdgeInsets.all(8),
+                      child: pw.Text('Date', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                    ),
+                  ],
+                ),
+                ...selectedData.asMap().entries.map(
+                  (entry) {
+                    final index = entry.key;
+                    final participation = entry.value;
+                    return pw.TableRow(
+                      children: [
+                        pw.Padding(
+                          padding: pw.EdgeInsets.all(8),
+                          child: pw.Text('${index + 1}'),
+                        ),
+                        pw.Padding(
+                          padding: pw.EdgeInsets.all(8),
+                          child: pw.Text(participation.cardHolderName ?? 'N/A'),
+                        ),
+                        pw.Padding(
+                          padding: pw.EdgeInsets.all(8),
+                          child: pw.Text(participation.bankName ?? 'N/A'),
+                        ),
+                        pw.Padding(
+                          padding: pw.EdgeInsets.all(8),
+                          child: pw.Text(participation.transactionNumber ?? 'N/A'),
+                        ),
+                        pw.Padding(
+                          padding: pw.EdgeInsets.all(8),
+                          child: pw.Text(participation.rewardMoney.toStringAsFixed(2)),
+                        ),
+                        pw.Padding(
+                          padding: pw.EdgeInsets.all(8),
+                          child: pw.Text(_formatDate(participation.submittedAt)),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+                pw.TableRow(
+                  decoration: pw.BoxDecoration(color: PdfColors.grey100),
+                  children: [
+                    pw.Padding(padding: pw.EdgeInsets.all(8), child: pw.Text('')),
+                    pw.Padding(padding: pw.EdgeInsets.all(8), child: pw.Text('')),
+                    pw.Padding(padding: pw.EdgeInsets.all(8), child: pw.Text('')),
+                    pw.Padding(
+                      padding: pw.EdgeInsets.all(8),
+                      child: pw.Text('TOTAL:', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                    ),
+                    pw.Padding(
+                      padding: pw.EdgeInsets.all(8),
+                      child: pw.Text('${totalAmount.toStringAsFixed(2)} BAM', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                    ),
+                    pw.Padding(padding: pw.EdgeInsets.all(8), child: pw.Text('')),
+                  ],
+                ),
+              ],
+            ),
+            pw.SizedBox(height: 40),
+            pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Text('Prepared by: _________________________', style: pw.TextStyle(fontSize: 12)),
+                pw.SizedBox(height: 20),
+                pw.Text('Approved by: _________________________', style: pw.TextStyle(fontSize: 12)),
+                pw.SizedBox(height: 20),
+                pw.Text('Finance Manager: _____________________', style: pw.TextStyle(fontSize: 12)),
+              ],
+            ),
+          ],
+        ),
+      );
+
+      // Save PDF
+      String? outputFile = await FilePicker.platform.saveFile(
+        dialogTitle: 'Save Finance Report',
+        fileName: 'finance_report_${DateTime.now().toIso8601String().split('T')[0]}.pdf',
+        type: FileType.custom,
+        allowedExtensions: ['pdf'],
+      );
+
+      if (outputFile != null) {
+        final file = File(outputFile);
+        await file.writeAsBytes(await pdf.save());
+        _showSuccessSnackBar('PDF report generated successfully');
+      }
+    } catch (e) {
+      _showErrorSnackBar('Failed to generate PDF: $e');
+    }
+  }
+
+  void _showProcessFinanceDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Process Finance'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Process ${_selectedParticipations.length} selected participations?'),
+              SizedBox(height: 16),
+              TextField(
+                controller: _financeNotesController,
+                maxLines: 3,
+                decoration: InputDecoration(
+                  labelText: 'Finance Notes (Optional)',
+                  border: OutlineInputBorder(),
+                  hintText: 'Add any notes about the finance processing...',
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _processSelectedFinance(_financeNotesController.text);
+              },
+              child: Text('Process'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void _showErrorSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -118,11 +395,20 @@ class _RewardsPageState extends State<RewardsPage> {
     );
   }
 
-  void _onRewardsPageChanged(int page) {
+  void _showSuccessSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.green,
+      ),
+    );
+  }
+
+  void _onRequestParticipationsPageChanged(int page) {
     setState(() {
-      _rewardsCurrentPage = page;
+      _requestParticipationsCurrentPage = page;
     });
-    _loadRewards();
+    _loadRequestParticipations();
   }
 
   void _onDonationsPageChanged(int page) {
@@ -132,17 +418,17 @@ class _RewardsPageState extends State<RewardsPage> {
     _loadDonations();
   }
 
-  void _onRewardsSortChanged(String sortBy) {
+  void _onRequestParticipationsSortChanged(String sortBy) {
     setState(() {
-      if (_rewardsSortBy == sortBy) {
-        _rewardsSortDesc = !_rewardsSortDesc;
+      if (_requestParticipationsSortBy == sortBy) {
+        _requestParticipationsSortDesc = !_requestParticipationsSortDesc;
       } else {
-        _rewardsSortBy = sortBy;
-        _rewardsSortDesc = true;
+        _requestParticipationsSortBy = sortBy;
+        _requestParticipationsSortDesc = true;
       }
-      _rewardsCurrentPage = 0;
+      _requestParticipationsCurrentPage = 0;
     });
-    _loadRewards();
+    _loadRequestParticipations();
   }
 
   void _onDonationsSortChanged(String sortBy) {
@@ -158,6 +444,35 @@ class _RewardsPageState extends State<RewardsPage> {
     _loadDonations();
   }
 
+  void _onFinanceFilterChanged(FinanceFilter filter) {
+    setState(() {
+      _financeFilter = filter;
+      _requestParticipationsCurrentPage = 0;
+      _selectedParticipations.clear();
+    });
+    _loadRequestParticipations();
+  }
+
+  void _toggleSelection(int id) {
+    setState(() {
+      if (_selectedParticipations.contains(id)) {
+        _selectedParticipations.remove(id);
+      } else {
+        _selectedParticipations.add(id);
+      }
+    });
+  }
+
+  void _toggleSelectAll() {
+    setState(() {
+      if (_selectedParticipations.length == _requestParticipations.length) {
+        _selectedParticipations.clear();
+      } else {
+        _selectedParticipations = Set<int>.from(_requestParticipations.map((p) => p.id));
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -167,9 +482,10 @@ class _RewardsPageState extends State<RewardsPage> {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Rewards Section (Left)
+            // Request Participations Section (Left)
             Expanded(
-              child: _buildRewardsSection(),
+              flex: 2,
+              child: _buildRequestParticipationsSection(),
             ),
             SizedBox(width: 24),
             // Donations Section (Right)
@@ -182,7 +498,7 @@ class _RewardsPageState extends State<RewardsPage> {
     );
   }
 
-  Widget _buildRewardsSection() {
+  Widget _buildRequestParticipationsSection() {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -204,57 +520,112 @@ class _RewardsPageState extends State<RewardsPage> {
             decoration: BoxDecoration(
               border: Border(bottom: BorderSide(color: Colors.grey[200]!)),
             ),
-            child: Row(
+            child: Column(
               children: [
-                Text(
-                  'Rewards',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+                Row(
+                  children: [
+                    Text(
+                      'Finance Management',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Spacer(),
+                    Container(
+                      height: 32,
+                      child: DropdownButton<String>(
+                        value: _requestParticipationsSortBy,
+                        underline: SizedBox(),
+                        items: [
+                          DropdownMenuItem(value: 'submittedAt', child: Text('Date', style: TextStyle(fontSize: 12))),
+                          DropdownMenuItem(value: 'rewardMoney', child: Text('Amount', style: TextStyle(fontSize: 12))),
+                          DropdownMenuItem(value: 'cardHolderName', child: Text('Name', style: TextStyle(fontSize: 12))),
+                        ],
+                        onChanged: (value) {
+                          if (value != null) _onRequestParticipationsSortChanged(value);
+                        },
+                        style: TextStyle(fontSize: 12, color: Colors.black),
+                        dropdownColor: Colors.white,
+                      ),
+                    ),
+                  ],
                 ),
-                Spacer(),
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.grey[100],
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Text(
-                    'Amount',
-                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                  ),
-                ),
-                SizedBox(width: 8),
-                Container(
-                  height: 32,
-                  child: DropdownButton<String>(
-                    value: _rewardsSortBy,
-                    underline: SizedBox(),
-                    items: [
-                      DropdownMenuItem(value: 'Amount', child: Text('Sort by', style: TextStyle(fontSize: 12))),
-                      DropdownMenuItem(value: 'CreatedAt', child: Text('Date', style: TextStyle(fontSize: 12))),
-                      DropdownMenuItem(value: 'UserName', child: Text('Name', style: TextStyle(fontSize: 12))),
+                SizedBox(height: 12),
+                Row(
+                  children: [
+                    // Filter tabs
+                    Row(
+                      children: [
+                        _buildFilterTab('New', FinanceFilter.pending),
+                        SizedBox(width: 8),
+                        _buildFilterTab('Processed', FinanceFilter.processed),
+                        SizedBox(width: 8),
+                        _buildFilterTab('All', FinanceFilter.all),
+                      ],
+                    ),
+                    Spacer(),
+                    // Action buttons
+                    if (_selectedParticipations.isNotEmpty) ...[
+                      ElevatedButton.icon(
+                        onPressed: _generatePdfReport,
+                        icon: Icon(Icons.picture_as_pdf, size: 16),
+                        label: Text('Generate PDF'),
+                        style: ElevatedButton.styleFrom(
+                          padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          backgroundColor: Colors.blue,
+                          foregroundColor: Colors.white,
+                        ),
+                      ),
+                      SizedBox(width: 8),
+                      if (_financeFilter == FinanceFilter.pending)
+                        ElevatedButton.icon(
+                          onPressed: _showProcessFinanceDialog,
+                          icon: Icon(Icons.check_circle, size: 16),
+                          label: Text('Process Selected'),
+                          style: ElevatedButton.styleFrom(
+                            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            backgroundColor: Colors.green,
+                            foregroundColor: Colors.white,
+                          ),
+                        ),
                     ],
-                    onChanged: (value) {
-                      if (value != null) _onRewardsSortChanged(value);
-                    },
-                    style: TextStyle(fontSize: 12, color: Colors.black),
-                    dropdownColor: Colors.white,
-                  ),
+                  ],
                 ),
               ],
             ),
           ),
           // Table
           Expanded(
-            child: _rewardsLoading
+            child: _requestParticipationsLoading
                 ? Center(child: CircularProgressIndicator())
-                : _buildRewardsTable(),
+                : _buildRequestParticipationsTable(),
           ),
           // Pagination
-          _buildRewardsPagination(),
+          _buildRequestParticipationsPagination(),
         ],
+      ),
+    );
+  }
+
+  Widget _buildFilterTab(String title, FinanceFilter filter) {
+    final isSelected = _financeFilter == filter;
+    return GestureDetector(
+      onTap: () => _onFinanceFilterChanged(filter),
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.blue : Colors.grey[200],
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Text(
+          title,
+          style: TextStyle(
+            color: isSelected ? Colors.white : Colors.grey[700],
+            fontSize: 12,
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+          ),
+        ),
       ),
     );
   }
@@ -324,7 +695,7 @@ class _RewardsPageState extends State<RewardsPage> {
     );
   }
 
-  Widget _buildRewardsTable() {
+  Widget _buildRequestParticipationsTable() {
     return Column(
       children: [
         // Table Header
@@ -336,19 +707,29 @@ class _RewardsPageState extends State<RewardsPage> {
           ),
           child: Row(
             children: [
+              Expanded(
+                flex: 1,
+                child: Checkbox(
+                  value: _selectedParticipations.length == _requestParticipations.length && _requestParticipations.isNotEmpty,
+                  onChanged: (_) => _toggleSelectAll(),
+                  tristate: true,
+                ),
+              ),
               Expanded(flex: 1, child: Text('No.', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12))),
-              Expanded(flex: 3, child: Text('Name', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12))),
-              Expanded(flex: 3, child: Text('Approved By', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12))),
+              Expanded(flex: 3, child: Text('Card Holder', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12))),
+              Expanded(flex: 2, child: Text('Bank', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12))),
               Expanded(flex: 2, child: Text('Amount(BAM)', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12))),
+              Expanded(flex: 2, child: Text('Status', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12))),
+              Expanded(flex: 2, child: Text('Date', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12))),
             ],
           ),
         ),
         // Table Body
         Expanded(
           child: ListView.builder(
-            itemCount: _rewards.length,
+            itemCount: _requestParticipations.length,
             itemBuilder: (context, index) {
-              final reward = _rewards[index];
+              final participation = _requestParticipations[index];
               return Container(
                 padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
@@ -356,10 +737,40 @@ class _RewardsPageState extends State<RewardsPage> {
                 ),
                 child: Row(
                   children: [
-                    Expanded(flex: 1, child: Text('${(_rewardsCurrentPage * _rewardsPageSize) + index + 1}', style: TextStyle(fontSize: 12))),
-                    Expanded(flex: 3, child: Text(reward.userName ?? 'Unknown', style: TextStyle(fontSize: 12))),
-                    Expanded(flex: 3, child: Text(reward.approvedByAdminName ?? 'Pending', style: TextStyle(fontSize: 12))),
-                    Expanded(flex: 2, child: Text('${reward.moneyAmount.toStringAsFixed(0)}', style: TextStyle(fontSize: 12))),
+                    Expanded(
+                      flex: 1,
+                      child: Checkbox(
+                        value: _selectedParticipations.contains(participation.id),
+                        onChanged: (_) => _toggleSelection(participation.id),
+                      ),
+                    ),
+                    Expanded(flex: 1, child: Text('${(_requestParticipationsCurrentPage * _requestParticipationsPageSize) + index + 1}', style: TextStyle(fontSize: 12))),
+                    Expanded(flex: 3, child: Text(participation.cardHolderName ?? 'N/A', style: TextStyle(fontSize: 12))),
+                    Expanded(flex: 2, child: Text(participation.bankName ?? 'N/A', style: TextStyle(fontSize: 12))),
+                    Expanded(flex: 2, child: Text('${participation.rewardMoney.toStringAsFixed(2)}', style: TextStyle(fontSize: 12))),
+                    Expanded(
+                      flex: 2,
+                      child: Container(
+                        padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: participation.financeStatus == FinanceStatus.processed 
+                              ? Colors.green[100] 
+                              : Colors.orange[100],
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          participation.financeStatus.displayName,
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: participation.financeStatus == FinanceStatus.processed 
+                                ? Colors.green[800] 
+                                : Colors.orange[800],
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                    Expanded(flex: 2, child: Text(_formatDate(participation.submittedAt), style: TextStyle(fontSize: 12))),
                   ],
                 ),
               );
@@ -416,7 +827,7 @@ class _RewardsPageState extends State<RewardsPage> {
     );
   }
 
-  Widget _buildRewardsPagination() {
+  Widget _buildRequestParticipationsPagination() {
     return Container(
       padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -425,16 +836,16 @@ class _RewardsPageState extends State<RewardsPage> {
       child: Row(
         children: [
           Text(
-            '${(_rewardsCurrentPage * _rewardsPageSize) + 1}-${((_rewardsCurrentPage + 1) * _rewardsPageSize).clamp(0, _rewardsTotalCount)} of $_rewardsTotalCount',
+            '${(_requestParticipationsCurrentPage * _requestParticipationsPageSize) + 1}-${((_requestParticipationsCurrentPage + 1) * _requestParticipationsPageSize).clamp(0, _requestParticipationsTotalCount)} of $_requestParticipationsTotalCount',
             style: TextStyle(fontSize: 12, color: Colors.grey[600]),
           ),
           Spacer(),
           IconButton(
-            onPressed: _rewardsCurrentPage > 0 ? () => _onRewardsPageChanged(_rewardsCurrentPage - 1) : null,
+            onPressed: _requestParticipationsCurrentPage > 0 ? () => _onRequestParticipationsPageChanged(_requestParticipationsCurrentPage - 1) : null,
             icon: Icon(Icons.chevron_left, size: 20),
           ),
           IconButton(
-            onPressed: _rewardsCurrentPage < _rewardsTotalPages - 1 ? () => _onRewardsPageChanged(_rewardsCurrentPage + 1) : null,
+            onPressed: _requestParticipationsCurrentPage < _requestParticipationsTotalPages - 1 ? () => _onRequestParticipationsPageChanged(_requestParticipationsCurrentPage + 1) : null,
             icon: Icon(Icons.chevron_right, size: 20),
           ),
         ],
@@ -466,5 +877,15 @@ class _RewardsPageState extends State<RewardsPage> {
         ],
       ),
     );
+  }
+
+  String _formatDate(DateTime date) {
+    return '${date.day}/${date.month}/${date.year}';
+  }
+
+  @override
+  void dispose() {
+    _financeNotesController.dispose();
+    super.dispose();
   }
 }

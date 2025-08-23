@@ -17,8 +17,10 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Formats.Asn1.AsnWriter;
 
 namespace EcoChallenge.Services.Services
 {
@@ -389,7 +391,10 @@ namespace EcoChallenge.Services.Services
 
                 _ = Task.Run(async () =>
                 {
-                    await CreateRequestStatusNotificationAsync(entity, originalStatusName, newStatusName, request);
+                    using var scope = _serviceProvider.CreateScope();
+                    var notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
+
+                    await CreateRequestStatusNotificationAsync(entity, originalStatusName, newStatusName, request, notificationService);
                 });
 
                 // Only publish for Approved or Denied status changes
@@ -401,7 +406,12 @@ namespace EcoChallenge.Services.Services
             }
         }
 
-        private async Task CreateRequestStatusNotificationAsync(Request entity, string originalStatus, string newStatus, RequestUpdateRequest request)
+        private async Task CreateRequestStatusNotificationAsync(
+     Request entity,
+     string originalStatus,
+     string newStatus,
+     RequestUpdateRequest request,
+     INotificationService notificationService)
         {
             try
             {
@@ -436,13 +446,12 @@ namespace EcoChallenge.Services.Services
                         break;
 
                     case "completed":
-                        notificationType = NotificationType.RequestApproved; // Using approved for completed
+                        notificationType = NotificationType.RequestApproved;
                         title = "Request Completed! ✅";
                         message = $"Your cleanup request '{entity.Title}' has been marked as completed. Thank you for making a difference!";
                         break;
 
                     default:
-                        // For other status changes, create a general update notification
                         notificationType = NotificationType.AdminMessage;
                         title = "Request Status Updated";
                         message = $"Your cleanup request '{entity.Title}' status has been updated to {newStatus}.";
@@ -458,7 +467,7 @@ namespace EcoChallenge.Services.Services
                     IsPushed = false
                 };
 
-                await _notificationService.CreateAsync(notificationRequest);
+                await notificationService.CreateAsync(notificationRequest);
 
                 _logger.LogInformation("Created notification for user {UserId} regarding request {RequestId} status change to {NewStatus}",
                     entity.UserId, entity.Id, newStatus);
@@ -466,7 +475,6 @@ namespace EcoChallenge.Services.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to create notification for request {RequestId} status change", entity.Id);
-                // Don't throw - we don't want to fail the main operation
             }
         }
 

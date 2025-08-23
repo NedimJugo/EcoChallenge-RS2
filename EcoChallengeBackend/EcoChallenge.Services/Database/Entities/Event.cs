@@ -55,7 +55,6 @@ namespace EcoChallenge.Services.Database.Entities
         public virtual ICollection<Photo>? Photos { get; set; }
         public virtual ICollection<EventParticipant>? Participants { get; set; }
         public virtual ICollection<GalleryShowcase>? GalleryShowcases { get; set; }
-        public virtual ICollection<Reward>? Rewards { get; set; }
         public virtual ICollection<ActivityHistory>? ActivityLogs { get; set; }
     }
 }

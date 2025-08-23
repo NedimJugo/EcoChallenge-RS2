@@ -1,3 +1,4 @@
+import 'package:ecochallenge_desktop/providers/balance_setting_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -12,12 +13,14 @@ class RequestDetailsWidget extends StatefulWidget {
   final RequestResponse request;
   final VoidCallback onBack;
   final double availableHeight;
+  final VoidCallback? onBalanceChanged;
 
   const RequestDetailsWidget({
     Key? key,
     required this.request,
     required this.onBack,
     required this.availableHeight,
+    this.onBalanceChanged,
   }) : super(key: key);
 
   @override
@@ -1016,66 +1019,33 @@ Widget _buildLocationDropdown() {
   }
 
    void _approveRequest() async {
-    if (!_canApprove()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              Icon(Icons.warning, color: Colors.white),
-              SizedBox(width: 8),
-              Text('Please fix all validation errors before approving'),
-            ],
-          ),
-          backgroundColor: Colors.orange[600],
+  if (!_canApprove()) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(Icons.warning, color: Colors.white),
+            SizedBox(width: 8),
+            Text('Please fix all validation errors before approving'),
+          ],
         ),
-      );
-      return;
-    }
+        backgroundColor: Colors.orange[600],
+      ),
+    );
+    return;
+  }
+  
+  setState(() => _isLoading = true);
+  
+  try {
+    final provider = Provider.of<RequestProvider>(context, listen: false);
+    final balanceProvider = Provider.of<BalanceSettingProvider>(context, listen: false);
     
-    setState(() => _isLoading = true);
+    final rewardMoney = double.tryParse(_rewardController.text.trim()) ?? widget.request.actualRewardMoney;
     
-    try {
-      final provider = Provider.of<RequestProvider>(context, listen: false);
-      
-      // Create update request - make sure all required fields are included
-      final updateRequest = RequestUpdateRequest(
-        id: widget.request.id,
-        title: _titleController.text.trim(),
-        description: _descriptionController.text.trim(),
-        locationId: _selectedLocation?.id,
-        urgencyLevel: _selectedUrgency,
-        estimatedAmount: _selectedAmount,
-        statusId: 2, // Approved status
-        actualRewardPoints: int.tryParse(_pointsController.text.trim()) ?? widget.request.actualRewardPoints,
-        actualRewardMoney: double.tryParse(_rewardController.text.trim()) ?? widget.request.actualRewardMoney,
-        approvedAt: DateTime.now(),
-        // Include wasteTypeId to maintain referential integrity
-        wasteTypeId: widget.request.wasteTypeId,
-      );
-      
-      print('Sending approve request with data: ${updateRequest.toJson()}');
-      
-      await provider.update(widget.request.id, updateRequest);
-      
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                Icon(Icons.check_circle, color: Colors.white),
-                SizedBox(width: 8),
-                Text('Request approved successfully'),
-              ],
-            ),
-            backgroundColor: Colors.green[600],
-          ),
-        );
-        
-        widget.onBack();
-      }
-    } catch (e) {
-      String errorMessage = 'Error approving request: ${e.toString()}';
-      
+    // Check if there's enough balance
+    final currentBalance = await balanceProvider.getCurrentBalance();
+    if (currentBalance == null || currentBalance.balanceLeft < rewardMoney) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -1083,7 +1053,11 @@ Widget _buildLocationDropdown() {
               children: [
                 Icon(Icons.error, color: Colors.white),
                 SizedBox(width: 8),
-                Expanded(child: Text(errorMessage)),
+                Expanded(
+                  child: Text(
+                    'Insufficient balance. Available: ${currentBalance?.balanceLeft ?? 0} KM, Required: $rewardMoney KM'
+                  ),
+                ),
               ],
             ),
             backgroundColor: Colors.red[600],
@@ -1091,14 +1065,87 @@ Widget _buildLocationDropdown() {
           ),
         );
       }
+      return;
+    }
+    
+    // Create update request - make sure all required fields are included
+    final updateRequest = RequestUpdateRequest(
+      id: widget.request.id,
+      title: _titleController.text.trim(),
+      description: _descriptionController.text.trim(),
+      locationId: _selectedLocation?.id,
+      urgencyLevel: _selectedUrgency,
+      estimatedAmount: _selectedAmount,
+      statusId: 2, // Approved status
+      actualRewardPoints: int.tryParse(_pointsController.text.trim()) ?? widget.request.actualRewardPoints,
+      actualRewardMoney: rewardMoney,
+      approvedAt: DateTime.now(),
+      // Include wasteTypeId to maintain referential integrity
+      wasteTypeId: widget.request.wasteTypeId,
+    );
+    
+    print('Sending approve request with data: ${updateRequest.toJson()}');
+    
+    await provider.update(widget.request.id, updateRequest);
+    
+    // Deduct balance after successful approval
+    try {
+      await balanceProvider.deductBalance(
+        rewardMoney, 
+        1, // You might want to get the actual admin ID from your auth context
+        reason: 'Request approval - ID: ${widget.request.id}'
+      );
+      print('Balance deducted successfully: $rewardMoney KM');
+    } catch (balanceError) {
+      print('Warning: Failed to deduct balance: $balanceError');
+      // You might want to show a warning but not fail the whole operation
+    }
+    
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              Icon(Icons.check_circle, color: Colors.white),
+              SizedBox(width: 8),
+              Text('Request approved successfully'),
+            ],
+          ),
+          backgroundColor: Colors.green[600],
+        ),
+      );
       
-      print('Detailed error: $e');
-    } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
+       if (widget.onBalanceChanged != null) {
+      widget.onBalanceChanged!();
+    }
+      widget.onBack();
+    }
+  } catch (e) {
+    String errorMessage = 'Error approving request: ${e.toString()}';
+    
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              Icon(Icons.error, color: Colors.white),
+              SizedBox(width: 8),
+              Expanded(child: Text(errorMessage)),
+            ],
+          ),
+          backgroundColor: Colors.red[600],
+          duration: Duration(seconds: 5),
+        ),
+      );
+    }
+    
+    print('Detailed error: $e');
+  } finally {
+    if (mounted) {
+      setState(() => _isLoading = false);
     }
   }
+}
 
   void _denyRequest() async {
   final confirmed = await showDialog<bool>(

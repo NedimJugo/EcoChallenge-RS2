@@ -67,12 +67,6 @@ namespace EcoChallenge.Services.Database
                 new RequestStatus { Id = 4, Name = "Completed" }
             );
 
-            builder.Entity<RewardType>().HasData(
-                new RewardType { Id = 1, Name = "Points" },
-                new RewardType { Id = 2, Name = "Money" },
-                new RewardType { Id = 3, Name = "Badge" },
-                new RewardType { Id = 4, Name = "Combo" }
-            );
 
             builder.Entity<TargetEntityType>().HasData(
                 new TargetEntityType { Id = 1, Name = "User" },
@@ -915,32 +909,7 @@ namespace EcoChallenge.Services.Database
                 }
             );
 
-            // 11) Rewards
-            builder.Entity<Reward>().HasData(
-                new Reward
-                {
-                    Id = 1,
-                    UserId = 2,
-                    RequestId = 1,
-                    RewardTypeId = 1,
-                    PointsAmount = 50,
-                    Currency = "USD",
-                    Status = RewardStatus.Approved,
-                    CreatedAt = new DateTime(2025, 6, 7),
-                    ApprovedAt = new DateTime(2025, 6, 8)
-                },
-                new Reward
-                {
-                    Id = 2,
-                    UserId = 2,
-                    DonationId = 1,
-                    RewardTypeId = 3,
-                    BadgeId = 2,
-                    Status = RewardStatus.Paid,
-                    CreatedAt = new DateTime(2025, 6, 10),
-                    PaidAt = new DateTime(2025, 6, 11)
-                }
-            );
+
 
             // 12) UserBadges
             builder.Entity<UserBadge>().HasData(

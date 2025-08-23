@@ -24,13 +24,15 @@ namespace EcoChallenge.Services.Services
     {
         private readonly EcoChallengeDbContext _db;
         private readonly IBlobService _blobService;
+        private readonly IUserStatsService _userStatsService;
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<EventService> _logger;
 
-        public EventService(EcoChallengeDbContext db, IMapper mapper, IBlobService blobService, IServiceProvider serviceProvider, ILogger<EventService> logger) : base(db, mapper)
+        public EventService(EcoChallengeDbContext db, IMapper mapper, IBlobService blobService, IUserStatsService userStatsService, IServiceProvider serviceProvider, ILogger<EventService> logger) : base(db, mapper)
         {
             _db = db;
             _blobService = blobService;
+            _userStatsService = userStatsService;
             _serviceProvider = serviceProvider;
             _logger = logger;
         }
@@ -105,6 +107,8 @@ namespace EcoChallenge.Services.Services
             }
 
             await base.BeforeInsert(entity, request, cancellationToken);
+
+            await _userStatsService.UpdateUserEventsOrganizedAsync(entity.CreatorUserId, 1, cancellationToken);
 
             _ = Task.Run(async () =>
             {

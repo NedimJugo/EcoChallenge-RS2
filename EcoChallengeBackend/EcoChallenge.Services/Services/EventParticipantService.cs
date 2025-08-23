@@ -13,11 +13,13 @@ using Microsoft.Extensions.DependencyInjection;
 
 public class EventParticipantService : BaseCRUDService<EventParticipantResponse, EventParticipantSearchObject, EventParticipant, EventParticipantInsertRequest, EventParticipantUpdateRequest>, IEventParticipantService
 {
+    private readonly IUserStatsService _userStatsService;
     private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<EventParticipantService> _logger;
-    public EventParticipantService(EcoChallengeDbContext db, IMapper mapper, IServiceProvider serviceProvider, ILogger<EventParticipantService> logger) : base(db, mapper)
+    public EventParticipantService(EcoChallengeDbContext db, IMapper mapper, IUserStatsService userStatsService, IServiceProvider serviceProvider, ILogger<EventParticipantService> logger) : base(db, mapper)
     {
         _serviceProvider = serviceProvider;
+        _userStatsService = userStatsService;
         _logger = logger;
     }
 
@@ -71,11 +73,13 @@ public class EventParticipantService : BaseCRUDService<EventParticipantResponse,
         if (request.Status.HasValue && request.Status.Value == AttendanceStatus.Attended &&
        originalStatus != AttendanceStatus.Attended)
         {
+            await _userStatsService.UpdateUserEventsParticipatedAsync(entity.UserId, 1, cancellationToken);
             _ = Task.Run(async () =>
             {
                 try
                 {
-                    var badgeService = _serviceProvider.GetRequiredService<IBadgeManagementService>();
+                    using var scope = _serviceProvider.CreateScope();
+                    var badgeService = scope.ServiceProvider.GetRequiredService<IBadgeManagementService>();
                     await badgeService.CheckAndAwardBadgesAsync(entity.UserId);
                 }
                 catch (Exception ex)
@@ -83,6 +87,12 @@ public class EventParticipantService : BaseCRUDService<EventParticipantResponse,
                     _logger.LogError(ex, "Failed to check badges for user {UserId} after event attendance", entity.UserId);
                 }
             });
+        }
+        else if (originalStatus == AttendanceStatus.Attended &&
+               request.Status.HasValue && request.Status.Value != AttendanceStatus.Attended)
+        {
+            // Subtract from user's events participated count
+            await _userStatsService.UpdateUserEventsParticipatedAsync(entity.UserId, -1, cancellationToken);
         }
     }
 

@@ -25,12 +25,14 @@ namespace EcoChallenge.Services.Services
         private readonly IBlobService _blobService;
         private readonly IRabbitMQService _rabbitMQService;
         private readonly INotificationService _notificationService;
+        private readonly IUserStatsService _userStatsService;
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<RequestParticipationService> _logger;
 
 
         public RequestParticipationService(EcoChallengeDbContext db, IMapper mapper, IBlobService blobService, IRabbitMQService rabbitMQService,
             INotificationService notificationService,
+            IUserStatsService userStatsService,
             IServiceProvider serviceProvider,
             ILogger<RequestParticipationService> logger) : base(db, mapper)
         {
@@ -38,6 +40,7 @@ namespace EcoChallenge.Services.Services
             _blobService = blobService;
             _rabbitMQService = rabbitMQService;
             _notificationService = notificationService;
+            _userStatsService = userStatsService;
             _serviceProvider = serviceProvider;
             _logger = logger;
         }
@@ -57,6 +60,8 @@ namespace EcoChallenge.Services.Services
 
             if (search.Status.HasValue)
                 query = query.Where(x => x.Status == search.Status.Value);
+            if (search.FinanceStatus.HasValue)
+                query = query.Where(x => x.FinanceStatus == search.FinanceStatus.Value);
 
             return query;
         }
@@ -111,10 +116,43 @@ namespace EcoChallenge.Services.Services
                 }
             }
 
+            if (request.FinanceStatus.HasValue)
+            {
+                entity.FinanceStatus = request.FinanceStatus.Value;
+                entity.FinanceNotes = request.FinanceNotes;
+                entity.FinanceManagerId = request.FinanceManagerId;
+                entity.FinanceProcessedAt = request.FinanceProcessedAt ?? DateTime.UtcNow;
+            }
+
             await base.BeforeUpdate(entity, request, cancellationToken);
             if (request.Status.HasValue && request.Status.Value != originalStatus)
             {
                 var newStatus = request.Status.Value;
+
+                if (newStatus == ParticipationStatus.Approved && originalStatus != ParticipationStatus.Approved)
+                {
+                    // Update points if reward points are specified
+                    if (request.RewardPoints.HasValue && request.RewardPoints.Value > 0)
+                    {
+                        await _userStatsService.UpdateUserPointsAsync(entity.UserId, request.RewardPoints.Value, cancellationToken);
+                    }
+
+
+                    // Update cleanup count
+                    await _userStatsService.UpdateUserCleanupsAsync(entity.UserId, 1, cancellationToken);
+                }
+                else if (originalStatus == ParticipationStatus.Approved && newStatus != ParticipationStatus.Approved)
+                {
+                    // Subtract points if they were previously awarded
+                    if (entity.RewardPoints > 0)
+                    {
+                        await _userStatsService.UpdateUserPointsAsync(entity.UserId, -entity.RewardPoints, cancellationToken);
+                    }
+
+                    // Subtract cleanup count
+                    await _userStatsService.UpdateUserCleanupsAsync(entity.UserId, -1, cancellationToken);
+                }
+
 
                 _ = Task.Run(async () =>
                 {
@@ -128,7 +166,8 @@ namespace EcoChallenge.Services.Services
                     {
                         try
                         {
-                            var badgeService = _serviceProvider.GetRequiredService<IBadgeManagementService>();
+                            using var scope = _serviceProvider.CreateScope();
+                            var badgeService = scope.ServiceProvider.GetRequiredService<IBadgeManagementService>();
                             await badgeService.CheckAndAwardBadgesAsync(entity.UserId);
                         }
                         catch (Exception ex)

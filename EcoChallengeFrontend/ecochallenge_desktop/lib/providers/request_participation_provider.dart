@@ -61,6 +61,18 @@ class RequestParticipationProvider extends BaseProvider<RequestParticipationResp
     if (request.rejectionReason != null) {
       multipartRequest.fields['rejectionReason'] = request.rejectionReason!;
     }
+    if (request.financeStatus != null) {
+      multipartRequest.fields['financeStatus'] = request.financeStatus!.index.toString();
+    }
+    if (request.financeNotes != null) {
+    multipartRequest.fields['financeNotes'] = request.financeNotes!;
+    }
+    if (request.financeManagerId != null) {
+    multipartRequest.fields['financeManagerId'] = request.financeManagerId.toString();
+    }
+    if (request.financeProcessedAt != null) {
+      multipartRequest.fields['financeProcessedAt'] = request.financeProcessedAt!.toIso8601String();
+    }
 
     // Send the request
     var streamedResponse = await multipartRequest.send();

@@ -1,4 +1,3 @@
-import 'package:ecochallenge_desktop/models/reward.dart';
 
 class BaseSearchObject {
   int? page;
@@ -314,54 +313,6 @@ class DonationSearchObject extends BaseSearchObject {
   }
 }
 
-// NEW: Reward Search Object
-class RewardSearchObject extends BaseSearchObject {
-  int? userId;
-  int? rewardTypeId;
-  RewardStatus? status;
-  int? approvedByAdminId;
-  int? donationId;
-  int? eventId;
-  double? minAmount;
-  double? maxAmount;
 
-  RewardSearchObject({
-    this.userId,
-    this.rewardTypeId,
-    this.status,
-    this.approvedByAdminId,
-    this.donationId,
-    this.eventId,
-    this.minAmount,
-    this.maxAmount,
-    int? page = 0,
-    int? pageSize = 20,
-    String sortBy = "Id",
-    bool desc = false,
-    bool includeTotalCount = true,
-    bool retrieveAll = false,
-  }) : super(
-          page: page,
-          pageSize: pageSize,
-          sortBy: sortBy,
-          desc: desc,
-          includeTotalCount: includeTotalCount,
-          retrieveAll: retrieveAll,
-        );
-
-  @override
-  Map<String, dynamic> toJson() {
-    final json = super.toJson();
-    if (userId != null) json['userId'] = userId;
-    if (rewardTypeId != null) json['rewardTypeId'] = rewardTypeId;
-    if (status != null) json['status'] = status!.index;
-    if (approvedByAdminId != null) json['approvedByAdminId'] = approvedByAdminId;
-    if (donationId != null) json['donationId'] = donationId;
-    if (eventId != null) json['eventId'] = eventId;
-    if (minAmount != null) json['minAmount'] = minAmount;
-    if (maxAmount != null) json['maxAmount'] = maxAmount;
-    return json;
-  }
-}
 
 
