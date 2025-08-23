@@ -1,5 +1,7 @@
   // Location Type enum
-  enum LocationType {
+  import 'package:ecochallenge_desktop/models/search_objects.dart';
+
+enum LocationType {
     park,
     beach,
     forest,
@@ -180,3 +182,40 @@
       return data;
     }
   }
+
+class LocationSearchObject extends BaseSearchObject {
+  String? name;
+  String? city;
+  String? country;
+  int? locationType; // Using int to match enum index
+
+  LocationSearchObject({
+    this.name,
+    this.city,
+    this.country,
+    this.locationType,
+    int? page = 0,
+    int? pageSize = 20,
+    String sortBy = "Id",
+    bool desc = false,
+    bool includeTotalCount = true,
+    bool retrieveAll = false,
+  }) : super(
+          page: page,
+          pageSize: pageSize,
+          sortBy: sortBy,
+          desc: desc,
+          includeTotalCount: includeTotalCount,
+          retrieveAll: retrieveAll,
+        );
+
+  @override
+  Map<String, dynamic> toJson() {
+    final json = super.toJson();
+    if (name != null) json['name'] = name;
+    if (city != null) json['city'] = city;
+    if (country != null) json['country'] = country;
+    if (locationType != null) json['locationType'] = locationType;
+    return json;
+  }
+}

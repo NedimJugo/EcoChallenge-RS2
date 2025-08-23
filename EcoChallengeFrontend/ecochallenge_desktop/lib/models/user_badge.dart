@@ -1,4 +1,6 @@
 // UserBadge Response model
+import 'package:ecochallenge_desktop/models/search_objects.dart';
+
 class UserBadgeResponse {
   final int id;
   final int userId;
@@ -72,5 +74,42 @@ class UserBadgeUpdateRequest {
     if (earnedAt != null) data['earnedAt'] = earnedAt!.toIso8601String();
     
     return data;
+  }
+}
+
+class UserBadgeSearchObject extends BaseSearchObject {
+  int? userId;
+  int? badgeId;
+  DateTime? fromDate;
+  DateTime? toDate;
+
+  UserBadgeSearchObject({
+    this.userId,
+    this.badgeId,
+    this.fromDate,
+    this.toDate,
+    int? page = 0,
+    int? pageSize = 20,
+    String sortBy = "Id",
+    bool desc = false,
+    bool includeTotalCount = true,
+    bool retrieveAll = false,
+  }) : super(
+          page: page,
+          pageSize: pageSize,
+          sortBy: sortBy,
+          desc: desc,
+          includeTotalCount: includeTotalCount,
+          retrieveAll: retrieveAll,
+        );
+
+  @override
+  Map<String, dynamic> toJson() {
+    final json = super.toJson();
+    if (userId != null) json['userId'] = userId;
+    if (badgeId != null) json['badgeId'] = badgeId;
+    if (fromDate != null) json['fromDate'] = fromDate!.toIso8601String();
+    if (toDate != null) json['toDate'] = toDate!.toIso8601String();
+    return json;
   }
 }

@@ -227,7 +227,7 @@ class UserUpdateRequest {
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = {};
-    
+
     if (username != null) data['username'] = username;
     if (email != null) data['email'] = email;
     if (passwordHash != null) data['passwordHash'] = passwordHash;
@@ -235,22 +235,25 @@ class UserUpdateRequest {
     if (lastName != null) data['lastName'] = lastName;
     if (profileImageUrl != null) data['profileImageUrl'] = profileImageUrl;
     if (phoneNumber != null) data['phoneNumber'] = phoneNumber;
-    if (dateOfBirth != null) data['dateOfBirth'] = dateOfBirth!.toIso8601String();
+    if (dateOfBirth != null)
+      data['dateOfBirth'] = dateOfBirth!.toIso8601String();
     if (city != null) data['city'] = city;
     if (country != null) data['country'] = country;
     if (totalPoints != null) data['totalPoints'] = totalPoints;
     if (totalCleanups != null) data['totalCleanups'] = totalCleanups;
-    if (totalEventsOrganized != null) data['totalEventsOrganized'] = totalEventsOrganized;
-    if (totalEventsParticipated != null) data['totalEventsParticipated'] = totalEventsParticipated;
+    if (totalEventsOrganized != null)
+      data['totalEventsOrganized'] = totalEventsOrganized;
+    if (totalEventsParticipated != null)
+      data['totalEventsParticipated'] = totalEventsParticipated;
     if (userTypeId != null) data['userTypeId'] = userTypeId;
     if (isActive != null) data['isActive'] = isActive;
     if (lastLogin != null) data['lastLogin'] = lastLogin!.toIso8601String();
-    if (deactivatedAt != null) data['deactivatedAt'] = deactivatedAt!.toIso8601String();
-    
+    if (deactivatedAt != null)
+      data['deactivatedAt'] = deactivatedAt!.toIso8601String();
+
     return data;
   }
 }
-
 
 class UserRegisterRequest {
   final String username;
@@ -270,11 +273,61 @@ class UserRegisterRequest {
   });
 
   Map<String, dynamic> toJson() => {
-        'username': username,
-        'email': email,
-        'passwordHash': passwordHash,
-        'firstName': firstName,
-        'lastName': lastName,
-        'userTypeId': userTypeId,
-      };
+    'username': username,
+    'email': email,
+    'passwordHash': passwordHash,
+    'firstName': firstName,
+    'lastName': lastName,
+    'userTypeId': userTypeId,
+  };
+}
+
+class UserSearchObject {
+  int? page;
+  int? pageSize;
+  String sortBy;
+  bool desc;
+  bool includeTotalCount;
+  bool retrieveAll;
+  int? id;
+  String? username;
+  String? email;
+  int? userTypeId;
+  bool? isActive;
+  String? text;
+
+  UserSearchObject({
+    this.page = 0,
+    this.pageSize = 20,
+    this.sortBy = "Id",
+    this.desc = false,
+    this.includeTotalCount = true,
+    this.retrieveAll = false,
+    this.id,
+    this.username,
+    this.email,
+    this.userTypeId,
+    this.isActive,
+    this.text,
+  });
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = {
+      'page': page,
+      'pageSize': pageSize,
+      'sortBy': sortBy,
+      'desc': desc,
+      'includeTotalCount': includeTotalCount,
+      'retrieveAll': retrieveAll,
+    };
+
+    if (id != null) data['id'] = id;
+    if (username != null) data['username'] = username;
+    if (email != null) data['email'] = email;
+    if (userTypeId != null) data['userTypeId'] = userTypeId;
+    if (isActive != null) data['isActive'] = isActive;
+    if (text != null) data['text'] = text;
+
+    return data;
+  }
 }

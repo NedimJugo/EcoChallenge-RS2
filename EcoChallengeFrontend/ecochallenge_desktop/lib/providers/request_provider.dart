@@ -15,9 +15,6 @@ class RequestProvider extends BaseProvider<RequestResponse> {
 
    @override
   Future<RequestResponse> update(int id, [dynamic request]) async {
-    var baseUrl = BaseProvider.baseUrl.endsWith('/')
-        ? BaseProvider.baseUrl.substring(0, BaseProvider.baseUrl.length - 1)
-        : BaseProvider.baseUrl;
     var endpoint = "Request"; // Your endpoint
     var url = "$baseUrl/$endpoint/$id";
     var uri = Uri.parse(url);

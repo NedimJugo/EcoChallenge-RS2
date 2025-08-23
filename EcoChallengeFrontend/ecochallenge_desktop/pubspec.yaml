@@ -41,6 +41,9 @@ dependencies:
   url_launcher: ^6.3.2
   flutter_map: ^8.2.1
   latlong2: ^0.9.1
+  file_saver: ^0.3.1
+  path_provider: ^2.1.5
+  pdf: ^3.11.3
 
 dev_dependencies:
   flutter_test:

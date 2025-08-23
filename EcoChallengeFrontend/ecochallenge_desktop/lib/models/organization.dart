@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:ecochallenge_desktop/models/search_objects.dart';
+
 // Organization Response model
 class OrganizationResponse {
   final int id;
@@ -140,5 +142,42 @@ class OrganizationUpdateRequest {
     if (isActive != null) data['isActive'] = isActive;
     
     return data;
+  }
+}
+
+class OrganizationSearchObject extends BaseSearchObject {
+  String? text;
+  bool? isVerified;
+  bool? isActive;
+  String? category;
+
+  OrganizationSearchObject({
+    this.text,
+    this.isVerified,
+    this.isActive,
+    this.category,
+    int? page = 0,
+    int? pageSize = 20,
+    String sortBy = "Id",
+    bool desc = false,
+    bool includeTotalCount = true,
+    bool retrieveAll = false,
+  }) : super(
+          page: page,
+          pageSize: pageSize,
+          sortBy: sortBy,
+          desc: desc,
+          includeTotalCount: includeTotalCount,
+          retrieveAll: retrieveAll,
+        );
+
+  @override
+  Map<String, dynamic> toJson() {
+    final json = super.toJson();
+    if (text != null) json['text'] = text;
+    if (isVerified != null) json['isVerified'] = isVerified;
+    if (isActive != null) json['isActive'] = isActive;
+    if (category != null) json['category'] = category;
+    return json;
   }
 }
