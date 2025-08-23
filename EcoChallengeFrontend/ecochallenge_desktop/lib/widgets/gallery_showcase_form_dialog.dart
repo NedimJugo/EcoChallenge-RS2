@@ -3,6 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:ecochallenge_desktop/models/gallery_showcase.dart';
 import 'package:ecochallenge_desktop/providers/gallery_showcase_provider.dart';
+import 'package:ecochallenge_desktop/providers/user_provider.dart';
+import 'package:ecochallenge_desktop/providers/location_provider.dart';
+import 'package:ecochallenge_desktop/providers/event_provider.dart';
+import 'package:ecochallenge_desktop/providers/request_provider.dart';
+import 'package:ecochallenge_desktop/models/user.dart';
+import 'package:ecochallenge_desktop/models/location.dart';
+import 'package:ecochallenge_desktop/models/event.dart';
+import 'package:ecochallenge_desktop/models/request.dart';
 
 class GalleryShowcaseFormDialog extends StatefulWidget {
   final GalleryShowcaseResponse? galleryItem;
@@ -21,22 +29,34 @@ class GalleryShowcaseFormDialog extends StatefulWidget {
 class _GalleryShowcaseFormDialogState extends State<GalleryShowcaseFormDialog> {
   final _formKey = GlobalKey<FormState>();
   final GalleryShowcaseProvider _galleryProvider = GalleryShowcaseProvider();
+  final UserProvider _userProvider = UserProvider();
+  final LocationProvider _locationProvider = LocationProvider();
+  final EventProvider _eventProvider = EventProvider();
+  final RequestProvider _requestProvider = RequestProvider();
   
   late TextEditingController _titleController;
   late TextEditingController _descriptionController;
-  late TextEditingController _locationIdController;
-  late TextEditingController _adminIdController;
-  late TextEditingController _requestIdController;
-  late TextEditingController _eventIdController;
   
   bool _isFeatured = false;
   bool _isApproved = false;
   bool _isLoading = false;
+  bool _isLoadingData = true;
   
   File? _beforeImage;
   File? _afterImage;
-  String? _beforeImagePath;
-  String? _afterImagePath;
+
+
+  // Dropdown data
+  List<LocationResponse> _locations = [];
+  List<UserResponse> _users = [];
+  List<EventResponse> _events = [];
+  List<RequestResponse> _requests = [];
+
+  // Selected values
+  int? _selectedLocationId;
+  int? _selectedAdminId;
+  int? _selectedRequestId;
+  int? _selectedEventId;
 
   @override
   void initState() {
@@ -44,14 +64,47 @@ class _GalleryShowcaseFormDialogState extends State<GalleryShowcaseFormDialog> {
     
     _titleController = TextEditingController(text: widget.galleryItem?.title ?? '');
     _descriptionController = TextEditingController(text: widget.galleryItem?.description ?? '');
-    _locationIdController = TextEditingController(text: widget.galleryItem?.locationId.toString() ?? '');
-    _adminIdController = TextEditingController(text: widget.galleryItem?.createdByAdminId.toString() ?? '');
-    _requestIdController = TextEditingController(text: widget.galleryItem?.requestId?.toString() ?? '');
-    _eventIdController = TextEditingController(text: widget.galleryItem?.eventId?.toString() ?? '');
     
+    // Initialize selected values from existing gallery item
     if (widget.galleryItem != null) {
+      _selectedLocationId = widget.galleryItem!.locationId;
+      _selectedAdminId = widget.galleryItem!.createdByAdminId;
+      _selectedRequestId = widget.galleryItem!.requestId;
+      _selectedEventId = widget.galleryItem!.eventId;
       _isFeatured = widget.galleryItem!.isFeatured;
       _isApproved = widget.galleryItem!.isApproved;
+    }
+
+    _loadDropdownData();
+  }
+
+  Future<void> _loadDropdownData() async {
+    setState(() => _isLoadingData = true);
+    
+    try {
+      // Load all dropdown data in parallel
+      final results = await Future.wait([
+        _locationProvider.getAllLocations(),
+        _userProvider.get().then((result) => result.items ?? <UserResponse>[]),
+        _eventProvider.get().then((result) => result.items ?? <EventResponse>[]),
+        _requestProvider.get().then((result) => result.items ?? <RequestResponse>[]),
+      ]);
+
+      setState(() {
+        _locations = results[0] as List<LocationResponse>;
+        _users = results[1] as List<UserResponse>;
+        _events = results[2] as List<EventResponse>;
+        _requests = results[3] as List<RequestResponse>;
+        _isLoadingData = false;
+      });
+    } catch (e) {
+      setState(() => _isLoadingData = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to load dropdown data: $e'),
+          backgroundColor: Colors.orange,
+        ),
+      );
     }
   }
 
@@ -66,10 +119,9 @@ class _GalleryShowcaseFormDialogState extends State<GalleryShowcaseFormDialog> {
         setState(() {
           if (isBefore) {
             _beforeImage = File(result.files.single.path!);
-            _beforeImagePath = result.files.single.name;
           } else {
             _afterImage = File(result.files.single.path!);
-            _afterImagePath = result.files.single.name;
+
           }
         });
       }
@@ -80,79 +132,132 @@ class _GalleryShowcaseFormDialogState extends State<GalleryShowcaseFormDialog> {
     }
   }
 
-  Future<void> _saveGalleryItem() async {
-    if (!_formKey.currentState!.validate()) return;
+Future<void> _saveGalleryItem() async {
+  print('_saveGalleryItem called'); // Debug
+  
+  if (!_formKey.currentState!.validate()) {
+    print('Form validation failed'); // Debug
+    return;
+  }
 
-    // Validate required fields
-    if (_locationIdController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Location ID is required')),
+  // Validate required fields
+  if (_selectedLocationId == null) {
+    print('Location not selected'); // Debug
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Please select a location')),
+    );
+    return;
+  }
+
+  if (_selectedAdminId == null) {
+    print('Admin not selected'); // Debug
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Please select an admin')),
+    );
+    return;
+  }
+
+  // For new items, images are required
+  if (widget.galleryItem == null && (_beforeImage == null || _afterImage == null)) {
+    print('Images not selected for new item'); // Debug
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Before and After images are required')),
+    );
+    return;
+  }
+
+  print('Starting save operation, isUpdate: ${widget.galleryItem != null}'); // Debug
+  setState(() => _isLoading = true);
+
+  try {
+    if (widget.galleryItem == null) {
+      print('Creating new gallery item'); // Debug
+      final request = GalleryShowcaseInsertRequest(
+        locationId: _selectedLocationId!,
+        createdByAdminId: _selectedAdminId!,
+        beforeImage: _beforeImage!,
+        afterImage: _afterImage!,
+        title: _titleController.text.isEmpty ? null : _titleController.text,
+        description: _descriptionController.text.isEmpty ? null : _descriptionController.text,
+        requestId: _selectedRequestId,
+        eventId: _selectedEventId,
+        isFeatured: _isFeatured,
       );
-      return;
-    }
-
-    if (_adminIdController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Admin ID is required')),
+      await _galleryProvider.createWithImages(request);
+      print('Create operation completed'); // Debug
+    } else {
+      print('Updating existing gallery item: ${widget.galleryItem!.id}'); // Debug
+      final request = GalleryShowcaseUpdateRequest(
+        locationId: _selectedLocationId,
+        createdByAdminId: _selectedAdminId,
+        title: _titleController.text.isEmpty ? null : _titleController.text,
+        description: _descriptionController.text.isEmpty ? null : _descriptionController.text,
+        requestId: _selectedRequestId,
+        eventId: _selectedEventId,
+        isFeatured: _isFeatured,
+        isApproved: _isApproved,
       );
-      return;
-    }
-
-    // For new items, images are required
-    if (widget.galleryItem == null && (_beforeImage == null || _afterImage == null)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Before and After images are required')),
-      );
-      return;
-    }
-
-    setState(() => _isLoading = true);
-
-    try {
-      if (widget.galleryItem == null) {
-        // Create new gallery item
-        final request = GalleryShowcaseInsertRequest(
-          locationId: int.parse(_locationIdController.text),
-          createdByAdminId: int.parse(_adminIdController.text),
-          beforeImage: _beforeImage!,
-          afterImage: _afterImage!,
-          title: _titleController.text.isEmpty ? null : _titleController.text,
-          description: _descriptionController.text.isEmpty ? null : _descriptionController.text,
-          requestId: _requestIdController.text.isEmpty ? null : int.tryParse(_requestIdController.text),
-          eventId: _eventIdController.text.isEmpty ? null : int.tryParse(_eventIdController.text),
-          isFeatured: _isFeatured,
-        );
-        await _galleryProvider.createWithImages(request);
-      } else {
-        // Update existing gallery item
-        final request = GalleryShowcaseUpdateRequest(
-          id: widget.galleryItem!.id,
-          locationId: _locationIdController.text.isEmpty ? null : int.tryParse(_locationIdController.text),
-          createdByAdminId: _adminIdController.text.isEmpty ? null : int.tryParse(_adminIdController.text),
-          title: _titleController.text.isEmpty ? null : _titleController.text,
-          description: _descriptionController.text.isEmpty ? null : _descriptionController.text,
-          requestId: _requestIdController.text.isEmpty ? null : int.tryParse(_requestIdController.text),
-          eventId: _eventIdController.text.isEmpty ? null : int.tryParse(_eventIdController.text),
-          isFeatured: _isFeatured,
-          isApproved: _isApproved,
-        );
-        await _galleryProvider.updateWithImages(
-          widget.galleryItem!.id,
-          request,
-          beforeImage: _beforeImage,
-          afterImage: _afterImage,
-        );
-      }
       
-      widget.onSaved();
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to save gallery item: $e'), backgroundColor: Colors.red),
+      print('Update request created, calling provider...'); // Debug
+      await _galleryProvider.updateWithImages(
+        widget.galleryItem!.id,
+        request,
+        beforeImage: _beforeImage,
+        afterImage: _afterImage,
       );
-    } finally {
+      print('Update operation completed'); // Debug
+    }
+    
+    print('Save successful, navigating back...'); // Debug
+    
+    // Check if widget is still mounted before navigation
+    if (!mounted) {
+      print('Widget not mounted, skipping navigation'); // Debug
+      return;
+    }
+    
+    // Stop loading first
+    setState(() => _isLoading = false);
+    
+    // Show success message
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(widget.galleryItem == null ? 
+          'Gallery item created successfully!' : 
+          'Gallery item updated successfully!'),
+        backgroundColor: Colors.green,
+        duration: const Duration(seconds: 2),
+      ),
+    );
+    
+    // Small delay to let the success message show
+    await Future.delayed(const Duration(milliseconds: 100));
+    
+    // Navigate back and call callback
+    if (mounted) {
+      print('Calling onSaved callback...'); // Debug
+      widget.onSaved(); // Call callback first
+      
+      print('Popping dialog...'); // Debug
+      Navigator.of(context).pop(); // Then pop dialog
+    }
+    
+  } catch (e, stackTrace) {
+    print('Error in _saveGalleryItem: $e'); // Debug
+    print('StackTrace: $stackTrace'); // Debug
+    
+    if (mounted) {
       setState(() => _isLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to save gallery item: $e'), 
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 5),
+        ),
+      );
     }
   }
+}
 
   Widget _buildImagePicker({
     required String label,
@@ -240,212 +345,236 @@ class _GalleryShowcaseFormDialogState extends State<GalleryShowcaseFormDialog> {
     );
   }
 
+  Widget _buildDropdown<T>({
+    required String label,
+    required T? value,
+    required List<T> items,
+    required String Function(T) getDisplayText,
+    required dynamic Function(T) getValue,
+    required void Function(T?) onChanged,
+    bool isRequired = false,
+  }) {
+    return DropdownButtonFormField<T>(
+      value: value,
+      decoration: InputDecoration(
+        labelText: isRequired ? '$label *' : label,
+        border: const OutlineInputBorder(),
+      ),
+      items: items.map((item) {
+        return DropdownMenuItem<T>(
+          value: item,
+          child: Text(
+            getDisplayText(item),
+            overflow: TextOverflow.ellipsis,
+          ),
+        );
+      }).toList(),
+      onChanged: onChanged,
+      validator: isRequired ? (value) {
+        if (value == null) return '$label is required';
+        return null;
+      } : null,
+      isExpanded: true,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Dialog(
       child: Container(
         width: 700,
-        constraints: const BoxConstraints(maxHeight: 600),
+        constraints: const BoxConstraints(maxHeight: 650),
         padding: const EdgeInsets.all(24),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                widget.galleryItem == null ? 'Add New Gallery Item' : 'Edit Gallery Item',
-                style: Theme.of(context).textTheme.headlineSmall,
-              ),
-              const SizedBox(height: 24),
-              
-              Flexible(
-                child: SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      // Title and Description
-                      Row(
-                        children: [
-                          Expanded(
-                            child: TextFormField(
+        child: _isLoadingData
+            ? const Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    CircularProgressIndicator(),
+                    SizedBox(height: 16),
+                    Text('Loading dropdown data...'),
+                  ],
+                ),
+              )
+            : Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.galleryItem == null ? 'Add New Gallery Item' : 'Edit Gallery Item',
+                      style: Theme.of(context).textTheme.headlineSmall,
+                    ),
+                    const SizedBox(height: 24),
+                    
+                    Flexible(
+                      child: SingleChildScrollView(
+                        child: Column(
+                          children: [
+                            // Title and Description
+                            TextFormField(
                               controller: _titleController,
                               decoration: const InputDecoration(
                                 labelText: 'Title',
                                 border: OutlineInputBorder(),
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      
-                      TextFormField(
-                        controller: _descriptionController,
-                        decoration: const InputDecoration(
-                          labelText: 'Description',
-                          border: OutlineInputBorder(),
+                            const SizedBox(height: 16),
+                            
+                            TextFormField(
+                              controller: _descriptionController,
+                              decoration: const InputDecoration(
+                                labelText: 'Description',
+                                border: OutlineInputBorder(),
+                              ),
+                              maxLines: 3,
+                            ),
+                            const SizedBox(height: 16),
+                            
+                            // Location and Admin dropdowns
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _buildDropdown<LocationResponse>(
+                                    label: 'Location',
+                                    value: _locations.where((l) => l.id == _selectedLocationId).firstOrNull,
+                                    items: _locations,
+                                    getDisplayText: (location) => location.name ?? 'Unknown Location',
+                                    getValue: (location) => location.id,
+                                    onChanged: (location) => setState(() => _selectedLocationId = location?.id),
+                                    isRequired: true,
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                               Expanded(
+  child: _buildDropdown<UserResponse>(
+    label: 'Admin',
+    value: _users.where((u) => u.id == _selectedAdminId).firstOrNull,
+    items: _users,
+    getDisplayText: (user) {
+      final firstName = user.firstName;
+      final lastName = user.lastName;
+      final fullName = '$firstName $lastName'.trim();
+    
+      return fullName.isEmpty ? user.email : fullName;
+    },
+    getValue: (user) => user.id,
+    onChanged: (user) => setState(() => _selectedAdminId = user?.id),
+    isRequired: true,
+  ),
+),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            
+                            // Request and Event dropdowns (optional)
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _buildDropdown<RequestResponse>(
+                                    label: 'Request',
+                                    value: _requests.where((r) => r.id == _selectedRequestId).firstOrNull,
+                                    items: _requests,
+                                    getDisplayText: (request) => request.title ?? 'Request #${request.id}',
+                                    getValue: (request) => request.id,
+                                    onChanged: (request) => setState(() => _selectedRequestId = request?.id),
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: _buildDropdown<EventResponse>(
+                                    label: 'Event',
+                                    value: _events.where((e) => e.id == _selectedEventId).firstOrNull,
+                                    items: _events,
+                                    getDisplayText: (event) => event.title ?? 'Event #${event.id}',
+                                    getValue: (event) => event.id,
+                                    onChanged: (event) => setState(() => _selectedEventId = event?.id),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            
+                            // Image Pickers
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _buildImagePicker(
+                                    label: 'Before Image',
+                                    isBefore: true,
+                                    imagePath: _beforeImage?.path,
+                                    existingImageUrl: widget.galleryItem?.beforeImageUrl,
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: _buildImagePicker(
+                                    label: 'After Image',
+                                    isBefore: false,
+                                    imagePath: _afterImage?.path,
+                                    existingImageUrl: widget.galleryItem?.afterImageUrl,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            
+                            // Switches
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: SwitchListTile(
+                                    title: const Text('Featured'),
+                                    subtitle: const Text('Show in featured gallery'),
+                                    value: _isFeatured,
+                                    onChanged: (value) => setState(() => _isFeatured = value),
+                                  ),
+                                ),
+                                if (widget.galleryItem != null)
+                                  Expanded(
+                                    child: SwitchListTile(
+                                      title: const Text('Approved'),
+                                      subtitle: const Text('Approve for public viewing'),
+                                      value: _isApproved,
+                                      onChanged: (value) => setState(() => _isApproved = value),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ],
                         ),
-                        maxLines: 3,
                       ),
-                      const SizedBox(height: 16),
-                      
-                      // Location ID and Admin ID
-                      Row(
-                        children: [
-                          Expanded(
-                            child: TextFormField(
-                              controller: _locationIdController,
-                              decoration: const InputDecoration(
-                                labelText: 'Location ID *',
-                                border: OutlineInputBorder(),
-                              ),
-                              keyboardType: TextInputType.number,
-                              validator: (value) {
-                                if (value?.isEmpty == true) return 'Location ID is required';
-                                if (int.tryParse(value!) == null) return 'Enter a valid number';
-                                return null;
-                              },
-                            ),
+                    ),
+                    
+                    const SizedBox(height: 24),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text('Cancel'),
+                        ),
+                        const SizedBox(width: 16),
+                        ElevatedButton(
+                          onPressed: _isLoading ? null : _saveGalleryItem,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green[700],
+                            foregroundColor: Colors.white,
                           ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: TextFormField(
-                              controller: _adminIdController,
-                              decoration: const InputDecoration(
-                                labelText: 'Admin ID *',
-                                border: OutlineInputBorder(),
-                              ),
-                              keyboardType: TextInputType.number,
-                              validator: (value) {
-                                if (value?.isEmpty == true) return 'Admin ID is required';
-                                if (int.tryParse(value!) == null) return 'Enter a valid number';
-                                return null;
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      
-                      // Request ID and Event ID
-                      Row(
-                        children: [
-                          Expanded(
-                            child: TextFormField(
-                              controller: _requestIdController,
-                              decoration: const InputDecoration(
-                                labelText: 'Request ID (Optional)',
-                                border: OutlineInputBorder(),
-                              ),
-                              keyboardType: TextInputType.number,
-                              validator: (value) {
-                                if (value?.isNotEmpty == true && int.tryParse(value!) == null) {
-                                  return 'Enter a valid number';
-                                }
-                                return null;
-                              },
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: TextFormField(
-                              controller: _eventIdController,
-                              decoration: const InputDecoration(
-                                labelText: 'Event ID (Optional)',
-                                border: OutlineInputBorder(),
-                              ),
-                              keyboardType: TextInputType.number,
-                              validator: (value) {
-                                if (value?.isNotEmpty == true && int.tryParse(value!) == null) {
-                                  return 'Enter a valid number';
-                                }
-                                return null;
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      
-                      // Image Pickers
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildImagePicker(
-                              label: 'Before Image',
-                              isBefore: true,
-                              imagePath: _beforeImage?.path,
-                              existingImageUrl: widget.galleryItem?.beforeImageUrl,
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: _buildImagePicker(
-                              label: 'After Image',
-                              isBefore: false,
-                              imagePath: _afterImage?.path,
-                              existingImageUrl: widget.galleryItem?.afterImageUrl,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      
-                      // Switches
-                      Row(
-                        children: [
-                          Expanded(
-                            child: SwitchListTile(
-                              title: const Text('Featured'),
-                              subtitle: const Text('Show in featured gallery'),
-                              value: _isFeatured,
-                              onChanged: (value) => setState(() => _isFeatured = value),
-                            ),
-                          ),
-                          if (widget.galleryItem != null)
-                            Expanded(
-                              child: SwitchListTile(
-                                title: const Text('Approved'),
-                                subtitle: const Text('Approve for public viewing'),
-                                value: _isApproved,
-                                onChanged: (value) => setState(() => _isApproved = value),
-                              ),
-                            ),
-                        ],
-                      ),
-                    ],
-                  ),
+                          child: _isLoading
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                )
+                              : Text(widget.galleryItem == null ? 'Create' : 'Update'),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
-              
-              const SizedBox(height: 24),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('Cancel'),
-                  ),
-                  const SizedBox(width: 16),
-                  ElevatedButton(
-                    onPressed: _isLoading ? null : _saveGalleryItem,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green[700],
-                      foregroundColor: Colors.white,
-                    ),
-                    child: _isLoading
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : Text(widget.galleryItem == null ? 'Create' : 'Update'),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }
@@ -454,10 +583,6 @@ class _GalleryShowcaseFormDialogState extends State<GalleryShowcaseFormDialog> {
   void dispose() {
     _titleController.dispose();
     _descriptionController.dispose();
-    _locationIdController.dispose();
-    _adminIdController.dispose();
-    _requestIdController.dispose();
-    _eventIdController.dispose();
     super.dispose();
   }
 }

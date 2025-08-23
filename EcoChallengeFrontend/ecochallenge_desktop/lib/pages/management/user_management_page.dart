@@ -108,36 +108,7 @@ class _UserManagementPageState extends State<UserManagementPage> {
     );
   }
 
-  Future<void> _deleteUser(int id) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Confirm Delete'),
-        content: const Text('Are you sure you want to delete this user?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true) {
-      try {
-        await _userProvider.delete(id);
-        _showSuccessSnackBar('User deleted successfully');
-        _loadUsers();
-      } catch (e) {
-        _showErrorSnackBar('Failed to delete user: $e');
-      }
-    }
-  }
+  
 
   Future<void> _toggleUserStatus(UserResponse user) async {
     try {

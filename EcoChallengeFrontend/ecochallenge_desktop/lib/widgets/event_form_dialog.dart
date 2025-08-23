@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:ecochallenge_desktop/models/event.dart';
+import 'package:ecochallenge_desktop/models/user.dart';
 import 'package:ecochallenge_desktop/providers/event_provider.dart';
+import 'package:ecochallenge_desktop/providers/user_provider.dart';
 
 class EventFormDialog extends StatefulWidget {
   final EventResponse? event;
+  final UserProvider userProvider;
   final VoidCallback onSaved;
 
   const EventFormDialog({
     Key? key,
     this.event,
+    required this.userProvider,
     required this.onSaved,
   }) : super(key: key);
 
@@ -36,11 +40,18 @@ class _EventFormDialogState extends State<EventFormDialog> {
   bool _equipmentProvided = false;
   bool _adminApproved = false;
   bool _isLoading = false;
+  bool _isLoadingCreator = false;
+  
+  // Creator validation
+  UserResponse? _selectedCreator;
+  String? _creatorValidationError;
+  List<UserResponse> _recentUsers = []; // Cache for recently searched users
 
   @override
   void initState() {
     super.initState();
     _initializeControllers();
+    _loadRecentUsers();
   }
 
   void _initializeControllers() {
@@ -64,7 +75,67 @@ class _EventFormDialogState extends State<EventFormDialog> {
       );
       _equipmentProvided = widget.event!.equipmentProvided;
       _adminApproved = widget.event!.adminApproved;
+      
+      // Load creator data for existing event
+      _loadCreatorData(widget.event!.creatorUserId);
     }
+  }
+
+  Future<void> _loadRecentUsers() async {
+    try {
+      final result = await widget.userProvider.get(
+        filter: {'pageSize': 20, 'sortBy': 'Id', 'desc': true}
+      );
+      setState(() {
+        _recentUsers = result.items ?? [];
+      });
+    } catch (e) {
+      print('Failed to load recent users: $e');
+    }
+  }
+
+  Future<void> _loadCreatorData(int creatorId) async {
+    setState(() {
+      _isLoadingCreator = true;
+      _creatorValidationError = null;
+    });
+
+    try {
+      final user = await widget.userProvider.getById(creatorId);
+      setState(() {
+        _selectedCreator = user;
+        _creatorValidationError = null;
+      });
+    } catch (e) {
+      setState(() {
+        _selectedCreator = null;
+        _creatorValidationError = 'User not found';
+      });
+    } finally {
+      setState(() => _isLoadingCreator = false);
+    }
+  }
+
+  Future<void> _validateCreatorId() async {
+    final idText = _creatorUserIdController.text;
+    if (idText.isEmpty) {
+      setState(() {
+        _selectedCreator = null;
+        _creatorValidationError = null;
+      });
+      return;
+    }
+
+    final id = int.tryParse(idText);
+    if (id == null) {
+      setState(() {
+        _selectedCreator = null;
+        _creatorValidationError = 'Invalid ID format';
+      });
+      return;
+    }
+
+    await _loadCreatorData(id);
   }
 
   Future<void> _selectDate() async {
@@ -73,6 +144,7 @@ class _EventFormDialogState extends State<EventFormDialog> {
       initialDate: _selectedDate,
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 365)),
+      helpText: 'Select event date',
     );
     if (picked != null && picked != _selectedDate) {
       setState(() {
@@ -85,6 +157,7 @@ class _EventFormDialogState extends State<EventFormDialog> {
     final TimeOfDay? picked = await showTimePicker(
       context: context,
       initialTime: _selectedTime,
+      helpText: 'Select event time',
     );
     if (picked != null && picked != _selectedTime) {
       setState(() {
@@ -95,6 +168,17 @@ class _EventFormDialogState extends State<EventFormDialog> {
 
   Future<void> _saveEvent() async {
     if (!_formKey.currentState!.validate()) return;
+    
+    // Additional validation for creator
+    if (_selectedCreator == null && _creatorUserIdController.text.isNotEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please select a valid creator'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
 
     setState(() => _isLoading = true);
 
@@ -119,7 +203,7 @@ class _EventFormDialogState extends State<EventFormDialog> {
           statusId: int.parse(_statusIdController.text),
           adminApproved: _adminApproved,
         );
-        await _eventProvider.insertEvent(request);
+         await _eventProvider.insertEvent(request);
       } else {
         // Update existing event
         final request = EventUpdateRequest(
@@ -144,27 +228,153 @@ class _EventFormDialogState extends State<EventFormDialog> {
       
       widget.onSaved();
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+      }
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
+  }
+
+  Widget _buildCreatorField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TextFormField(
+          controller: _creatorUserIdController,
+          decoration: InputDecoration(
+            labelText: 'Creator User ID *',
+            border: const OutlineInputBorder(),
+            suffixIcon: _isLoadingCreator
+                ? const Padding(
+                    padding: EdgeInsets.all(12.0),
+                    child: SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  )
+                : _selectedCreator != null
+                    ? const Icon(Icons.check_circle, color: Colors.green)
+                    : _creatorValidationError != null
+                        ? const Icon(Icons.error, color: Colors.red)
+                        : null,
+            errorText: _creatorValidationError,
+          ),
+          keyboardType: TextInputType.number,
+          onChanged: (value) {
+            // Debounce the validation
+            Future.delayed(const Duration(milliseconds: 500), () {
+              if (_creatorUserIdController.text == value && value.isNotEmpty) {
+                _validateCreatorId();
+              }
+            });
+          },
+          validator: (value) {
+            if (value?.isEmpty == true) return 'Creator User ID is required';
+            if (int.tryParse(value!) == null) return 'Must be a number';
+            return null;
+          },
+        ),
+        if (_selectedCreator != null) ...[
+          const SizedBox(height: 4),
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.green[50],
+              borderRadius: BorderRadius.circular(4),
+              border: Border.all(color: Colors.green[200]!),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.person, size: 16, color: Colors.green),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    '${_selectedCreator!.firstName} ${_selectedCreator!.lastName} (${_selectedCreator!.username})',
+                    style: const TextStyle(fontSize: 12, color: Colors.green),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+        if (_recentUsers.isNotEmpty) ...[
+          const SizedBox(height: 8),
+          const Text(
+            'Recent Users:',
+            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+          ),
+          const SizedBox(height: 4),
+          Wrap(
+            spacing: 4,
+            runSpacing: 4,
+            children: _recentUsers.take(5).map((user) {
+              return InkWell(
+                onTap: () {
+                  _creatorUserIdController.text = user.id.toString();
+                  setState(() {
+                    _selectedCreator = user;
+                    _creatorValidationError = null;
+                  });
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.blue[50],
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.blue[200]!),
+                  ),
+                  child: Text(
+                    '${user.firstName} ${user.lastName} (${user.id})',
+                    style: const TextStyle(fontSize: 10, color: Colors.blue),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ],
+      ],
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Dialog(
       child: Container(
-        width: 600,
-        height: 700,
+        width: 700,
+        height: 750,
         padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              widget.event == null ? 'Add Event' : 'Edit Event',
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            Row(
+              children: [
+                Icon(
+                  widget.event == null ? Icons.add_circle : Icons.edit,
+                  color: Colors.blue[700],
+                  size: 24,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  widget.event == null ? 'Create New Event' : 'Edit Event',
+                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                const Spacer(),
+                IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(Icons.close),
+                  tooltip: 'Close',
+                ),
+              ],
             ),
             const SizedBox(height: 20),
             Expanded(
@@ -173,46 +383,43 @@ class _EventFormDialogState extends State<EventFormDialog> {
                 child: SingleChildScrollView(
                   child: Column(
                     children: [
+                      // Title and Creator ID row
                       Row(
                         children: [
                           Expanded(
+                            flex: 2,
                             child: TextFormField(
                               controller: _titleController,
                               decoration: const InputDecoration(
                                 labelText: 'Title *',
                                 border: OutlineInputBorder(),
+                                prefixIcon: Icon(Icons.event),
                               ),
                               validator: (value) => value?.isEmpty == true ? 'Title is required' : null,
                             ),
                           ),
                           const SizedBox(width: 16),
                           Expanded(
-                            child: TextFormField(
-                              controller: _creatorUserIdController,
-                              decoration: const InputDecoration(
-                                labelText: 'Creator User ID *',
-                                border: OutlineInputBorder(),
-                              ),
-                              keyboardType: TextInputType.number,
-                              validator: (value) {
-                                if (value?.isEmpty == true) return 'Creator User ID is required';
-                                if (int.tryParse(value!) == null) return 'Must be a number';
-                                return null;
-                              },
-                            ),
+                            flex: 1,
+                            child: _buildCreatorField(),
                           ),
                         ],
                       ),
                       const SizedBox(height: 16),
+                      
+                      // Description
                       TextFormField(
                         controller: _descriptionController,
                         decoration: const InputDecoration(
                           labelText: 'Description',
                           border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.description),
                         ),
                         maxLines: 3,
                       ),
                       const SizedBox(height: 16),
+                      
+                      // Location and Event Type row
                       Row(
                         children: [
                           Expanded(
@@ -221,6 +428,7 @@ class _EventFormDialogState extends State<EventFormDialog> {
                               decoration: const InputDecoration(
                                 labelText: 'Location ID *',
                                 border: OutlineInputBorder(),
+                                prefixIcon: Icon(Icons.location_on),
                               ),
                               keyboardType: TextInputType.number,
                               validator: (value) {
@@ -237,6 +445,7 @@ class _EventFormDialogState extends State<EventFormDialog> {
                               decoration: const InputDecoration(
                                 labelText: 'Event Type ID *',
                                 border: OutlineInputBorder(),
+                                prefixIcon: Icon(Icons.category),
                               ),
                               keyboardType: TextInputType.number,
                               validator: (value) {
@@ -249,6 +458,8 @@ class _EventFormDialogState extends State<EventFormDialog> {
                         ],
                       ),
                       const SizedBox(height: 16),
+                      
+                      // Date and Time row
                       Row(
                         children: [
                           Expanded(
@@ -258,9 +469,10 @@ class _EventFormDialogState extends State<EventFormDialog> {
                                 decoration: const InputDecoration(
                                   labelText: 'Event Date *',
                                   border: OutlineInputBorder(),
+                                  prefixIcon: Icon(Icons.calendar_today),
                                 ),
                                 child: Text(
-                                  '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
+                                  '${_selectedDate.day.toString().padLeft(2, '0')}/${_selectedDate.month.toString().padLeft(2, '0')}/${_selectedDate.year}',
                                 ),
                               ),
                             ),
@@ -273,6 +485,7 @@ class _EventFormDialogState extends State<EventFormDialog> {
                                 decoration: const InputDecoration(
                                   labelText: 'Event Time *',
                                   border: OutlineInputBorder(),
+                                  prefixIcon: Icon(Icons.access_time),
                                 ),
                                 child: Text(
                                   '${_selectedTime.hour.toString().padLeft(2, '0')}:${_selectedTime.minute.toString().padLeft(2, '0')}',
@@ -283,6 +496,8 @@ class _EventFormDialogState extends State<EventFormDialog> {
                         ],
                       ),
                       const SizedBox(height: 16),
+                      
+                      // Max Participants and Duration row
                       Row(
                         children: [
                           Expanded(
@@ -291,11 +506,14 @@ class _EventFormDialogState extends State<EventFormDialog> {
                               decoration: const InputDecoration(
                                 labelText: 'Max Participants *',
                                 border: OutlineInputBorder(),
+                                prefixIcon: Icon(Icons.group),
                               ),
                               keyboardType: TextInputType.number,
                               validator: (value) {
                                 if (value?.isEmpty == true) return 'Max participants is required';
-                                if (int.tryParse(value!) == null) return 'Must be a number';
+                                final num = int.tryParse(value!);
+                                if (num == null) return 'Must be a number';
+                                if (num <= 0) return 'Must be greater than 0';
                                 return null;
                               },
                             ),
@@ -307,11 +525,14 @@ class _EventFormDialogState extends State<EventFormDialog> {
                               decoration: const InputDecoration(
                                 labelText: 'Duration (minutes) *',
                                 border: OutlineInputBorder(),
+                                prefixIcon: Icon(Icons.timer),
                               ),
                               keyboardType: TextInputType.number,
                               validator: (value) {
                                 if (value?.isEmpty == true) return 'Duration is required';
-                                if (int.tryParse(value!) == null) return 'Must be a number';
+                                final num = int.tryParse(value!);
+                                if (num == null) return 'Must be a number';
+                                if (num <= 0) return 'Must be greater than 0';
                                 return null;
                               },
                             ),
@@ -319,14 +540,18 @@ class _EventFormDialogState extends State<EventFormDialog> {
                         ],
                       ),
                       const SizedBox(height: 16),
+                      
+                      // Meeting Point and Status ID row
                       Row(
                         children: [
                           Expanded(
+                            flex: 2,
                             child: TextFormField(
                               controller: _meetingPointController,
                               decoration: const InputDecoration(
                                 labelText: 'Meeting Point',
                                 border: OutlineInputBorder(),
+                                prefixIcon: Icon(Icons.place),
                               ),
                             ),
                           ),
@@ -337,6 +562,7 @@ class _EventFormDialogState extends State<EventFormDialog> {
                               decoration: const InputDecoration(
                                 labelText: 'Status ID *',
                                 border: OutlineInputBorder(),
+                                prefixIcon: Icon(Icons.info),
                               ),
                               keyboardType: TextInputType.number,
                               validator: (value) {
@@ -349,32 +575,47 @@ class _EventFormDialogState extends State<EventFormDialog> {
                         ],
                       ),
                       const SizedBox(height: 16),
+                      
+                      // Checkboxes row
                       Row(
                         children: [
                           Expanded(
-                            child: CheckboxListTile(
-                              title: const Text('Equipment Provided'),
-                              value: _equipmentProvided,
-                              onChanged: (value) {
-                                setState(() {
-                                  _equipmentProvided = value ?? false;
-                                });
-                              },
+                            child: Card(
+                              elevation: 1,
+                              child: CheckboxListTile(
+                                title: const Text('Equipment Provided'),
+                                subtitle: const Text('Check if equipment will be provided'),
+                                value: _equipmentProvided,
+                                onChanged: (value) {
+                                  setState(() {
+                                    _equipmentProvided = value ?? false;
+                                  });
+                                },
+                                secondary: const Icon(Icons.build),
+                              ),
                             ),
                           ),
+                          const SizedBox(width: 16),
                           Expanded(
-                            child: CheckboxListTile(
-                              title: const Text('Admin Approved'),
-                              value: _adminApproved,
-                              onChanged: (value) {
-                                setState(() {
-                                  _adminApproved = value ?? false;
-                                });
-                              },
+                            child: Card(
+                              elevation: 1,
+                              child: CheckboxListTile(
+                                title: const Text('Admin Approved'),
+                                subtitle: const Text('Mark as approved by admin'),
+                                value: _adminApproved,
+                                onChanged: (value) {
+                                  setState(() {
+                                    _adminApproved = value ?? false;
+                                  });
+                                },
+                                secondary: const Icon(Icons.admin_panel_settings),
+                              ),
                             ),
                           ),
                         ],
                       ),
+                      
+                      // Equipment List (conditional)
                       if (_equipmentProvided) ...[
                         const SizedBox(height: 16),
                         TextFormField(
@@ -382,8 +623,10 @@ class _EventFormDialogState extends State<EventFormDialog> {
                           decoration: const InputDecoration(
                             labelText: 'Equipment List',
                             border: OutlineInputBorder(),
+                            prefixIcon: Icon(Icons.list),
+                            hintText: 'List the equipment that will be provided...',
                           ),
-                          maxLines: 2,
+                          maxLines: 3,
                         ),
                       ],
                     ],
@@ -392,11 +635,13 @@ class _EventFormDialogState extends State<EventFormDialog> {
               ),
             ),
             const SizedBox(height: 20),
+            
+            // Action buttons
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 TextButton(
-                  onPressed: () => Navigator.pop(context),
+                  onPressed: _isLoading ? null : () => Navigator.pop(context),
                   child: const Text('Cancel'),
                 ),
                 const SizedBox(width: 12),
@@ -405,14 +650,25 @@ class _EventFormDialogState extends State<EventFormDialog> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue[700],
                     foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                   ),
                   child: _isLoading
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2),
+                      ? const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              ),
+                            ),
+                            SizedBox(width: 8),
+                            Text('Saving...'),
+                          ],
                         )
-                      : Text(widget.event == null ? 'Create' : 'Update'),
+                      : Text(widget.event == null ? 'Create Event' : 'Update Event'),
                 ),
               ],
             ),

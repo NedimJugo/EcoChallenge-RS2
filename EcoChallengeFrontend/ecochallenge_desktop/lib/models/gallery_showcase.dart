@@ -120,7 +120,6 @@ class GalleryShowcaseInsertRequest {
 
 // Gallery Showcase Update Request Model
 class GalleryShowcaseUpdateRequest {
-  final int id;
   final int? requestId;
   final int? eventId;
   final int? locationId;
@@ -134,7 +133,6 @@ class GalleryShowcaseUpdateRequest {
   final bool? isReported;
 
   GalleryShowcaseUpdateRequest({
-    required this.id,
     this.requestId,
     this.eventId,
     this.locationId,
@@ -149,8 +147,7 @@ class GalleryShowcaseUpdateRequest {
   });
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = {'id': id};
-    
+    final Map<String, dynamic> data = {};
     if (requestId != null) data['requestId'] = requestId;
     if (eventId != null) data['eventId'] = eventId;
     if (locationId != null) data['locationId'] = locationId;

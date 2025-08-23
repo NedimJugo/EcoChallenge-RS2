@@ -10,8 +10,6 @@ namespace EcoChallenge.Models.Requests
 {
     public class GalleryShowcaseUpdateRequest
     {
-        [Required]
-        public int Id { get; set; }
 
         public int? RequestId { get; set; }
         public int? EventId { get; set; }

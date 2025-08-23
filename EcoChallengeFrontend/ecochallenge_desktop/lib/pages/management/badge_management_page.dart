@@ -110,36 +110,57 @@ class _BadgeManagementPageState extends State<BadgeManagementPage> {
     );
   }
 
-  Future<void> _deleteBadge(int id, String name) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Confirm Delete'),
-        content: Text('Are you sure you want to delete "$name"?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
-    );
+  // Replace your existing _deleteBadge method in BadgeManagementPage with this:
 
-    if (confirmed == true) {
-      try {
-        await _badgeProvider.deleteBadge(id);
-        _showSuccessSnackBar('Badge deleted successfully');
-        _loadBadges();
-      } catch (e) {
-        _showErrorSnackBar('Failed to delete badge: $e');
+Future<void> _deleteBadge(int id, String name) async {
+  final confirmed = await showDialog<bool>(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text('Confirm Delete'),
+      content: Text('Are you sure you want to delete "$name"?'),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context, false),
+          child: const Text('Cancel'),
+        ),
+        TextButton(
+          onPressed: () => Navigator.pop(context, true),
+          style: TextButton.styleFrom(foregroundColor: Colors.red),
+          child: const Text('Delete'),
+        ),
+      ],
+    ),
+  );
+
+  if (confirmed == true) {
+    try {
+      print("Attempting to delete badge ID: $id, Name: $name");
+      
+      bool result = await _badgeProvider.deleteBadge(id);
+      
+      print("Delete operation result: $result");
+      
+      if (result) {
+        _showSuccessSnackBar('Badge "$name" deleted successfully');
+        await _loadBadges(); // Reload the list to reflect changes
+      } else {
+        _showErrorSnackBar('You cannot delete this badge because it is awarded to users');
       }
+    } catch (e) {
+      print("Delete operation exception: $e");
+      
+      // Handle specific error messages
+      String errorMessage = 'Failed to delete badge "$name"';
+      if (e.toString().contains('Cannot delete badge')) {
+        errorMessage = 'Cannot delete badge "$name": It may have been awarded to users';
+      } else if (e.toString().contains('Network')) {
+        errorMessage = 'Network error: Please check your connection';
+      }
+      
+      _showErrorSnackBar(errorMessage);
     }
   }
+}
 
   String _getBadgeTypeName(int badgeTypeId) {
     final badgeType = _badgeTypes.firstWhere(

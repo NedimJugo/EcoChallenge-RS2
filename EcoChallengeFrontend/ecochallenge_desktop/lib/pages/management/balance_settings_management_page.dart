@@ -408,49 +408,6 @@ class _BalanceSettingManagementPageState extends State<BalanceSettingManagementP
                       ),
                     ),
                     const SizedBox(width: 12),
-                    SizedBox(
-                      width: 150,
-                      height: 36,
-                      child: DropdownButtonFormField<String>(
-                        value: _sortBy,
-                        style: const TextStyle(fontSize: 12, color: Colors.black),
-                        decoration: const InputDecoration(
-                          labelText: 'Sort By',
-                          border: OutlineInputBorder(),
-                          contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          isDense: true,
-                        ),
-                        items: const [
-                          DropdownMenuItem(value: 'UpdatedAt', child: Text('Updated Date')),
-                          DropdownMenuItem(value: 'WholeBalance', child: Text('Whole Balance')),
-                          DropdownMenuItem(value: 'BalanceLeft', child: Text('Balance Left')),
-                        ],
-                        onChanged: (value) {
-                          setState(() {
-                            _sortBy = value!;
-                          });
-                        },
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    SizedBox(
-                      height: 36,
-                      child: ElevatedButton.icon(
-                        onPressed: () {
-                          setState(() {
-                            _sortDesc = !_sortDesc;
-                          });
-                          _loadBalanceSettings();
-                        },
-                        icon: Icon(_sortDesc ? Icons.arrow_downward : Icons.arrow_upward, size: 16),
-                        label: Text(_sortDesc ? 'Desc' : 'Asc', style: const TextStyle(fontSize: 12)),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.grey[700],
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
-                        ),
-                      ),
-                    ),
                     const Spacer(),
                     Text('Total: $_totalCount balance settings', style: const TextStyle(fontSize: 14)),
                   ],
