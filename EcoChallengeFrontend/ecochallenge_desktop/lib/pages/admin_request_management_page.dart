@@ -1,3 +1,4 @@
+import 'package:ecochallenge_desktop/layouts/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/request.dart';
@@ -108,7 +109,7 @@ class _AdminRequestManagementPageState extends State<AdminRequestManagementPage>
                   Container(
                     padding: EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: Colors.blue[50],
+                      color: forestGreen[50],
                       borderRadius: BorderRadius.only(
                         topLeft: Radius.circular(12),
                         topRight: Radius.circular(12),
@@ -119,7 +120,7 @@ class _AdminRequestManagementPageState extends State<AdminRequestManagementPage>
                         Container(
                           padding: EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: Colors.blue[600],
+                            color: forestGreen,
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Icon(Icons.assignment, color: Colors.white, size: 20),
@@ -130,7 +131,7 @@ class _AdminRequestManagementPageState extends State<AdminRequestManagementPage>
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w700,
-                            color: Colors.blue[800],
+                            color: forestGreen[800],
                           ),
                         ),
                       ],
@@ -361,10 +362,10 @@ class _AdminRequestManagementPageState extends State<AdminRequestManagementPage>
                     width: 48,
                     height: 48,
                     decoration: BoxDecoration(
-                      color: Colors.blue[100],
+                      color: forestGreen[100],
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Icon(Icons.assignment, color: Colors.blue[600], size: 24),
+                    child: Icon(Icons.assignment, color: forestGreen[600], size: 24),
                   ),
                   SizedBox(width: 16),
                   Expanded(
@@ -556,7 +557,7 @@ class _AdminRequestManagementPageState extends State<AdminRequestManagementPage>
                 padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
                   color: currentPage == i 
-                      ? (isRequest ? Colors.blue[600] : Colors.green[600])
+                      ? (isRequest ? forestGreen[600] : Colors.green[600])
                       : Colors.transparent,
                   borderRadius: BorderRadius.circular(8),
                   border: currentPage == i 

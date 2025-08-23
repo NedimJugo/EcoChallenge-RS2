@@ -524,6 +524,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                       ? IconButton(
                           onPressed: () async {
                             await auth.logout();
+                            if (!mounted) return;
                             Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(builder: (_) => AdminLoginPage()),

@@ -1,3 +1,4 @@
+import 'package:ecochallenge_desktop/layouts/constants.dart';
 import 'package:ecochallenge_desktop/providers/balance_setting_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -322,11 +323,11 @@ class _RequestDetailsWidgetState extends State<RequestDetailsWidget> {
             child: Row(
               children: [
                 IconButton(
-                  icon: Icon(Icons.arrow_back, color: Colors.blue[600]),
+                  icon: Icon(Icons.arrow_back, color: forestGreen[600]),
                   onPressed: widget.onBack,
                 ),
                 SizedBox(width: 8),
-                Icon(Icons.assignment, color: Colors.blue[600], size: 24),
+                Icon(Icons.assignment, color: forestGreen[600], size: 24),
                 SizedBox(width: 12),
                 Expanded(
                   child: Text(
