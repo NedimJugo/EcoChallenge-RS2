@@ -62,5 +62,34 @@ namespace EcoChallenge.Services.Services
                 entity.IconUrl = url;
             }
         }
+
+        public override async Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                // First check if badge exists
+                var badge = await _db.Badges.FindAsync(id);
+                if (badge == null)
+                    return false;
+
+                // Check for dependencies (UserBadges referencing this badge)
+                var hasUserBadges = await _db.UserBadges.AnyAsync(ub => ub.BadgeId == id);
+                if (hasUserBadges)
+                {
+                    throw new InvalidOperationException("Cannot delete badge that has been awarded to users");
+                }
+
+                // Delete the badge
+                _db.Badges.Remove(badge);
+                var result = await _db.SaveChangesAsync(cancellationToken);
+
+                return result > 0;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Badge deletion failed: {ex.Message}");
+                return false;
+            }
+        }
     }
 }

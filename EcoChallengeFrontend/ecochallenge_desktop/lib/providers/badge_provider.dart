@@ -126,13 +126,59 @@ class BadgeProvider extends BaseProvider<BadgeResponse> {
     }
   }
 
-  // Delete Badge by ID
+
+
   Future<bool> deleteBadge(int id) async {
-    try {
-      await super.delete(id);
-      return true;
-    } catch (e) {
-      return false;
+  var url = "${super.baseUrl}/${super.endpoint}/$id";
+  var uri = Uri.parse(url);
+  var headers = createHeaders();
+  
+  print("Attempting to delete badge with URL: $url");
+  
+  try {
+    var response = await http.delete(uri, headers: headers);
+    
+    print("Delete response status code: ${response.statusCode}");
+    print("Delete response body: ${response.body}");
+    
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      // For successful HTTP status codes, check the response body
+      if (response.body.isNotEmpty) {
+        try {
+          var responseData = jsonDecode(response.body);
+          
+          // If your server returns a boolean result
+          if (responseData is bool) {
+            print("Server returned boolean: $responseData");
+            return responseData;
+          } else {
+            // If it's not a boolean, assume success based on status code
+            print("Server returned non-boolean response, assuming success");
+            return true;
+          }
+        } catch (e) {
+          // If response is not valid JSON, check status code
+          print("Response body parsing error: $e, assuming success based on status code");
+          return true;
+        }
+      } else {
+        // Empty response body with success status code
+        print("Empty response body with success status code");
+        return true;
+      }
+    } else if (response.statusCode == 400) {
+      // Handle specific error cases
+      print("Bad request - possibly badge has dependencies");
+      throw Exception("Cannot delete badge: ${response.body}");
+    } else {
+      print("Delete failed with status code: ${response.statusCode}");
+      print("Response body: ${response.body}");
+      throw Exception("Failed to delete badge: ${response.statusCode}");
     }
+  } catch (e) {
+    print("Network error during delete: $e");
+    // Re-throw the exception so the UI can handle it properly
+    rethrow;
   }
+}
 }

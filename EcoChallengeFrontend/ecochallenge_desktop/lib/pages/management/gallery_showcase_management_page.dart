@@ -1,4 +1,8 @@
 import 'package:ecochallenge_desktop/layouts/constants.dart';
+import 'package:ecochallenge_desktop/models/location.dart';
+import 'package:ecochallenge_desktop/models/user.dart';
+import 'package:ecochallenge_desktop/providers/location_provider.dart';
+import 'package:ecochallenge_desktop/providers/user_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:ecochallenge_desktop/models/gallery_showcase.dart';
@@ -20,11 +24,16 @@ class _GalleryShowcaseManagementPageState extends State<GalleryShowcaseManagemen
   int _currentPage = 0;
   int _pageSize = 10;
   int _totalCount = 0;
+
+  final LocationProvider _locationProvider = LocationProvider();
+  final UserProvider _userProvider = UserProvider();
+  List<LocationResponse> _locations = [];
+  List<UserResponse> _admins = [];
+  int? _selectedLocationId;
+  int? _selectedAdminId;
   
   // Filter controllers
   final TextEditingController _titleController = TextEditingController();
-  final TextEditingController _locationIdController = TextEditingController();
-  final TextEditingController _adminIdController = TextEditingController();
   bool? _isApprovedFilter;
   bool? _isFeaturedFilter;
   
@@ -42,11 +51,37 @@ class _GalleryShowcaseManagementPageState extends State<GalleryShowcaseManagemen
     setState(() => _isLoading = true);
     
     try {
+      await Future.wait([
+        _loadLocations(),
+        _loadAdmins(),
+      ]);
+      // Load gallery items after locations and admins are loaded
       await _loadGalleryItems();
     } catch (e) {
       _showErrorSnackBar('Failed to load data: $e');
     } finally {
       setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _loadLocations() async {
+    try {
+      final locations = await _locationProvider.getAllLocations();
+      setState(() => _locations = locations);
+      print('Loaded ${_locations.length} locations');
+    } catch (e) {
+      _showErrorSnackBar('Failed to load locations: $e');
+    }
+  }
+
+  Future<void> _loadAdmins() async {
+    try {
+      // You might need to adjust this filter to get only admin users
+      final result = await _userProvider.get(filter: {'userTypeId': 2}); // Assuming 2 is the ID for admin user type
+      setState(() => _admins = result.items ?? []);
+      print('Loaded ${_admins.length} admins');
+    } catch (e) {
+      _showErrorSnackBar('Failed to load admins: $e');
     }
   }
 
@@ -56,12 +91,8 @@ class _GalleryShowcaseManagementPageState extends State<GalleryShowcaseManagemen
         page: _currentPage,
         pageSize: _pageSize,
         title: _titleController.text.isNotEmpty ? _titleController.text : null,
-        locationId: _locationIdController.text.isNotEmpty 
-            ? int.tryParse(_locationIdController.text) 
-            : null,
-        createdByAdminId: _adminIdController.text.isNotEmpty 
-            ? int.tryParse(_adminIdController.text) 
-            : null,
+        locationId: _selectedLocationId,
+        createdByAdminId: _selectedAdminId,
         isApproved: _isApprovedFilter,
         isFeatured: _isFeaturedFilter,
       );
@@ -72,10 +103,35 @@ class _GalleryShowcaseManagementPageState extends State<GalleryShowcaseManagemen
         _galleryItems = result.items ?? [];
         _totalCount = result.totalCount ?? 0;
       });
+      
+      print('Loaded ${_galleryItems.length} gallery items');
     } catch (e) {
       _showErrorSnackBar('Failed to load gallery items: $e');
     }
   }
+
+  // Helper methods to get location and admin names
+  String _getLocationName(int? locationId) {
+    if (locationId == null) return 'No Location';
+    
+    try {
+      final location = _locations.firstWhere((loc) => loc.id == locationId);
+      return location.name ?? 'Location $locationId';
+    } catch (e) {
+      return 'Location $locationId ';
+    }
+  }
+
+  String _getAdminName(int? adminId) {
+  if (adminId == null) return 'No Admin';
+  
+  try {
+    final admin = _admins.firstWhere((admin) => admin.id == adminId);
+    return '${admin.firstName} ${admin.lastName}'.trim();
+  } catch (e) {
+    return 'Admin $adminId';
+  }
+}
 
   void _showErrorSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -89,12 +145,12 @@ class _GalleryShowcaseManagementPageState extends State<GalleryShowcaseManagemen
     );
   }
 
-  Future<void> _deleteGalleryItem(int id) async {
+  Future<void> _deleteGalleryItem(int id, String name) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Confirm Delete'),
-        content: const Text('Are you sure you want to delete this gallery item?'),
+        content: Text('Are you sure you want to delete the gallery item "$name"?\n\nThis action cannot be undone.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -115,44 +171,34 @@ class _GalleryShowcaseManagementPageState extends State<GalleryShowcaseManagemen
         _showSuccessSnackBar('Gallery item deleted successfully');
         _loadGalleryItems();
       } catch (e) {
-        _showErrorSnackBar('Failed to delete gallery item: $e');
+        String errorMessage = 'You cannot delete this gallery item because it is being used by existing tables';
+
+        // Check for specific error types
+        final errorString = e.toString().toLowerCase();
+        if (errorString.contains('reference constraint') || 
+            errorString.contains('foreign key') ||
+            errorString.contains('being used')) {
+          errorMessage = 'Cannot delete "$name" because it is currently being used by existing users. Please reassign or remove those users first.';
+        } else if (errorString.contains('invalidoperationexception')) {
+          // Extract the custom message from the exception
+          final match = RegExp(r"Cannot delete user type.*").firstMatch(e.toString());
+          if (match != null) {
+            errorMessage = match.group(0) ?? errorMessage;
+          }
+        }
+        
+        _showErrorSnackBar(errorMessage);
       }
     }
   }
 
-  Future<void> _toggleApprovalStatus(GalleryShowcaseResponse item) async {
-    try {
-      final updateRequest = GalleryShowcaseUpdateRequest(
-        id: item.id,
-        isApproved: !item.isApproved,
-      );
-      await _galleryProvider.update(item.id, updateRequest.toJson());
-      _showSuccessSnackBar('Gallery item approval status updated successfully');
-      _loadGalleryItems();
-    } catch (e) {
-      _showErrorSnackBar('Failed to update approval status: $e');
-    }
-  }
 
-  Future<void> _toggleFeaturedStatus(GalleryShowcaseResponse item) async {
-    try {
-      final updateRequest = GalleryShowcaseUpdateRequest(
-        id: item.id,
-        isFeatured: !item.isFeatured,
-      );
-      await _galleryProvider.update(item.id, updateRequest.toJson());
-      _showSuccessSnackBar('Gallery item featured status updated successfully');
-      _loadGalleryItems();
-    } catch (e) {
-      _showErrorSnackBar('Failed to update featured status: $e');
-    }
-  }
 
   void _clearFilters() {
     setState(() {
       _titleController.clear();
-      _locationIdController.clear();
-      _adminIdController.clear();
+      _selectedLocationId = null;
+      _selectedAdminId = null;
       _isApprovedFilter = null;
       _isFeaturedFilter = null;
       _currentPage = 0;
@@ -161,20 +207,24 @@ class _GalleryShowcaseManagementPageState extends State<GalleryShowcaseManagemen
   }
 
   void _showGalleryItemForm([GalleryShowcaseResponse? item]) {
-    showDialog(
-      context: context,
-      builder: (context) => GalleryShowcaseFormDialog(
-        galleryItem: item,
-        onSaved: () {
-          Navigator.pop(context);
-          _loadGalleryItems();
-          _showSuccessSnackBar(item == null 
-              ? 'Gallery item created successfully' 
-              : 'Gallery item updated successfully');
-        },
-      ),
-    );
-  }
+  showDialog(
+    context: context,
+    builder: (context) => GalleryShowcaseFormDialog(
+      galleryItem: item,
+      onSaved: () {
+        // Remove Navigator.pop(context) - the dialog handles its own navigation!
+        print('onSaved callback triggered in parent');
+        setState(() {
+          // Force rebuild
+        });
+        _loadGalleryItems();
+        _showSuccessSnackBar(item == null 
+            ? 'Gallery item created successfully' 
+            : 'Gallery item updated successfully');
+      },
+    ),
+  );
+}
 
   void _showImagePreview(String imageUrl, String title) {
     showDialog(
@@ -245,35 +295,38 @@ class _GalleryShowcaseManagementPageState extends State<GalleryShowcaseManagemen
                     Expanded(
                       child: SizedBox(
                         height: 40,
-                        child: TextField(
-                          controller: _locationIdController,
-                          style: const TextStyle(fontSize: 14),
-                          keyboardType: TextInputType.number,
+                        child: DropdownButtonFormField<int>(
+                          value: _selectedLocationId,
+                          style: const TextStyle(fontSize: 14, color: Colors.black),
                           decoration: const InputDecoration(
-                            labelText: 'Location ID',
+                            labelText: 'Location',
                             border: OutlineInputBorder(),
                             prefixIcon: Icon(Icons.location_on, size: 18),
                             contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                             isDense: true,
                           ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: SizedBox(
-                        height: 40,
-                        child: TextField(
-                          controller: _adminIdController,
-                          style: const TextStyle(fontSize: 14),
-                          keyboardType: TextInputType.number,
-                          decoration: const InputDecoration(
-                            labelText: 'Admin ID',
-                            border: OutlineInputBorder(),
-                            prefixIcon: Icon(Icons.admin_panel_settings, size: 18),
-                            contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                            isDense: true,
-                          ),
+                          isExpanded: true,
+                          items: [
+                            const DropdownMenuItem<int>(
+                              value: null,
+                              child: Text('All Locations', style: TextStyle(color: Colors.black)),
+                            ),
+                            ..._locations.map((location) {
+                              final locationName = location.name ?? 'Location ${location.id}';
+                              return DropdownMenuItem<int>(
+                                value: location.id,
+                                child: Text(
+                                  locationName.length > 20 ? '${locationName.substring(0, 20)}...' : locationName,
+                                  style: const TextStyle(color: Colors.black),
+                                ),
+                              );
+                            }).toList(),
+                          ],
+                          onChanged: (value) {
+                            setState(() {
+                              _selectedLocationId = value;
+                            });
+                          },
                         ),
                       ),
                     ),
@@ -312,39 +365,6 @@ class _GalleryShowcaseManagementPageState extends State<GalleryShowcaseManagemen
                       ),
                     ),
                     const SizedBox(width: 12),
-                    SizedBox(
-                      width: 120,
-                      height: 40,
-                      child: DropdownButtonFormField<bool>(
-                        value: _isFeaturedFilter,
-                        style: const TextStyle(fontSize: 14, color: Colors.black),
-                        decoration: const InputDecoration(
-                          labelText: 'Featured',
-                          border: OutlineInputBorder(),
-                          contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                          isDense: true,
-                        ),
-                        items: const [
-                          DropdownMenuItem<bool>(
-                            value: null,
-                            child: Text('All'),
-                          ),
-                          DropdownMenuItem<bool>(
-                            value: true,
-                            child: Text('Featured'),
-                          ),
-                          DropdownMenuItem<bool>(
-                            value: false,
-                            child: Text('Not Featured'),
-                          ),
-                        ],
-                        onChanged: (value) {
-                          setState(() {
-                            _isFeaturedFilter = value;
-                          });
-                        },
-                      ),
-                    ),
                   ],
                 ),
                 const SizedBox(height: 12),
@@ -383,19 +403,6 @@ class _GalleryShowcaseManagementPageState extends State<GalleryShowcaseManagemen
                       ),
                     ),
                     const Spacer(),
-                    SizedBox(
-                      height: 36,
-                      child: ElevatedButton.icon(
-                        onPressed: () => _showGalleryItemForm(),
-                        icon: const Icon(Icons.add, size: 16),
-                        label: const Text('Add Gallery Item', style: TextStyle(fontSize: 12)),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: forestGreen[700],
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
-                        ),
-                      ),
-                    ),
                     const SizedBox(width: 16),
                     Text('Total: $_totalCount items', style: const TextStyle(fontSize: 14)),
                   ],
@@ -455,8 +462,8 @@ class _GalleryShowcaseManagementPageState extends State<GalleryShowcaseManagemen
                                   columns: const [
                                     DataColumn(label: Text('ID')),
                                     DataColumn(label: Text('Title')),
-                                    DataColumn(label: Text('Location ID')),
-                                    DataColumn(label: Text('Admin ID')),
+                                    DataColumn(label: Text('Location')),
+                                    DataColumn(label: Text('Admin')),
                                     DataColumn(label: Text('Before/After')),
                                     DataColumn(label: Text('Likes/Dislikes')),
                                     DataColumn(label: Text('Featured')),
@@ -478,8 +485,8 @@ class _GalleryShowcaseManagementPageState extends State<GalleryShowcaseManagemen
                                             ),
                                           ),
                                         ),
-                                        DataCell(Text(item.locationId.toString())),
-                                        DataCell(Text(item.createdByAdminId.toString())),
+                                        DataCell(Text(_getLocationName(item.locationId))),
+                                        DataCell(Text(_getAdminName(item.createdByAdminId))),
                                         DataCell(
                                           Row(
                                             mainAxisSize: MainAxisSize.min,
@@ -597,32 +604,11 @@ class _GalleryShowcaseManagementPageState extends State<GalleryShowcaseManagemen
                                                 constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
                                                 padding: EdgeInsets.zero,
                                               ),
-                                              IconButton(
-                                                icon: Icon(
-                                                  item.isApproved ? Icons.remove_circle : Icons.check_circle,
-                                                  size: 18,
-                                                ),
-                                                color: item.isApproved ? Colors.orange : Colors.green,
-                                                onPressed: () => _toggleApprovalStatus(item),
-                                                tooltip: item.isApproved ? 'Remove Approval' : 'Approve',
-                                                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-                                                padding: EdgeInsets.zero,
-                                              ),
-                                              IconButton(
-                                                icon: Icon(
-                                                  item.isFeatured ? Icons.star : Icons.star_border,
-                                                  size: 18,
-                                                ),
-                                                color: item.isFeatured ? Colors.amber : Colors.grey,
-                                                onPressed: () => _toggleFeaturedStatus(item),
-                                                tooltip: item.isFeatured ? 'Remove Featured' : 'Make Featured',
-                                                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-                                                padding: EdgeInsets.zero,
-                                              ),
+
                                               IconButton(
                                                 icon: const Icon(Icons.delete, size: 18),
                                                 color: Colors.red,
-                                                onPressed: () => _deleteGalleryItem(item.id),
+                                                onPressed: () => _deleteGalleryItem(item.id, item.title ?? 'N/A'),
                                                 tooltip: 'Delete',
                                                 constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
                                                 padding: EdgeInsets.zero,
@@ -688,8 +674,6 @@ class _GalleryShowcaseManagementPageState extends State<GalleryShowcaseManagemen
   @override
   void dispose() {
     _titleController.dispose();
-    _locationIdController.dispose();
-    _adminIdController.dispose();
     _verticalScrollController.dispose();
     _horizontalScrollController.dispose();
     super.dispose();

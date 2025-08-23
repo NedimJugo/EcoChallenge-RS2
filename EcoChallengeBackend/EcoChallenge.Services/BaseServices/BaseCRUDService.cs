@@ -73,7 +73,7 @@ namespace EcoChallenge.Services.BaseServices
             _mapper.Map(request, entity);
         }
 
-        public async Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default)
+        public virtual async Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default)
         {
             var entity = await _context.Set<TEntity>().FindAsync(new object[] { id }, cancellationToken);
             if (entity == null)

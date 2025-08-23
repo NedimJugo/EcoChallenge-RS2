@@ -75,12 +75,12 @@ class _LocationManagementPageState extends State<LocationManagementPage> {
     );
   }
 
-  Future<void> _deleteLocation(int id) async {
+ Future<void> _deleteLocation(int id, String name) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Confirm Delete'),
-        content: const Text('Are you sure you want to delete this location?'),
+        content: Text('Are you sure you want to delete the location "$name"?\n\nThis action cannot be undone.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -101,7 +101,23 @@ class _LocationManagementPageState extends State<LocationManagementPage> {
         _showSuccessSnackBar('Location deleted successfully');
         _loadLocations();
       } catch (e) {
-        _showErrorSnackBar('Failed to delete location: $e');
+        String errorMessage = 'You cannot delete this location because it is used by existing events and requests.';
+
+        // Check for specific error types
+        final errorString = e.toString().toLowerCase();
+        if (errorString.contains('reference constraint') || 
+            errorString.contains('foreign key') ||
+            errorString.contains('being used')) {
+          errorMessage = 'Cannot delete "$name" because it is currently being used by existing users. Please reassign or remove those users first.';
+        } else if (errorString.contains('invalidoperationexception')) {
+          // Extract the custom message from the exception
+          final match = RegExp(r"Cannot delete user type.*").firstMatch(e.toString());
+          if (match != null) {
+            errorMessage = match.group(0) ?? errorMessage;
+          }
+        }
+        
+        _showErrorSnackBar(errorMessage);
       }
     }
   }
@@ -414,7 +430,7 @@ class _LocationManagementPageState extends State<LocationManagementPage> {
                                               IconButton(
                                                 icon: const Icon(Icons.delete, size: 18),
                                                 color: Colors.red,
-                                                onPressed: () => _deleteLocation(location.id),
+                                                onPressed: () => _deleteLocation(location.id, location.name ?? 'N/A'),
                                                 tooltip: 'Delete',
                                                 constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
                                                 padding: EdgeInsets.zero,

@@ -149,7 +149,7 @@ abstract class BaseProvider<T> with ChangeNotifier {
 
   bool isValidResponse(Response response) {
     print("Status code: ${response.statusCode}");
-    print("Response body: ${response.body}");
+    //print("Response body: ${response.body}");
     if (response.statusCode < 299) {
       return true;
     } else if (response.statusCode == 401) {
