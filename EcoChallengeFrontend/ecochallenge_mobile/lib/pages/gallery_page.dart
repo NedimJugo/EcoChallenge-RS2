@@ -1,3 +1,4 @@
+import 'package:ecochallenge_mobile/layouts/constants.dart';
 import 'package:ecochallenge_mobile/widgets/bottom_navigation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -382,7 +383,8 @@ class _GalleryPageState extends State<GalleryPage> {
             fontWeight: FontWeight.bold,
           ),
         ),
-        backgroundColor: Color(0xFFD4A574),
+        centerTitle: true,
+        backgroundColor: goldenBrown,
         elevation: 0,
       ),
       body: Column(

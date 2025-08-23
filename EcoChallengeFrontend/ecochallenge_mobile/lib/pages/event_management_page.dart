@@ -1,3 +1,4 @@
+import 'package:ecochallenge_mobile/layouts/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:ecochallenge_mobile/models/event.dart';
@@ -150,7 +151,8 @@ class _EventManagementScreenState extends State<EventManagementScreen> {
           'Manage: ${widget.event.title ?? "Event"}',
           style: const TextStyle(color: Colors.white),
         ),
-        backgroundColor: Colors.orange[400],
+        backgroundColor: goldenBrown,
+        centerTitle: true,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: _isLoading

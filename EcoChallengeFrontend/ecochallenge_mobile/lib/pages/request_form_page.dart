@@ -1,3 +1,4 @@
+import 'package:ecochallenge_mobile/layouts/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
@@ -428,16 +429,16 @@ class _RequestFormPageState extends State<RequestFormPage> {
             padding: EdgeInsets.all(16),
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [Colors.blue.shade50, Colors.white],
+                colors: [forestGreen[50]!, Colors.white],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.blue.shade200),
+              border: Border.all(color: forestGreen[200]!),
             ),
             child: Row(
               children: [
-                Icon(Icons.location_on, color: Colors.blue.shade700, size: 32),
+                Icon(Icons.location_on, color: forestGreen[700], size: 32),
                 SizedBox(width: 12),
                 Expanded(
                   child: Text(
@@ -445,7 +446,7 @@ class _RequestFormPageState extends State<RequestFormPage> {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: Colors.blue.shade700,
+                      color: forestGreen[700],
                     ),
                   ),
                 ),
@@ -731,16 +732,16 @@ class _RequestFormPageState extends State<RequestFormPage> {
             padding: EdgeInsets.all(16),
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [Colors.orange.shade50, Colors.white],
+                colors: [forestGreen[50]!, Colors.white],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.orange.shade200),
+              border: Border.all(color: forestGreen[200]!),
             ),
             child: Row(
               children: [
-                Icon(Icons.settings, color: Colors.orange.shade700, size: 32),
+                Icon(Icons.settings, color: forestGreen[700], size: 32),
                 SizedBox(width: 12),
                 Expanded(
                   child: Text(
@@ -748,7 +749,7 @@ class _RequestFormPageState extends State<RequestFormPage> {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: Colors.orange.shade700,
+                      color: forestGreen[700],
                     ),
                   ),
                 ),
@@ -952,16 +953,16 @@ class _RequestFormPageState extends State<RequestFormPage> {
             padding: EdgeInsets.all(16),
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [Colors.purple.shade50, Colors.white],
+                colors: [forestGreen[50]!, Colors.white],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.purple.shade200),
+              border: Border.all(color: forestGreen[200]!),
             ),
             child: Row(
               children: [
-                Icon(Icons.camera_alt, color: Colors.purple.shade700, size: 32),
+                Icon(Icons.camera_alt, color: forestGreen[700], size: 32),
                 SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -972,14 +973,14 @@ class _RequestFormPageState extends State<RequestFormPage> {
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
-                          color: Colors.purple.shade700,
+                          color: forestGreen[700],
                         ),
                       ),
                       Text(
                         'Photos help volunteers understand the task better',
                         style: TextStyle(
                           fontSize: 12,
-                          color: Colors.purple.shade600,
+                          color: forestGreen[600]!,
                         ),
                       ),
                     ],

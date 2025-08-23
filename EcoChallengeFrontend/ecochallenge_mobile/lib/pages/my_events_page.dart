@@ -1,3 +1,4 @@
+import 'package:ecochallenge_mobile/layouts/constants.dart';
 import 'package:ecochallenge_mobile/pages/event_management_page.dart';
 import 'package:ecochallenge_mobile/pages/my_event_participations_page.dart';
 import 'package:flutter/material.dart';
@@ -203,7 +204,8 @@ class _MyEventsScreenState extends State<MyEventsScreen> {
             fontWeight: FontWeight.bold,
           ),
         ),
-        backgroundColor: Colors.orange[400],
+        centerTitle: true,
+        backgroundColor: goldenBrown,
         elevation: 0,
         actions: [
           IconButton(
@@ -357,7 +359,7 @@ class _MyEventsScreenState extends State<MyEventsScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.orange[400] : Colors.grey[200],
+          color: isSelected ? forestGreen[400] : Colors.grey[200],
           borderRadius: BorderRadius.circular(15),
         ),
         child: Text(
@@ -669,7 +671,7 @@ class EnhancedEventCard extends StatelessWidget {
                                 ? Colors.grey
                                 : (event.adminApproved 
                                     ? Colors.grey 
-                                    : Colors.green),
+                                    : forestGreen),
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),

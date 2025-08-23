@@ -1,3 +1,4 @@
+import 'package:ecochallenge_mobile/layouts/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/request.dart';
@@ -297,7 +298,8 @@ class _RequestsTrackingPageState extends State<RequestsTrackingPage> {
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
         title: Text('Requests', style: TextStyle(color: Colors.white)),
-        backgroundColor: Colors.orange,
+        backgroundColor: goldenBrown,
+        centerTitle: true,
         elevation: 0,
         actions: [
           // Button to navigate to My Request Participation page
@@ -361,7 +363,7 @@ class _RequestsTrackingPageState extends State<RequestsTrackingPage> {
                               icon: Icon(Icons.eco),
                               label: Text('View My Participations'),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.green,
+                                backgroundColor: forestGreen,
                                 foregroundColor: Colors.white,
                                 padding: EdgeInsets.symmetric(vertical: 12),
                                 shape: RoundedRectangleBorder(

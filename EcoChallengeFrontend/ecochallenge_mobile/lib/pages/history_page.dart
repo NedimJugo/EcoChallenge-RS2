@@ -1,3 +1,4 @@
+import 'package:ecochallenge_mobile/layouts/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -53,7 +54,7 @@ class _HistoryPageState extends State<HistoryPage> {
   bool _isLoading = true;
   List<HistoryItem> _allHistoryItems = [];
   List<HistoryItem> _filteredHistoryItems = [];
-  
+
   // Pagination
   int _currentPage = 1;
   final int _itemsPerPage = 10;
@@ -79,7 +80,7 @@ class _HistoryPageState extends State<HistoryPage> {
 
   Future<void> _loadHistoryData() async {
     if (!mounted) return;
-    
+
     setState(() {
       _isLoading = true;
       if (_showDebugInfo) _debugInfo = "Starting to load history data...\n";
@@ -88,7 +89,7 @@ class _HistoryPageState extends State<HistoryPage> {
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final currentUserId = authProvider.currentUserId;
-      
+
       if (currentUserId == null) {
         throw Exception('User not logged in');
       }
@@ -100,9 +101,16 @@ class _HistoryPageState extends State<HistoryPage> {
       }
 
       final eventProvider = Provider.of<EventProvider>(context, listen: false);
-      final requestProvider = Provider.of<RequestProvider>(context, listen: false);
-      final participantProvider = Provider.of<EventParticipantProvider>(context, listen: false);
-      final requestParticipationProvider = Provider.of<RequestParticipationProvider>(context, listen: false);
+      final requestProvider = Provider.of<RequestProvider>(
+        context,
+        listen: false,
+      );
+      final participantProvider = Provider.of<EventParticipantProvider>(
+        context,
+        listen: false,
+      );
+      final requestParticipationProvider =
+          Provider.of<RequestParticipationProvider>(context, listen: false);
 
       List<HistoryItem> historyItems = [];
       final now = DateTime.now();
@@ -113,9 +121,11 @@ class _HistoryPageState extends State<HistoryPage> {
           _debugInfo += "Fetching user event participations...\n";
         });
       }
-      
-      final participations = await participantProvider.getUserParticipations(currentUserId);
-      
+
+      final participations = await participantProvider.getUserParticipations(
+        currentUserId,
+      );
+
       if (_showDebugInfo) {
         setState(() {
           _debugInfo += "Found ${participations.length} event participations\n";
@@ -129,10 +139,9 @@ class _HistoryPageState extends State<HistoryPage> {
         });
       }
 
-      final allEventsResult = await eventProvider.get(filter: {
-        'retrieveAll': true,
-        'pageSize': 1000,
-      });
+      final allEventsResult = await eventProvider.get(
+        filter: {'retrieveAll': true, 'pageSize': 1000},
+      );
 
       final allEvents = allEventsResult.items ?? [];
       if (_showDebugInfo) {
@@ -153,30 +162,34 @@ class _HistoryPageState extends State<HistoryPage> {
 
           if (_showDebugInfo) {
             setState(() {
-              _debugInfo += "Participated Event ${matchingEvent.id}: '${matchingEvent.title}' - DateTime: $eventDateTime\n";
+              _debugInfo +=
+                  "Participated Event ${matchingEvent.id}: '${matchingEvent.title}' - DateTime: $eventDateTime\n";
             });
           }
 
           // Only include events that have passed (date/time is before now)
           if (eventDateTime != null && eventDateTime.isBefore(now)) {
-            historyItems.add(HistoryItem(
-              id: 'event_participation_${matchingEvent.id}',
-              name: matchingEvent.title ?? 'Unnamed Event',
-              date: eventDateTime,
-              eventDateTime: eventDateTime,
-              isParticipant: true,
-              isRequest: false,
-              isRequestParticipation: false,
-              isCreatedByUser: false,
-              status: 'Participated',
-              statusId: matchingEvent.statusId,
-              description: matchingEvent.description,
-            ));
+            historyItems.add(
+              HistoryItem(
+                id: 'event_participation_${matchingEvent.id}',
+                name: matchingEvent.title ?? 'Unnamed Event',
+                date: eventDateTime,
+                eventDateTime: eventDateTime,
+                isParticipant: true,
+                isRequest: false,
+                isRequestParticipation: false,
+                isCreatedByUser: false,
+                status: 'Participated',
+                statusId: matchingEvent.statusId,
+                description: matchingEvent.description,
+              ),
+            );
           }
         } catch (e) {
           if (_showDebugInfo) {
             setState(() {
-              _debugInfo += "Could not find event with ID: ${participation.eventId} - Error: $e\n";
+              _debugInfo +=
+                  "Could not find event with ID: ${participation.eventId} - Error: $e\n";
             });
           }
         }
@@ -189,16 +202,19 @@ class _HistoryPageState extends State<HistoryPage> {
         });
       }
 
-      final userCreatedEventsResult = await eventProvider.get(filter: {
-        'createdBy': currentUserId,
-        'retrieveAll': true,
-        'pageSize': 1000,
-      });
+      final userCreatedEventsResult = await eventProvider.get(
+        filter: {
+          'createdBy': currentUserId,
+          'retrieveAll': true,
+          'pageSize': 1000,
+        },
+      );
 
       final userCreatedEvents = userCreatedEventsResult.items ?? [];
       if (_showDebugInfo) {
         setState(() {
-          _debugInfo += "Found ${userCreatedEvents.length} user-created events\n";
+          _debugInfo +=
+              "Found ${userCreatedEvents.length} user-created events\n";
         });
       }
 
@@ -208,34 +224,39 @@ class _HistoryPageState extends State<HistoryPage> {
 
         if (_showDebugInfo) {
           setState(() {
-            _debugInfo += "Created Event ${event.id}: '${event.title}' - DateTime: $eventDateTime\n";
+            _debugInfo +=
+                "Created Event ${event.id}: '${event.title}' - DateTime: $eventDateTime\n";
           });
         }
 
         // Include events that have passed (date/time is before now)
         if (eventDateTime != null && eventDateTime.isBefore(now)) {
           // Check if this event is already in history items (from participation)
-          bool alreadyIncluded = historyItems.any((item) => 
-            item.id == 'event_participation_${event.id}');
-          
+          bool alreadyIncluded = historyItems.any(
+            (item) => item.id == 'event_participation_${event.id}',
+          );
+
           if (!alreadyIncluded) {
-            historyItems.add(HistoryItem(
-              id: 'event_created_${event.id}',
-              name: event.title ?? 'Unnamed Event',
-              date: eventDateTime,
-              eventDateTime: eventDateTime,
-              isParticipant: false,
-              isRequest: false,
-              isRequestParticipation: false,
-              isCreatedByUser: true,
-              status: 'Created',
-              statusId: event.statusId,
-              description: event.description,
-            ));
+            historyItems.add(
+              HistoryItem(
+                id: 'event_created_${event.id}',
+                name: event.title ?? 'Unnamed Event',
+                date: eventDateTime,
+                eventDateTime: eventDateTime,
+                isParticipant: false,
+                isRequest: false,
+                isRequestParticipation: false,
+                isCreatedByUser: true,
+                status: 'Created',
+                statusId: event.statusId,
+                description: event.description,
+              ),
+            );
           } else {
             // Update the existing item to show both created and participated
-            final existingIndex = historyItems.indexWhere((item) => 
-              item.id == 'event_participation_${event.id}');
+            final existingIndex = historyItems.indexWhere(
+              (item) => item.id == 'event_participation_${event.id}',
+            );
             if (existingIndex != -1) {
               final existingItem = historyItems[existingIndex];
               historyItems[existingIndex] = HistoryItem(
@@ -269,59 +290,63 @@ class _HistoryPageState extends State<HistoryPage> {
         pageSize: 1000,
       );
 
-      final requestParticipationsResult = await requestParticipationProvider.get(
-        filter: requestParticipationSearchObject.toJson()
-      );
+      final requestParticipationsResult = await requestParticipationProvider
+          .get(filter: requestParticipationSearchObject.toJson());
 
       if (requestParticipationsResult.items != null) {
         if (_showDebugInfo) {
           setState(() {
-            _debugInfo += "Found ${requestParticipationsResult.items!.length} request participations\n";
+            _debugInfo +=
+                "Found ${requestParticipationsResult.items!.length} request participations\n";
           });
         }
 
         // Get all requests to get details
-        final allRequestsResult = await requestProvider.get(filter: {
-          'retrieveAll': true,
-          'pageSize': 1000,
-        });
+        final allRequestsResult = await requestProvider.get(
+          filter: {'retrieveAll': true, 'pageSize': 1000},
+        );
         final allRequests = allRequestsResult.items ?? [];
 
         for (final requestParticipation in requestParticipationsResult.items!) {
           if (_showDebugInfo) {
             setState(() {
-              _debugInfo += "Request Participation ${requestParticipation.id}: Status: ${requestParticipation.status.displayName}\n";
+              _debugInfo +=
+                  "Request Participation ${requestParticipation.id}: Status: ${requestParticipation.status.displayName}\n";
             });
           }
 
           // Only include approved or rejected participations
-          if (requestParticipation.status == ParticipationStatus.approved || 
+          if (requestParticipation.status == ParticipationStatus.approved ||
               requestParticipation.status == ParticipationStatus.rejected) {
-            
             try {
               final matchingRequest = allRequests.firstWhere(
                 (request) => request.id == requestParticipation.requestId,
               );
 
-              historyItems.add(HistoryItem(
-                id: 'request_participation_${requestParticipation.id}',
-                name: matchingRequest.title ?? 'Unnamed Request',
-                date: requestParticipation.approvedAt ?? requestParticipation.submittedAt,
-                isParticipant: true,
-                isRequest: false,
-                isRequestParticipation: true,
-                isCreatedByUser: false,
-                status: requestParticipation.status.displayName,
-                statusId: requestParticipation.status.index,
-                description: matchingRequest.description,
-                rewardMoney: requestParticipation.rewardMoney,
-                rewardPoints: requestParticipation.rewardPoints,
-                rejectionReason: requestParticipation.rejectionReason,
-              ));
+              historyItems.add(
+                HistoryItem(
+                  id: 'request_participation_${requestParticipation.id}',
+                  name: matchingRequest.title ?? 'Unnamed Request',
+                  date:
+                      requestParticipation.approvedAt ??
+                      requestParticipation.submittedAt,
+                  isParticipant: true,
+                  isRequest: false,
+                  isRequestParticipation: true,
+                  isCreatedByUser: false,
+                  status: requestParticipation.status.displayName,
+                  statusId: requestParticipation.status.index,
+                  description: matchingRequest.description,
+                  rewardMoney: requestParticipation.rewardMoney,
+                  rewardPoints: requestParticipation.rewardPoints,
+                  rejectionReason: requestParticipation.rejectionReason,
+                ),
+              );
             } catch (e) {
               if (_showDebugInfo) {
                 setState(() {
-                  _debugInfo += "Could not find request with ID: ${requestParticipation.requestId} - Error: $e\n";
+                  _debugInfo +=
+                      "Could not find request with ID: ${requestParticipation.requestId} - Error: $e\n";
                 });
               }
             }
@@ -336,57 +361,68 @@ class _HistoryPageState extends State<HistoryPage> {
         });
       }
 
-      final userCreatedRequestsResult = await requestProvider.get(filter: {
-        'createdBy': currentUserId,
-        'retrieveAll': true,
-        'pageSize': 1000,
-      });
+      final userCreatedRequestsResult = await requestProvider.get(
+        filter: {
+          'createdBy': currentUserId,
+          'retrieveAll': true,
+          'pageSize': 1000,
+        },
+      );
 
       final userCreatedRequests = userCreatedRequestsResult.items ?? [];
       if (_showDebugInfo) {
         setState(() {
-          _debugInfo += "Found ${userCreatedRequests.length} user-created requests\n";
+          _debugInfo +=
+              "Found ${userCreatedRequests.length} user-created requests\n";
         });
       }
 
       // For each user-created request, get participations that are approved/rejected
       for (final request in userCreatedRequests) {
-        final requestParticipationSearchForRequest = RequestParticipationSearchObject(
-          requestId: request.id,
-          retrieveAll: true,
-          pageSize: 1000,
-        );
+        final requestParticipationSearchForRequest =
+            RequestParticipationSearchObject(
+              requestId: request.id,
+              retrieveAll: true,
+              pageSize: 1000,
+            );
 
         try {
-          final participationsForRequest = await requestParticipationProvider.get(
-            filter: requestParticipationSearchForRequest.toJson()
-          );
+          final participationsForRequest = await requestParticipationProvider
+              .get(filter: requestParticipationSearchForRequest.toJson());
 
           if (participationsForRequest.items != null) {
-            final completedParticipations = participationsForRequest.items!.where(
-              (p) => p.status == ParticipationStatus.approved || p.status == ParticipationStatus.rejected
-            ).toList();
+            final completedParticipations = participationsForRequest.items!
+                .where(
+                  (p) =>
+                      p.status == ParticipationStatus.approved ||
+                      p.status == ParticipationStatus.rejected,
+                )
+                .toList();
 
             if (completedParticipations.isNotEmpty) {
               // Add one item representing the request with completed participations
-              historyItems.add(HistoryItem(
-                id: 'request_created_${request.id}',
-                name: request.title ?? 'Unnamed Request',
-                date: request.createdAt,
-                isParticipant: false,
-                isRequest: true,
-                isRequestParticipation: false,
-                isCreatedByUser: true,
-                status: 'Request Created (${completedParticipations.length} responses)',
-                statusId: request.statusId,
-                description: request.description,
-              ));
+              historyItems.add(
+                HistoryItem(
+                  id: 'request_created_${request.id}',
+                  name: request.title ?? 'Unnamed Request',
+                  date: request.createdAt,
+                  isParticipant: false,
+                  isRequest: true,
+                  isRequestParticipation: false,
+                  isCreatedByUser: true,
+                  status:
+                      'Request Created (${completedParticipations.length} responses)',
+                  statusId: request.statusId,
+                  description: request.description,
+                ),
+              );
             }
           }
         } catch (e) {
           if (_showDebugInfo) {
             setState(() {
-              _debugInfo += "Error getting participations for request ${request.id}: $e\n";
+              _debugInfo +=
+                  "Error getting participations for request ${request.id}: $e\n";
             });
           }
         }
@@ -398,12 +434,12 @@ class _HistoryPageState extends State<HistoryPage> {
       if (mounted) {
         setState(() {
           _allHistoryItems = historyItems;
-          if (_showDebugInfo) _debugInfo += "Total history items: ${historyItems.length}\n";
+          if (_showDebugInfo)
+            _debugInfo += "Total history items: ${historyItems.length}\n";
           _applyFilters();
           _isLoading = false;
         });
       }
-
     } catch (e) {
       print('Error loading history data: $e');
       if (mounted) {
@@ -411,7 +447,7 @@ class _HistoryPageState extends State<HistoryPage> {
           _isLoading = false;
           if (_showDebugInfo) _debugInfo += "ERROR: $e\n";
         });
-        
+
         _showErrorSnackBar('Error loading history: $e');
       }
     }
@@ -420,7 +456,7 @@ class _HistoryPageState extends State<HistoryPage> {
   // Helper method to get event date and time
   DateTime? _getEventDateTime(dynamic event) {
     if (event.eventDate == null) return null;
-    
+
     if (event.eventTime != null) {
       // Combine date and time
       return _combineDateTime(event.eventDate!, event.eventTime!);
@@ -430,7 +466,9 @@ class _HistoryPageState extends State<HistoryPage> {
         event.eventDate!.year,
         event.eventDate!.month,
         event.eventDate!.day,
-        23, 59, 59
+        23,
+        59,
+        59,
       );
     }
   }
@@ -439,14 +477,17 @@ class _HistoryPageState extends State<HistoryPage> {
   DateTime? _combineDateTime(DateTime date, String timeString) {
     try {
       // Parse time string (assuming format like "14:30" or "2:30 PM")
-      final timeFormat = RegExp(r'^(\d{1,2}):(\d{2})(?:\s*(AM|PM))?$', caseSensitive: false);
+      final timeFormat = RegExp(
+        r'^(\d{1,2}):(\d{2})(?:\s*(AM|PM))?$',
+        caseSensitive: false,
+      );
       final match = timeFormat.firstMatch(timeString.trim());
-      
+
       if (match != null) {
         int hour = int.parse(match.group(1)!);
         int minute = int.parse(match.group(2)!);
         String? period = match.group(3)?.toUpperCase();
-        
+
         // Handle 12-hour format
         if (period != null) {
           if (period == 'PM' && hour != 12) {
@@ -455,10 +496,10 @@ class _HistoryPageState extends State<HistoryPage> {
             hour = 0;
           }
         }
-        
+
         return DateTime(date.year, date.month, date.day, hour, minute);
       }
-      
+
       // Try alternative parsing with DateFormat
       final timeFormatter = DateFormat.Hm(); // HH:mm format
       final parsedTime = timeFormatter.parse(timeString);
@@ -488,13 +529,17 @@ class _HistoryPageState extends State<HistoryPage> {
     // Apply type filter
     switch (_filterType) {
       case 'events':
-        filtered = filtered.where((item) => !item.isRequest && !item.isRequestParticipation).toList();
+        filtered = filtered
+            .where((item) => !item.isRequest && !item.isRequestParticipation)
+            .toList();
         break;
       case 'requests':
         filtered = filtered.where((item) => item.isRequest).toList();
         break;
       case 'participations':
-        filtered = filtered.where((item) => item.isRequestParticipation).toList();
+        filtered = filtered
+            .where((item) => item.isRequestParticipation)
+            .toList();
         break;
       // 'all' shows everything
     }
@@ -510,14 +555,16 @@ class _HistoryPageState extends State<HistoryPage> {
   List<HistoryItem> _getCurrentPageItems() {
     final startIndex = (_currentPage - 1) * _itemsPerPage;
     final endIndex = startIndex + _itemsPerPage;
-    
+
     if (startIndex >= _filteredHistoryItems.length) {
       return [];
     }
-    
+
     return _filteredHistoryItems.sublist(
       startIndex,
-      endIndex > _filteredHistoryItems.length ? _filteredHistoryItems.length : endIndex,
+      endIndex > _filteredHistoryItems.length
+          ? _filteredHistoryItems.length
+          : endIndex,
     );
   }
 
@@ -528,7 +575,7 @@ class _HistoryPageState extends State<HistoryPage> {
       firstDate: DateTime(2020),
       lastDate: DateTime.now(),
     );
-    
+
     if (picked != null && mounted) {
       setState(() {
         _selectedDate = picked;
@@ -569,12 +616,9 @@ class _HistoryPageState extends State<HistoryPage> {
       appBar: AppBar(
         title: Text(
           'History',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
-        backgroundColor: Color(0xFFD2691E),
+        backgroundColor: goldenBrown,
         elevation: 0,
         centerTitle: true,
         actions: [
@@ -597,7 +641,10 @@ class _HistoryPageState extends State<HistoryPage> {
                       child: SingleChildScrollView(
                         child: Text(
                           _debugInfo,
-                          style: TextStyle(fontFamily: 'monospace', fontSize: 12),
+                          style: TextStyle(
+                            fontFamily: 'monospace',
+                            fontSize: 12,
+                          ),
                         ),
                       ),
                     ),
@@ -634,7 +681,7 @@ class _HistoryPageState extends State<HistoryPage> {
                     ),
                   ),
                   SizedBox(height: 12),
-                  
+
                   // Date filter
                   Row(
                     children: [
@@ -664,15 +711,18 @@ class _HistoryPageState extends State<HistoryPage> {
                                     onPressed: _clearDateFilter,
                                   )
                                 : Icon(Icons.calendar_today),
-                            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                            contentPadding: EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 16,
+                            ),
                           ),
                         ),
                       ),
                     ],
                   ),
-                  
+
                   SizedBox(height: 12),
-                  
+
                   // Type filter
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
@@ -691,30 +741,34 @@ class _HistoryPageState extends State<HistoryPage> {
                 ],
               ),
             ),
-            
+
             // Content
             Expanded(
               child: _isLoading
-                  ? Center(child: CircularProgressIndicator(color: Color(0xFFD2691E)))
+                  ? Center(
+                      child: CircularProgressIndicator(
+                        color: Color(0xFFD2691E),
+                      ),
+                    )
                   : _filteredHistoryItems.isEmpty
-                      ? _buildEmptyState()
-                      : Column(
-                          children: [
-                            Expanded(
-                              child: ListView.builder(
-                                padding: EdgeInsets.all(16),
-                                itemCount: _getCurrentPageItems().length,
-                                itemBuilder: (context, index) {
-                                  final item = _getCurrentPageItems()[index];
-                                  return _buildHistoryCard(item);
-                                },
-                              ),
-                            ),
-                            
-                            // Pagination
-                            if (_totalPages > 1) _buildPagination(),
-                          ],
+                  ? _buildEmptyState()
+                  : Column(
+                      children: [
+                        Expanded(
+                          child: ListView.builder(
+                            padding: EdgeInsets.all(16),
+                            itemCount: _getCurrentPageItems().length,
+                            itemBuilder: (context, index) {
+                              final item = _getCurrentPageItems()[index];
+                              return _buildHistoryCard(item);
+                            },
+                          ),
                         ),
+
+                        // Pagination
+                        if (_totalPages > 1) _buildPagination(),
+                      ],
+                    ),
             ),
           ],
         ),
@@ -734,10 +788,10 @@ class _HistoryPageState extends State<HistoryPage> {
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? Color(0xFFD2691E) : Colors.white,
+          color: isSelected ? forestGreen : Colors.white,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? Color(0xFFD2691E) : Colors.grey[300]!,
+            color: isSelected ? forestGreen : Colors.grey[300]!,
           ),
         ),
         child: Text(
@@ -772,11 +826,7 @@ class _HistoryPageState extends State<HistoryPage> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.history,
-            size: 64,
-            color: Colors.grey[400],
-          ),
+          Icon(Icons.history, size: 64, color: Colors.grey[400]),
           SizedBox(height: 16),
           Text(
             message,
@@ -789,10 +839,7 @@ class _HistoryPageState extends State<HistoryPage> {
           SizedBox(height: 8),
           Text(
             'Your completed activities will appear here',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey[500],
-            ),
+            style: TextStyle(fontSize: 14, color: Colors.grey[500]),
           ),
           if (_showDebugInfo) ...[
             SizedBox(height: 16),
@@ -808,7 +855,10 @@ class _HistoryPageState extends State<HistoryPage> {
                       child: SingleChildScrollView(
                         child: Text(
                           _debugInfo,
-                          style: TextStyle(fontFamily: 'monospace', fontSize: 12),
+                          style: TextStyle(
+                            fontFamily: 'monospace',
+                            fontSize: 12,
+                          ),
                         ),
                       ),
                     ),
@@ -869,65 +919,89 @@ class _HistoryPageState extends State<HistoryPage> {
                     size: 24,
                   ),
                 ),
-                
+
                 SizedBox(width: 12),
-                
+
                 // Content
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Expanded(
-                            child: Text(
-                              item.name,
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.grey[800],
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  item.name,
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.grey[800],
+                                  ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                               ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
+                              _buildActivityBadge(item),
+                            ],
                           ),
-                          _buildActivityBadge(item),
                         ],
                       ),
-                      
+
                       SizedBox(height: 8),
-                      
+
                       Row(
                         children: [
-                          Icon(
-                            Icons.calendar_today,
-                            size: 14,
-                            color: Colors.grey[500],
-                          ),
-                          SizedBox(width: 4),
-                          Text(
-                            DateFormat('MMM d, yyyy').format(item.date),
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey[600],
+                          Flexible(
+                            flex: 2,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.calendar_today,
+                                  size: 14,
+                                  color: Colors.grey[500],
+                                ),
+                                SizedBox(width: 4),
+                                Flexible(
+                                  child: Text(
+                                    DateFormat('MMM d, yyyy').format(item.date),
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.grey[600],
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          
-                          Spacer(),
-                          
+
+                          SizedBox(width: 8),
+
                           // Status Badge
-                          Container(
-                            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: _getStatusColor(item.status),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                                                          child: Text(
-                              item.status,
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w500,
+                          Flexible(
+                            flex: 1,
+                            child: Container(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 3,
+                              ),
+                              decoration: BoxDecoration(
+                                color: _getStatusColor(item.status),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Text(
+                                item.status,
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                textAlign: TextAlign.center,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                           ),
@@ -938,7 +1012,7 @@ class _HistoryPageState extends State<HistoryPage> {
                 ),
               ],
             ),
-            
+
             // Additional info for request participations
             if (item.isRequestParticipation) ...[
               SizedBox(height: 12),
@@ -954,39 +1028,53 @@ class _HistoryPageState extends State<HistoryPage> {
                     if (item.rewardMoney != null && item.rewardMoney! > 0) ...[
                       Row(
                         children: [
-                          Icon(Icons.attach_money, size: 16, color: Colors.green),
+                          Icon(
+                            Icons.attach_money,
+                            size: 16,
+                            color: Colors.green,
+                          ),
                           SizedBox(width: 4),
-                          Text(
-                            'Reward: \${item.rewardMoney!.toStringAsFixed(2)}',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.green[700],
+                          Expanded(
+                            child: Text(
+                              'Reward: ${item.rewardMoney!.toStringAsFixed(2)} KM',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.green[700],
+                              ),
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         ],
                       ),
                     ],
-                    if (item.rewardPoints != null && item.rewardPoints! > 0) ...[
-                      if (item.rewardMoney != null && item.rewardMoney! > 0) SizedBox(height: 4),
+                    if (item.rewardPoints != null &&
+                        item.rewardPoints! > 0) ...[
+                      if (item.rewardMoney != null && item.rewardMoney! > 0)
+                        SizedBox(height: 4),
                       Row(
                         children: [
                           Icon(Icons.stars, size: 16, color: Colors.orange),
                           SizedBox(width: 4),
-                          Text(
-                            'Points: ${item.rewardPoints}',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.orange[700],
+                          Expanded(
+                            child: Text(
+                              'Points: ${item.rewardPoints}',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.orange[700],
+                              ),
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         ],
                       ),
                     ],
-                    if (item.rejectionReason != null && item.rejectionReason!.isNotEmpty) ...[
-                      if ((item.rewardMoney != null && item.rewardMoney! > 0) || 
-                          (item.rewardPoints != null && item.rewardPoints! > 0)) SizedBox(height: 8),
+                    if (item.rejectionReason != null &&
+                        item.rejectionReason!.isNotEmpty) ...[
+                      if ((item.rewardMoney != null && item.rewardMoney! > 0) ||
+                          (item.rewardPoints != null && item.rewardPoints! > 0))
+                        SizedBox(height: 8),
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -1008,16 +1096,13 @@ class _HistoryPageState extends State<HistoryPage> {
                 ),
               ),
             ],
-            
+
             // Description (if available)
             if (item.description != null && item.description!.isNotEmpty) ...[
               SizedBox(height: 12),
               Text(
                 item.description!,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey[600],
-                ),
+                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                 maxLines: 3,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -1037,11 +1122,7 @@ class _HistoryPageState extends State<HistoryPage> {
           color: Color(0xFFE8F5E8),
           borderRadius: BorderRadius.circular(12),
         ),
-        child: Icon(
-          Icons.task_alt,
-          size: 16,
-          color: Color(0xFF4CAF50),
-        ),
+        child: Icon(Icons.task_alt, size: 16, color: Color(0xFF4CAF50)),
       );
     } else if (item.isRequest && item.isCreatedByUser) {
       return Container(
@@ -1051,11 +1132,7 @@ class _HistoryPageState extends State<HistoryPage> {
           color: Color(0xFFFFF3E0),
           borderRadius: BorderRadius.circular(12),
         ),
-        child: Icon(
-          Icons.create,
-          size: 16,
-          color: Color(0xFFFF9800),
-        ),
+        child: Icon(Icons.create, size: 16, color: Color(0xFFFF9800)),
       );
     } else if (item.isParticipant && item.isCreatedByUser) {
       return Container(
@@ -1065,11 +1142,7 @@ class _HistoryPageState extends State<HistoryPage> {
           color: Color(0xFFE1F5FE),
           borderRadius: BorderRadius.circular(12),
         ),
-        child: Icon(
-          Icons.group_work,
-          size: 16,
-          color: Color(0xFF0277BD),
-        ),
+        child: Icon(Icons.group_work, size: 16, color: Color(0xFF0277BD)),
       );
     } else if (item.isParticipant) {
       return Container(
@@ -1079,11 +1152,7 @@ class _HistoryPageState extends State<HistoryPage> {
           color: Color(0xFFE3F2FD),
           borderRadius: BorderRadius.circular(12),
         ),
-        child: Icon(
-          Icons.people,
-          size: 16,
-          color: Color(0xFF1976D2),
-        ),
+        child: Icon(Icons.people, size: 16, color: Color(0xFF1976D2)),
       );
     } else if (item.isCreatedByUser) {
       return Container(
@@ -1093,11 +1162,7 @@ class _HistoryPageState extends State<HistoryPage> {
           color: Color(0xFFFFF3E0),
           borderRadius: BorderRadius.circular(12),
         ),
-        child: Icon(
-          Icons.create,
-          size: 16,
-          color: Color(0xFFFF9800),
-        ),
+        child: Icon(Icons.create, size: 16, color: Color(0xFFFF9800)),
       );
     }
     return SizedBox.shrink();
@@ -1105,7 +1170,9 @@ class _HistoryPageState extends State<HistoryPage> {
 
   IconData _getActivityIcon(HistoryItem item) {
     if (item.isRequestParticipation) {
-      return item.status.toLowerCase() == 'approved' ? Icons.check_circle : Icons.cancel;
+      return item.status.toLowerCase() == 'approved'
+          ? Icons.check_circle
+          : Icons.cancel;
     } else if (item.isRequest) {
       return Icons.cleaning_services;
     } else {
@@ -1115,7 +1182,9 @@ class _HistoryPageState extends State<HistoryPage> {
 
   Color _getIconBackgroundColor(HistoryItem item) {
     if (item.isRequestParticipation) {
-      return item.status.toLowerCase() == 'approved' ? Color(0xFFE8F5E8) : Color(0xFFFFEBEE);
+      return item.status.toLowerCase() == 'approved'
+          ? Color(0xFFE8F5E8)
+          : Color(0xFFFFEBEE);
     } else if (item.isRequest) {
       return Color(0xFFE8F5E8);
     } else {
@@ -1125,7 +1194,9 @@ class _HistoryPageState extends State<HistoryPage> {
 
   Color _getIconColor(HistoryItem item) {
     if (item.isRequestParticipation) {
-      return item.status.toLowerCase() == 'approved' ? Color(0xFF4CAF50) : Color(0xFFF44336);
+      return item.status.toLowerCase() == 'approved'
+          ? Color(0xFF4CAF50)
+          : Color(0xFFF44336);
     } else if (item.isRequest) {
       return Color(0xFF4CAF50);
     } else {
@@ -1136,20 +1207,20 @@ class _HistoryPageState extends State<HistoryPage> {
   Color _getStatusColor(String status) {
     switch (status.toLowerCase()) {
       case 'approved':
-        return Color(0xFF4CAF50);
+        return forestGreen;
       case 'rejected':
         return Color(0xFFF44336);
       case 'participated':
         return Color(0xFF2196F3);
       case 'created':
-        return Color(0xFFFF9800);
+        return goldenBrown;
       case 'created & participated':
-        return Color(0xFF9C27B0);
+        return oliveGreen;
       default:
         if (status.contains('responses')) {
-          return Color(0xFF607D8B);
+          return oliveGreen;
         }
-        return Color(0xFF9E9E9E);
+        return oliveGreen;
     }
   }
 
@@ -1158,87 +1229,91 @@ class _HistoryPageState extends State<HistoryPage> {
       padding: EdgeInsets.symmetric(vertical: 16, horizontal: 20),
       decoration: BoxDecoration(
         color: Colors.white,
-        border: Border(
-          top: BorderSide(color: Colors.grey[200]!),
-        ),
+        border: Border(top: BorderSide(color: Colors.grey[200]!)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
             'Page $_currentPage of $_totalPages',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey[600],
-            ),
+            style: TextStyle(fontSize: 14, color: Colors.grey[600]),
           ),
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               // Previous button
               IconButton(
-                onPressed: _currentPage > 1 ? () {
-                  setState(() {
-                    _currentPage--;
-                  });
-                } : null,
+                onPressed: _currentPage > 1
+                    ? () {
+                        setState(() {
+                          _currentPage--;
+                        });
+                      }
+                    : null,
                 icon: Icon(Icons.chevron_left),
                 color: Color(0xFFD2691E),
               ),
-              
+
               // Page numbers (simplified for mobile)
-              ...List.generate(
-                _totalPages > 3 ? 3 : _totalPages,
-                (index) {
-                  int pageNumber;
-                  if (_totalPages <= 3) {
+              ...List.generate(_totalPages > 3 ? 3 : _totalPages, (index) {
+                int pageNumber;
+                if (_totalPages <= 3) {
+                  pageNumber = index + 1;
+                } else {
+                  if (_currentPage <= 2) {
                     pageNumber = index + 1;
+                  } else if (_currentPage >= _totalPages - 1) {
+                    pageNumber = _totalPages - 2 + index;
                   } else {
-                    if (_currentPage <= 2) {
-                      pageNumber = index + 1;
-                    } else if (_currentPage >= _totalPages - 1) {
-                      pageNumber = _totalPages - 2 + index;
-                    } else {
-                      pageNumber = _currentPage - 1 + index;
-                    }
+                    pageNumber = _currentPage - 1 + index;
                   }
-                  
-                  return GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        _currentPage = pageNumber;
-                      });
-                    },
-                    child: Container(
-                      margin: EdgeInsets.symmetric(horizontal: 2),
-                      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: _currentPage == pageNumber ? Color(0xFFD2691E) : Colors.transparent,
-                        border: Border.all(
-                          color: _currentPage == pageNumber ? Color(0xFFD2691E) : Colors.grey[300]!,
-                        ),
-                        borderRadius: BorderRadius.circular(6),
+                }
+
+                return GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _currentPage = pageNumber;
+                    });
+                  },
+                  child: Container(
+                    margin: EdgeInsets.symmetric(horizontal: 2),
+                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: _currentPage == pageNumber
+                          ? forestGreen
+                          : Colors.transparent,
+                      border: Border.all(
+                        color: _currentPage == pageNumber
+                            ? forestGreen
+                            : Colors.grey[300]!,
                       ),
-                      child: Text(
-                        pageNumber.toString(),
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: _currentPage == pageNumber ? Colors.white : Colors.grey[700],
-                          fontWeight: _currentPage == pageNumber ? FontWeight.w600 : FontWeight.normal,
-                        ),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      pageNumber.toString(),
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: _currentPage == pageNumber
+                            ? Colors.white
+                            : Colors.grey[700],
+                        fontWeight: _currentPage == pageNumber
+                            ? FontWeight.w600
+                            : FontWeight.normal,
                       ),
                     ),
-                  );
-                },
-              ),
-              
+                  ),
+                );
+              }),
+
               // Next button
               IconButton(
-                onPressed: _currentPage < _totalPages ? () {
-                  setState(() {
-                    _currentPage++;
-                  });
-                } : null,
+                onPressed: _currentPage < _totalPages
+                    ? () {
+                        setState(() {
+                          _currentPage++;
+                        });
+                      }
+                    : null,
                 icon: Icon(Icons.chevron_right),
                 color: Color(0xFFD2691E),
               ),

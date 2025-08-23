@@ -31,7 +31,7 @@ void main() async {
   
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
-      statusBarColor: darkBackground, // Match your dark header color
+      statusBarColor: goldenBrown, // Match your dark header color
       statusBarIconBrightness: Brightness.light, // Light icons on dark background
       statusBarBrightness: Brightness.dark, // For iOS
     ),
@@ -74,7 +74,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'EcoChallenge App',
       theme: ThemeData(
-        primarySwatch: Colors.green,
+        primarySwatch: goldenBrown,
         inputDecorationTheme: InputDecorationTheme(
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
         ),
