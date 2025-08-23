@@ -56,6 +56,53 @@ class _WasteTypeManagementPageState extends State<WasteTypeManagementPage> {
     }
   }
 
+   Future<void> _deleteWasteType(int id, String name) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Confirm Delete'),
+        content: Text('Are you sure you want to delete the waste type "$name"?\n\nThis action cannot be undone.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      try {
+        await _wasteTypeProvider.delete(id);
+        _showSuccessSnackBar('Waste type deleted successfully');
+        _loadWasteTypes();
+      } catch (e) {
+        String errorMessage = 'You cannot delete this because it is used by existing request';
+
+        // Check for specific error types
+        final errorString = e.toString().toLowerCase();
+        if (errorString.contains('reference constraint') || 
+            errorString.contains('foreign key') ||
+            errorString.contains('being used')) {
+          errorMessage = 'Cannot delete "$name" because it is currently being used by existing users. Please reassign or remove those users first.';
+        } else if (errorString.contains('invalidoperationexception')) {
+          // Extract the custom message from the exception
+          final match = RegExp(r"Cannot delete user type.*").firstMatch(e.toString());
+          if (match != null) {
+            errorMessage = match.group(0) ?? errorMessage;
+          }
+        }
+        
+        _showErrorSnackBar(errorMessage);
+      }
+    }
+  }
+
   void _showErrorSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message), backgroundColor: Colors.red),
@@ -90,36 +137,6 @@ class _WasteTypeManagementPageState extends State<WasteTypeManagementPage> {
     );
   }
 
-  Future<void> _deleteWasteType(int id) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Confirm Delete'),
-        content: const Text('Are you sure you want to delete this waste type?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true) {
-      try {
-        await _wasteTypeProvider.delete(id);
-        _showSuccessSnackBar('Waste type deleted successfully');
-        _loadWasteTypes();
-      } catch (e) {
-        _showErrorSnackBar('Failed to delete waste type: $e');
-      }
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -290,7 +307,7 @@ class _WasteTypeManagementPageState extends State<WasteTypeManagementPage> {
                                               IconButton(
                                                 icon: const Icon(Icons.delete, size: 18),
                                                 color: Colors.red,
-                                                onPressed: () => _deleteWasteType(wasteType.id),
+                                                onPressed: () => _deleteWasteType(wasteType.id, wasteType.name),
                                                 tooltip: 'Delete',
                                                 constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
                                                 padding: EdgeInsets.zero,

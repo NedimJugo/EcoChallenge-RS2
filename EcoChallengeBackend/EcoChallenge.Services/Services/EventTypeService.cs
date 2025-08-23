@@ -17,8 +17,11 @@ namespace EcoChallenge.Services.Services
 {
     public class EventTypeService : BaseCRUDService<EventTypeResponse, EventTypeSearchObject, EventType, EventTypeInsertRequest, EventTypeUpdateRequest>, IEventTypeService
     {
+        private readonly EcoChallengeDbContext _db;
+
         public EventTypeService(EcoChallengeDbContext db, IMapper mapper) : base(db, mapper)
         {
+            _db = db;
         }
 
         protected override IQueryable<EventType> ApplyFilter(IQueryable<EventType> query, EventTypeSearchObject search)
@@ -38,6 +41,19 @@ namespace EcoChallenge.Services.Services
                 .FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
 
             return entity == null ? null : MapToResponse(entity);
+        }
+
+        protected override async Task BeforeDelete(EventType entity, CancellationToken cancellationToken = default)
+        {
+            var hasEventType = await _db.Events.AnyAsync(u => u.EventTypeId == entity.Id, cancellationToken);
+
+
+            if (hasEventType)
+            {
+                throw new InvalidOperationException($"Cannot delete event type '{entity.Name}' because it is being used by one or more events.");
+            }
+
+            await base.BeforeDelete(entity, cancellationToken);
         }
     }
 }

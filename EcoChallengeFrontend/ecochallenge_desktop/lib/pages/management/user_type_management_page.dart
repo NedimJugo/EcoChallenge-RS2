@@ -44,7 +44,11 @@ class _UserTypeManagementPageState extends State<UserTypeManagementPage> {
 
   void _showErrorSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: Colors.red),
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+        duration: const Duration(seconds: 5),
+      ),
     );
   }
 
@@ -54,12 +58,12 @@ class _UserTypeManagementPageState extends State<UserTypeManagementPage> {
     );
   }
 
-  Future<void> _deleteUserType(int id) async {
+  Future<void> _deleteUserType(int id, String name) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Confirm Delete'),
-        content: const Text('Are you sure you want to delete this user type?'),
+        content: Text('Are you sure you want to delete the user type "$name"?\n\nThis action cannot be undone.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -80,7 +84,23 @@ class _UserTypeManagementPageState extends State<UserTypeManagementPage> {
         _showSuccessSnackBar('User type deleted successfully');
         _loadUserTypes();
       } catch (e) {
-        _showErrorSnackBar('Failed to delete user type: $e');
+        String errorMessage = 'You cannot delete this because it is used by existing users';
+
+        // Check for specific error types
+        final errorString = e.toString().toLowerCase();
+        if (errorString.contains('reference constraint') || 
+            errorString.contains('foreign key') ||
+            errorString.contains('being used')) {
+          errorMessage = 'Cannot delete "$name" because it is currently being used by existing users. Please reassign or remove those users first.';
+        } else if (errorString.contains('invalidoperationexception')) {
+          // Extract the custom message from the exception
+          final match = RegExp(r"Cannot delete user type.*").firstMatch(e.toString());
+          if (match != null) {
+            errorMessage = match.group(0) ?? errorMessage;
+          }
+        }
+        
+        _showErrorSnackBar(errorMessage);
       }
     }
   }
@@ -133,102 +153,110 @@ class _UserTypeManagementPageState extends State<UserTypeManagementPage> {
           Expanded(
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
-                : Container(
-                    margin: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey[300]!),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: ScrollConfiguration(
-                      behavior: ScrollConfiguration.of(context).copyWith(
-                        dragDevices: {
-                          PointerDeviceKind.touch,
-                          PointerDeviceKind.mouse,
-                          PointerDeviceKind.trackpad,
-                        },
-                        scrollbars: false, // We're using custom scrollbars
-                      ),
-                      child: RawScrollbar(
-                        controller: _verticalScrollController,
-                        thumbVisibility: true,
-                        thickness: 12,
-                        radius: const Radius.circular(6),
-                        thumbColor: Colors.grey[400],
-                        child: SingleChildScrollView(
-                          controller: _verticalScrollController,
-                          scrollDirection: Axis.vertical,
+                : _userTypes.isEmpty
+                    ? const Center(
+                        child: Text(
+                          'No user types found.\nClick "Add User Type" to create one.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(fontSize: 16, color: Colors.grey),
+                        ),
+                      )
+                    : Container(
+                        margin: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey[300]!),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: ScrollConfiguration(
+                          behavior: ScrollConfiguration.of(context).copyWith(
+                            dragDevices: {
+                              PointerDeviceKind.touch,
+                              PointerDeviceKind.mouse,
+                              PointerDeviceKind.trackpad,
+                            },
+                            scrollbars: false,
+                          ),
                           child: RawScrollbar(
-                            controller: _horizontalScrollController,
+                            controller: _verticalScrollController,
                             thumbVisibility: true,
                             thickness: 12,
                             radius: const Radius.circular(6),
                             thumbColor: Colors.grey[400],
                             child: SingleChildScrollView(
-                              controller: _horizontalScrollController,
-                              scrollDirection: Axis.horizontal,
-                              child: ConstrainedBox(
-                              constraints: BoxConstraints(
-                                minWidth: MediaQuery.of(context).size.width - 16,
-                              ),
-                              child: DataTable(
-                                columnSpacing: 20,
-                                horizontalMargin: 16,
-                                dataRowHeight: 48,
-                                headingRowHeight: 40,
-                                dataTextStyle: const TextStyle(fontSize: 12),
-                                headingTextStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
-                                columns: const [
-                                  DataColumn(label: Text('ID')),
-                                  DataColumn(label: Text('Name')),
-                                  DataColumn(label: Text('Actions')),
-                                ],
-                                rows: _userTypes.map((userType) {
-                                  return DataRow(
-                                    cells: [
-                                      DataCell(Text(userType.id.toString())),
-                                      DataCell(
-                                        SizedBox(
-                                          width: 200,
-                                          child: Text(
-                                            userType.name,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                      ),
-                                      DataCell(
-                                        Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            IconButton(
-                                              icon: const Icon(Icons.edit, size: 18),
-                                              color: Colors.blue,
-                                              onPressed: () => _showUserTypeForm(userType),
-                                              tooltip: 'Edit',
-                                              constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-                                              padding: EdgeInsets.zero,
+                              controller: _verticalScrollController,
+                              scrollDirection: Axis.vertical,
+                              child: RawScrollbar(
+                                controller: _horizontalScrollController,
+                                thumbVisibility: true,
+                                thickness: 12,
+                                radius: const Radius.circular(6),
+                                thumbColor: Colors.grey[400],
+                                child: SingleChildScrollView(
+                                  controller: _horizontalScrollController,
+                                  scrollDirection: Axis.horizontal,
+                                  child: ConstrainedBox(
+                                    constraints: BoxConstraints(
+                                      minWidth: MediaQuery.of(context).size.width - 16,
+                                    ),
+                                    child: DataTable(
+                                      columnSpacing: 20,
+                                      horizontalMargin: 16,
+                                      dataRowHeight: 48,
+                                      headingRowHeight: 40,
+                                      dataTextStyle: const TextStyle(fontSize: 12),
+                                      headingTextStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                                      columns: const [
+                                        DataColumn(label: Text('ID')),
+                                        DataColumn(label: Text('Name')),
+                                        DataColumn(label: Text('Actions')),
+                                      ],
+                                      rows: _userTypes.map((userType) {
+                                        return DataRow(
+                                          cells: [
+                                            DataCell(Text(userType.id.toString())),
+                                            DataCell(
+                                              SizedBox(
+                                                width: 200,
+                                                child: Text(
+                                                  userType.name,
+                                                  overflow: TextOverflow.ellipsis,
+                                                ),
+                                              ),
                                             ),
-                                            IconButton(
-                                              icon: const Icon(Icons.delete, size: 18),
-                                              color: Colors.red,
-                                              onPressed: () => _deleteUserType(userType.id),
-                                              tooltip: 'Delete',
-                                              constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-                                              padding: EdgeInsets.zero,
+                                            DataCell(
+                                              Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  IconButton(
+                                                    icon: const Icon(Icons.edit, size: 18),
+                                                    color: Colors.blue,
+                                                    onPressed: () => _showUserTypeForm(userType),
+                                                    tooltip: 'Edit',
+                                                    constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                                                    padding: EdgeInsets.zero,
+                                                  ),
+                                                  IconButton(
+                                                    icon: const Icon(Icons.delete, size: 18),
+                                                    color: Colors.red,
+                                                    onPressed: () => _deleteUserType(userType.id, userType.name),
+                                                    tooltip: 'Delete',
+                                                    constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                                                    padding: EdgeInsets.zero,
+                                                  ),
+                                                ],
+                                              ),
                                             ),
                                           ],
-                                        ),
-                                      ),
-                                    ],
-                                  );
-                                }                                ).toList(),
+                                        );
+                                      }).toList(),
+                                    ),
+                                  ),
+                                ),
                               ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                  ),
-                  ),
           ),
         ],
       ),

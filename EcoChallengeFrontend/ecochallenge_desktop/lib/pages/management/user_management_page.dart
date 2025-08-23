@@ -461,14 +461,6 @@ class _UserManagementPageState extends State<UserManagementPage> {
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
                                             IconButton(
-                                              icon: const Icon(Icons.edit, size: 18),
-                                              color: Colors.blue,
-                                              onPressed: () => _showUserForm(user),
-                                              tooltip: 'Edit',
-                                              constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-                                              padding: EdgeInsets.zero,
-                                            ),
-                                            IconButton(
                                               icon: Icon(
                                                 user.isActive ? Icons.block : Icons.check_circle,
                                                 size: 18,
@@ -476,14 +468,6 @@ class _UserManagementPageState extends State<UserManagementPage> {
                                               color: user.isActive ? Colors.orange : Colors.green,
                                               onPressed: () => _toggleUserStatus(user),
                                               tooltip: user.isActive ? 'Deactivate' : 'Activate',
-                                              constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-                                              padding: EdgeInsets.zero,
-                                            ),
-                                            IconButton(
-                                              icon: const Icon(Icons.delete, size: 18),
-                                              color: Colors.red,
-                                              onPressed: () => _deleteUser(user.id),
-                                              tooltip: 'Delete',
                                               constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
                                               padding: EdgeInsets.zero,
                                             ),

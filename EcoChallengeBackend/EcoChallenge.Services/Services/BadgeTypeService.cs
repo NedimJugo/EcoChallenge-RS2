@@ -11,13 +11,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace EcoChallenge.Services.Services
 {
     public class BadgeTypeService : BaseCRUDService<BadgeTypeResponse, BadgeTypeSearchObject, BadgeType, BadgeTypeInsertRequest, BadgeTypeUpdateRequest>, IBadgeTypeService
     {
+        private readonly EcoChallengeDbContext _db;
+
         public BadgeTypeService(EcoChallengeDbContext db, IMapper mapper) : base(db, mapper)
         {
+            _db = db;
         }
 
         protected override IQueryable<BadgeType> ApplyFilter(IQueryable<BadgeType> query, BadgeTypeSearchObject search)
@@ -28,6 +32,19 @@ namespace EcoChallenge.Services.Services
             }
 
             return query;
+        }
+
+        protected override async Task BeforeDelete(BadgeType entity, CancellationToken cancellationToken = default)
+        {
+            var hasBadgeType = await _db.Badges.AnyAsync(u => u.BadgeTypeId == entity.Id, cancellationToken);
+
+
+            if (hasBadgeType)
+            {
+                throw new InvalidOperationException($"Cannot delete badge type '{entity.Name}' because it is being used by one or more badges.");
+            }
+
+            await base.BeforeDelete(entity, cancellationToken);
         }
     }
 }
