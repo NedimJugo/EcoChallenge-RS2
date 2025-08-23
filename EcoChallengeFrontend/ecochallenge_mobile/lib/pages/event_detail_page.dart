@@ -1,3 +1,4 @@
+import 'package:ecochallenge_mobile/layouts/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -304,18 +305,13 @@ class _EventDetailPageState extends State<EventDetailPage>
     return SliverAppBar(
       expandedHeight: 250,
       pinned: true,
-      backgroundColor: _primaryColor,
+      backgroundColor: goldenBrown,
       leading: IconButton(
         icon: const Icon(Icons.arrow_back, color: Colors.white),
         onPressed: () => Navigator.of(context).pop(),
       ),
       flexibleSpace: FlexibleSpaceBar(
-        title: const Text(
-          'Event Details',
-          style: TextStyle(color: Colors.white, shadows: [
-            Shadow(color: Colors.black54, blurRadius: 2)
-          ]),
-        ),
+        
         background: _buildImageCarousel(),
       ),
     );
@@ -422,8 +418,6 @@ class _EventDetailPageState extends State<EventDetailPage>
                     ),
                   ),
                 ),
-                if (const bool.fromEnvironment('dart.vm.product') == false)
-                  _buildDebugIdBadge(),
               ],
             ),
             const SizedBox(height: 16),
@@ -434,23 +428,7 @@ class _EventDetailPageState extends State<EventDetailPage>
     );
   }
 
-  Widget _buildDebugIdBadge() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: Colors.blue[100],
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Text(
-        'ID: ${widget.event.id}',
-        style: TextStyle(
-          fontSize: 12,
-          color: Colors.blue[800],
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-    );
-  }
+
 
   Widget _buildDescriptionSection() {
     return Column(
@@ -673,7 +651,7 @@ class _EventDetailPageState extends State<EventDetailPage>
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              color: _buttonColor,
+              color: forestGreen,
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
@@ -712,14 +690,6 @@ class _EventDetailPageState extends State<EventDetailPage>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Event Details',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: Colors.black87,
-              ),
-            ),
             const SizedBox(height: 12),
             _buildDetailRows(),
           ],
@@ -805,7 +775,7 @@ class _EventDetailPageState extends State<EventDetailPage>
   Color _getButtonColor() {
     if (_isAlreadyRegistered) return Colors.grey;
     if (_isSigningUp) return Colors.grey[400]!;
-    return _buttonColor;
+    return forestGreen;
   }
 
   Widget _buildButtonChild() {

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:ecochallenge_mobile/layouts/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
@@ -627,8 +628,6 @@ class _UserProfilePageState extends State<UserProfilePage>
                               const SizedBox(height: 24),
                               _buildStatsCards(),
                               const SizedBox(height: 24),
-                              _buildBioSection(),
-                              const SizedBox(height: 24),
                               if (canEdit) _buildProfileForm(),
                               if (canEdit) const SizedBox(height: 24),
                               if (_isEditing && canEdit) _buildActionButtons(),
@@ -681,12 +680,12 @@ class _UserProfilePageState extends State<UserProfilePage>
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Colors.orange[300]!, Colors.orange[400]!],
+          colors: [goldenBrown[200]!, goldenBrown[400]!],
         ),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.orange.withOpacity(0.3),
+            color: goldenBrown[300]!.withOpacity(0.3),
             spreadRadius: 1,
             blurRadius: 10,
             offset: const Offset(0, 3),
@@ -839,64 +838,6 @@ class _UserProfilePageState extends State<UserProfilePage>
     );
   }
 
-  Widget _buildBioSection() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            spreadRadius: 1,
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(Icons.info_outline, size: 20, color: Colors.grey),
-              const SizedBox(width: 8),
-              const Text(
-                'Bio',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          if (_isEditing)
-            TextFormField(
-              controller: _bioController,
-              maxLines: 3,
-              decoration: const InputDecoration(
-                hintText: 'Tell us about yourself...',
-                border: OutlineInputBorder(),
-                contentPadding: EdgeInsets.all(12),
-              ),
-            )
-          else
-            Text(
-              _bioController.text.isEmpty 
-                  ? 'Passionate about nature and environmental sustainability. I love organizing cleanup events and inspiring others to make a positive impact on our planet.'
-                  : _bioController.text,
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[600],
-                height: 1.4,
-              ),
-            ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildProfileForm() {
     return Container(
@@ -1215,7 +1156,7 @@ class _UserProfilePageState extends State<UserProfilePage>
           style: TextStyle(fontWeight: FontWeight.w600),
         ),
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.green,
+          backgroundColor: forestGreen,
           foregroundColor: Colors.white,
           padding: const EdgeInsets.symmetric(vertical: 14),
           elevation: 2,

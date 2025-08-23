@@ -1,3 +1,4 @@
+import 'package:ecochallenge_mobile/layouts/constants.dart';
 import 'package:ecochallenge_mobile/models/event_participant.dart';
 import 'package:ecochallenge_mobile/models/request_participation.dart';
 import 'package:ecochallenge_mobile/providers/request_participation_provider.dart';
@@ -230,7 +231,7 @@ List<dynamic> get _filteredItems {
             fontSize: 20,
           ),
         ),
-        backgroundColor: Color(0xFFD4A574),
+        backgroundColor: goldenBrown,
         elevation: 0,
         centerTitle: true,
       ),
@@ -604,10 +605,10 @@ List<dynamic> get _filteredItems {
                           child: Container(
                             padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                             decoration: BoxDecoration(
-                              color: isParticipated ? Colors.grey : Color(0xFF8B4513),
+                              color: isParticipated ? Colors.grey : forestGreen,
                               borderRadius: BorderRadius.circular(20),
                             ),
-                            child: Text(
+                            child: Text(  
                               isParticipated ? 'Joined' : 'Join',
                               style: TextStyle(
                                 color: Colors.white,
@@ -731,7 +732,7 @@ List<dynamic> get _filteredItems {
                       child: Container(
                         padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
-                          color: Color(0xFF8B4513),
+                          color: forestGreen,
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(

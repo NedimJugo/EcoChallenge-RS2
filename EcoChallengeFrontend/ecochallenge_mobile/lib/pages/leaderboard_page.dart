@@ -1,3 +1,4 @@
+import 'package:ecochallenge_mobile/layouts/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:ecochallenge_mobile/models/user.dart';
@@ -101,7 +102,7 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
             color: Colors.white,
           ),
         ),
-        backgroundColor: Colors.green[600],
+        backgroundColor: goldenBrown,
         elevation: 0,
         centerTitle: true,
       ),
@@ -199,17 +200,17 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
     
     switch (rank) {
       case 1:
-        backgroundColor = Colors.green[600]!;
+        backgroundColor = forestGreen[700]!;
         medalColor = Colors.amber;
         medalIcon = Icons.emoji_events;
         break;
       case 2:
-        backgroundColor = Colors.green[500]!;
+        backgroundColor = forestGreen[500]!;
         medalColor = Colors.grey[400]!;
         medalIcon = Icons.emoji_events;
         break;
       case 3:
-        backgroundColor = Colors.green[400]!;
+        backgroundColor = forestGreen[500]!;
         medalColor = Colors.orange[300]!;
         medalIcon = Icons.emoji_events;
         break;
@@ -449,7 +450,7 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                     decoration: BoxDecoration(
-                      color: Colors.green[600],
+                      color: forestGreen,
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: const Text(
@@ -509,7 +510,7 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
             child: ElevatedButton(
               onPressed: _navigateToEvents,
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green[600],
+                backgroundColor: forestGreen,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(

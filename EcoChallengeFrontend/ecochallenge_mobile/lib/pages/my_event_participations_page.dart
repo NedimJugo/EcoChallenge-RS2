@@ -1,3 +1,4 @@
+import 'package:ecochallenge_mobile/layouts/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:ecochallenge_mobile/models/event.dart';
@@ -239,7 +240,8 @@ class _EventParticipationsScreenState extends State<EventParticipationsScreen> {
             fontWeight: FontWeight.bold,
           ),
         ),
-        backgroundColor: Colors.blue[600],
+        backgroundColor: goldenBrown,
+        centerTitle: true,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
@@ -298,13 +300,13 @@ class _EventParticipationsScreenState extends State<EventParticipationsScreen> {
                         vertical: 6,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.blue[50],
+                        color: forestGreen,
                         borderRadius: BorderRadius.circular(15),
                       ),
                       child: Text(
                         '${_filteredParticipations.length} events',
                         style: TextStyle(
-                          color: Colors.blue[700],
+                          color: Colors.white,
                           fontWeight: FontWeight.w500,
                           fontSize: 12,
                         ),
@@ -386,7 +388,7 @@ class _EventParticipationsScreenState extends State<EventParticipationsScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.blue[600] : Colors.grey[200],
+          color: isSelected ? forestGreen : Colors.grey[200],
           borderRadius: BorderRadius.circular(15),
         ),
         child: Text(
@@ -465,7 +467,7 @@ class ParticipationEventCard extends StatelessWidget {
   Color get statusColor {
     switch (participationData.participation.status) {
       case AttendanceStatus.registered:
-        return Colors.blue;
+        return forestGreen;
       case AttendanceStatus.attended:
         return Colors.orange;
       case AttendanceStatus.completed:
@@ -748,8 +750,8 @@ class ParticipationEventCard extends StatelessWidget {
                           icon: const Icon(Icons.visibility, size: 14),
                           label: const Text('View Details'),
                           style: OutlinedButton.styleFrom(
-                            foregroundColor: Colors.blue[600],
-                            side: BorderSide(color: Colors.blue[600]!),
+                            foregroundColor: forestGreen,
+                            side: BorderSide(color: forestGreen),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
                             ),
@@ -838,7 +840,7 @@ class EventDetailsModal extends StatelessWidget {
   Color get statusColor {
     switch (participationData.participation.status) {
       case AttendanceStatus.registered:
-        return Colors.blue;
+        return forestGreen;
       case AttendanceStatus.attended:
         return Colors.orange;
       case AttendanceStatus.completed:

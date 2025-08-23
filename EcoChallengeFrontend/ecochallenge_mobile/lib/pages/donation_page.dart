@@ -159,8 +159,13 @@ class _DonationPageState extends State<DonationPage> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text('Make a Donation'),
-        backgroundColor: darkBackground,
+        backgroundColor: goldenBrown,
         foregroundColor: Colors.white,
+        centerTitle: true,
+        titleTextStyle: const TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+        ),
         elevation: 0,
       ),
       body: SingleChildScrollView(

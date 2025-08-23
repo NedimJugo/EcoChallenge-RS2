@@ -1,3 +1,4 @@
+import 'package:ecochallenge_mobile/layouts/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/request.dart';
@@ -219,7 +220,7 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
             expandedHeight: 300,
             floating: false,
             pinned: true,
-            backgroundColor: Color(0xFF4CAF50),
+            backgroundColor: goldenBrown,
             leading: IconButton(
               icon: Icon(Icons.arrow_back, color: Colors.white),
               onPressed: () => Navigator.pop(context),
@@ -713,7 +714,7 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
         child: ElevatedButton(
           onPressed: _isSigningUp ? null : _navigateToProofSubmission,
           style: ElevatedButton.styleFrom(
-            backgroundColor: Color(0xFF4CAF50),
+            backgroundColor: forestGreen,
             foregroundColor: Colors.white,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),

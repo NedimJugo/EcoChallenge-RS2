@@ -1,3 +1,4 @@
+import 'package:ecochallenge_mobile/layouts/constants.dart';
 import 'package:ecochallenge_mobile/widgets/bottom_navigation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -280,7 +281,7 @@ class _CleanupMapPageState extends State<CleanupMapPage> {
                     _navigateToRequestDetail();
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFD4A574), // Changed color to match app theme
+                    backgroundColor: forestGreen, // Changed color to match app theme
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
@@ -426,7 +427,7 @@ class _CleanupMapPageState extends State<CleanupMapPage> {
             fontWeight: FontWeight.bold,
           ),
         ),
-        backgroundColor: const Color(0xFFD4A574),
+        backgroundColor: goldenBrown,
         elevation: 0,
         centerTitle: true,
         actions: [

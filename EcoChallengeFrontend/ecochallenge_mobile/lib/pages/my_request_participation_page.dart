@@ -1,3 +1,4 @@
+import 'package:ecochallenge_mobile/layouts/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/request_participation.dart';
@@ -138,7 +139,8 @@ class _MyRequestParticipationPageState extends State<MyRequestParticipationPage>
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
         title: Text('My Participations', style: TextStyle(color: Colors.white)),
-        backgroundColor: Colors.green,
+        backgroundColor: goldenBrown,
+        centerTitle: true,
         elevation: 0,
         iconTheme: IconThemeData(color: Colors.white),
       ),
@@ -228,14 +230,14 @@ class _MyRequestParticipationPageState extends State<MyRequestParticipationPage>
                                 padding: EdgeInsets.all(20),
                                 decoration: BoxDecoration(
                                   gradient: LinearGradient(
-                                    colors: [Colors.green[400]!, Colors.green[600]!],
+                                    colors: [forestGreen[500]!, forestGreen[600]!],
                                     begin: Alignment.topLeft,
                                     end: Alignment.bottomRight,
                                   ),
                                   borderRadius: BorderRadius.circular(16),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.green.withOpacity(0.3),
+                                      color: forestGreen.withOpacity(0.3),
                                       blurRadius: 15,
                                       offset: Offset(0, 5),
                                     ),

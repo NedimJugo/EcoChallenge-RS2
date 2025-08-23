@@ -188,10 +188,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       appBar: PreferredSize(
         preferredSize: Size.zero,
         child: AppBar(
-          backgroundColor: darkBackground,
+          backgroundColor: goldenBrown,
           elevation: 0,
           systemOverlayStyle: const SystemUiOverlayStyle(
-            statusBarColor: darkBackground,
+            statusBarColor: goldenBrown,
             statusBarIconBrightness: Brightness.light,
             statusBarBrightness: Brightness.dark,
           ),
@@ -308,7 +308,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   return Container(
     width: double.infinity,
     decoration: const BoxDecoration(
-      color: darkBackground,
+      color: goldenBrown,
       borderRadius: BorderRadius.only(
         bottomLeft: Radius.circular(24),
         bottomRight: Radius.circular(24),
