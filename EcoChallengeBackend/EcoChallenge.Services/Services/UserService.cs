@@ -69,11 +69,18 @@ namespace EcoChallenge.Services.Services
                 query = query.Where(u => u.IsActive == search.IsActive.Value);
             }
 
-            // Filter po Country
-            if (!string.IsNullOrWhiteSpace(search.Country))
+            if (!string.IsNullOrWhiteSpace(search.Email))
             {
-                string lowerCountry = search.Country.ToLower();
-                query = query.Where(u => u.Country != null && u.Country.ToLower() == lowerCountry);
+                string lowerEmail = search.Email.ToLower();
+                query = query.Where(u => u.Email != null && u.Email.ToLower() == lowerEmail);
+            }
+
+
+            // Filter po Country
+            if (!string.IsNullOrWhiteSpace(search.Username))
+            {
+                string lowerUsername = search.Username.ToLower();
+                query = query.Where(u => u.Username != null && u.Username.ToLower() == lowerUsername);
             }
 
             // Filter po City
@@ -147,20 +154,37 @@ namespace EcoChallenge.Services.Services
             var entity = await _db.Users.FindAsync(new object[] { id }, ct);
             if (entity is null) return null;
 
-            _mapper.Map(req, entity);
+            // Only update fields if provided
+            if (!string.IsNullOrWhiteSpace(req.Username))
+                entity.Username = req.Username;
+
+            if (!string.IsNullOrWhiteSpace(req.Email))
+                entity.Email = req.Email;
+
+            if (!string.IsNullOrWhiteSpace(req.FirstName))
+                entity.FirstName = req.FirstName;
+
+            if (!string.IsNullOrWhiteSpace(req.LastName))
+                entity.LastName = req.LastName;
+
+            if (req.UserTypeId.HasValue)
+                entity.UserTypeId = req.UserTypeId.Value;
+
+            if (req.IsActive.HasValue)
+                entity.IsActive = req.IsActive.Value;
 
             if (!string.IsNullOrWhiteSpace(req.PasswordHash))
                 entity.PasswordHash = _hasher.Hash(req.PasswordHash);
+
             if (req.ProfileImageUrl != null)
-            {
                 entity.ProfileImageUrl = await _blobService.UploadFileAsync(req.ProfileImageUrl);
-            }
 
             entity.UpdatedAt = DateTime.UtcNow;
 
             await _db.SaveChangesAsync(ct);
             return _mapper.Map<UserResponse>(entity);
         }
+
 
         protected override IQueryable<User> ApplyFilter(IQueryable<User> query, UserSearchObject s)
         {

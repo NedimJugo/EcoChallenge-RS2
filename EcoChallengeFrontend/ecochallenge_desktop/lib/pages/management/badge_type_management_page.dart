@@ -89,12 +89,12 @@ class _BadgeTypeManagementPageState extends State<BadgeTypeManagementPage> {
     );
   }
 
-  Future<void> _deleteBadgeType(int id) async {
+  Future<void> _deleteBadgeType(int id, String name) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Confirm Delete'),
-        content: const Text('Are you sure you want to delete this badge type?'),
+        content: Text('Are you sure you want to delete the badge type "$name"?\n\nThis action cannot be undone.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -112,10 +112,26 @@ class _BadgeTypeManagementPageState extends State<BadgeTypeManagementPage> {
     if (confirmed == true) {
       try {
         await _badgeTypeProvider.delete(id);
-        _showSuccessSnackBar('Badge type deleted successfully');
+        _showSuccessSnackBar('You cannot delete this because it is used by existing badges');
         _loadBadgeTypes();
       } catch (e) {
-        _showErrorSnackBar('Failed to delete badge type: $e');
+        String errorMessage = 'Failed to delete badge type';
+
+        // Check for specific error types
+        final errorString = e.toString().toLowerCase();
+        if (errorString.contains('reference constraint') || 
+            errorString.contains('foreign key') ||
+            errorString.contains('being used')) {
+          errorMessage = 'Cannot delete "$name" because it is currently being used by existing users. Please reassign or remove those users first.';
+        } else if (errorString.contains('invalidoperationexception')) {
+          // Extract the custom message from the exception
+          final match = RegExp(r"Cannot delete user type.*").firstMatch(e.toString());
+          if (match != null) {
+            errorMessage = match.group(0) ?? errorMessage;
+          }
+        }
+        
+        _showErrorSnackBar(errorMessage);
       }
     }
   }
@@ -289,7 +305,7 @@ class _BadgeTypeManagementPageState extends State<BadgeTypeManagementPage> {
                                               IconButton(
                                                 icon: const Icon(Icons.delete, size: 18),
                                                 color: Colors.red,
-                                                onPressed: () => _deleteBadgeType(badgeType.id),
+                                                onPressed: () => _deleteBadgeType(badgeType.id, badgeType.name),
                                                 tooltip: 'Delete',
                                                 constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
                                                 padding: EdgeInsets.zero,

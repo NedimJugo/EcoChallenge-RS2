@@ -95,7 +95,7 @@ class _EventTypeManagementPageState extends State<EventTypeManagementPage> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Confirm Delete'),
-        content: Text('Are you sure you want to delete "$name"?'),
+        content: Text('Are you sure you want to delete the event type "$name"?\n\nThis action cannot be undone.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -113,10 +113,26 @@ class _EventTypeManagementPageState extends State<EventTypeManagementPage> {
     if (confirmed == true) {
       try {
         await _eventTypeProvider.delete(id);
-        _showSuccessSnackBar('Event type deleted successfully');
+        _showSuccessSnackBar('You cannot delete this because it is used by existing events');
         _loadEventTypes();
       } catch (e) {
-        _showErrorSnackBar('Failed to delete event type: $e');
+        String errorMessage = 'You cannot delete this because it is used by existing events';
+
+        // Check for specific error types
+        final errorString = e.toString().toLowerCase();
+        if (errorString.contains('reference constraint') || 
+            errorString.contains('foreign key') ||
+            errorString.contains('being used')) {
+          errorMessage = 'Cannot delete "$name" because it is currently being used by existing users. Please reassign or remove those users first.';
+        } else if (errorString.contains('invalidoperationexception')) {
+          // Extract the custom message from the exception
+          final match = RegExp(r"Cannot delete user type.*").firstMatch(e.toString());
+          if (match != null) {
+            errorMessage = match.group(0) ?? errorMessage;
+          }
+        }
+        
+        _showErrorSnackBar(errorMessage);
       }
     }
   }

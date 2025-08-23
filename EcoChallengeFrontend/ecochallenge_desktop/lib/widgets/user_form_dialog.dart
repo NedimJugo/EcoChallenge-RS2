@@ -35,7 +35,13 @@ class _UserFormDialogState extends State<UserFormDialog> {
   UserType? _selectedUserType;
   bool _isActive = true;
   bool _isLoading = false;
+  bool _isPasswordVisible = false;
   DateTime? _selectedDateOfBirth;
+  
+  // Error messages for individual fields
+  String? _usernameError;
+  String? _emailError;
+  String? _passwordError;
 
   @override
   void initState() {
@@ -76,8 +82,87 @@ class _UserFormDialogState extends State<UserFormDialog> {
     }
   }
 
+  // Check if username exists (excluding current user if editing)
+  Future<bool> _checkUsernameExists(String username) async {
+    try {
+      final searchObject = UserSearchObject(
+        username: username,
+        pageSize: 1,
+      );
+      
+      final result = await _userProvider.get(filter: searchObject.toJson());
+      
+      // If editing, exclude current user from check
+      if (widget.user != null) {
+        return result.items?.any((user) => user.id != widget.user!.id) ?? false;
+      }
+      
+      return (result.items?.isNotEmpty ?? false);
+    } catch (e) {
+      print('Error checking username: $e');
+      return false;
+    }
+  }
+
+  // Check if email exists (excluding current user if editing)
+  Future<bool> _checkEmailExists(String email) async {
+    try {
+      final searchObject = UserSearchObject(
+        email: email,
+        pageSize: 1,
+      );
+      
+      final result = await _userProvider.get(filter: searchObject.toJson());
+      
+      // If editing, exclude current user from check
+      if (widget.user != null) {
+        return result.items?.any((user) => user.id != widget.user!.id) ?? false;
+      }
+      
+      return (result.items?.isNotEmpty ?? false);
+    } catch (e) {
+      print('Error checking email: $e');
+      return false;
+    }
+  }
+
+  Future<void> _validateUniqueFields() async {
+    setState(() {
+      _usernameError = null;
+      _emailError = null;
+    });
+
+    // Check username uniqueness
+    if (_usernameController.text.isNotEmpty) {
+      bool usernameExists = await _checkUsernameExists(_usernameController.text);
+      if (usernameExists) {
+        setState(() {
+          _usernameError = 'Username already exists';
+        });
+      }
+    }
+
+    // Check email uniqueness
+    if (_emailController.text.isNotEmpty) {
+      bool emailExists = await _checkEmailExists(_emailController.text);
+      if (emailExists) {
+        setState(() {
+          _emailError = 'Email already exists';
+        });
+      }
+    }
+  }
+
   Future<void> _saveUser() async {
+    // Clear previous errors
+    setState(() {
+      _usernameError = null;
+      _emailError = null;
+      _passwordError = null;
+    });
+
     if (!_formKey.currentState!.validate()) return;
+    
     if (_selectedUserType == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please select a user type')),
@@ -87,13 +172,22 @@ class _UserFormDialogState extends State<UserFormDialog> {
 
     setState(() => _isLoading = true);
 
+    // Validate unique fields
+    await _validateUniqueFields();
+
+    // Check if there are any validation errors
+    if (_usernameError != null || _emailError != null) {
+      setState(() => _isLoading = false);
+      return;
+    }
+
     try {
       if (widget.user == null) {
         // Create new user
         final request = UserInsertRequest(
           username: _usernameController.text,
           email: _emailController.text,
-          passwordHash: _passwordController.text, // In real app, hash this
+          passwordHash: _passwordController.text, // Backend handles hashing
           firstName: _firstNameController.text,
           lastName: _lastNameController.text,
           phoneNumber: _phoneController.text.isEmpty ? null : _phoneController.text,
@@ -106,29 +200,62 @@ class _UserFormDialogState extends State<UserFormDialog> {
         await _userProvider.insert(request.toJson());
       } else {
         // Update existing user
-        final request = UserUpdateRequest(
-          username: _usernameController.text,
-          email: _emailController.text,
-          firstName: _firstNameController.text,
-          lastName: _lastNameController.text,
-          phoneNumber: _phoneController.text.isEmpty ? null : _phoneController.text,
-          dateOfBirth: _selectedDateOfBirth,
-          city: _cityController.text.isEmpty ? null : _cityController.text,
-          country: _countryController.text.isEmpty ? null : _countryController.text,
-          userTypeId: _selectedUserType!.id,
-          isActive: _isActive,
-        );
-        await _userProvider.update(widget.user!.id, request.toJson());
+        final Map<String, dynamic> requestData = {
+          'username': _usernameController.text,
+          'email': _emailController.text,
+          'firstName': _firstNameController.text,
+          'lastName': _lastNameController.text,
+          'phoneNumber': _phoneController.text.isEmpty ? null : _phoneController.text,
+          'dateOfBirth': _selectedDateOfBirth?.toIso8601String(),
+          'city': _cityController.text.isEmpty ? null : _cityController.text,
+          'country': _countryController.text.isEmpty ? null : _countryController.text,
+          'userTypeId': _selectedUserType!.id,
+          'isActive': _isActive,
+        };
+
+        // Only include password if it's provided
+        if (_passwordController.text.isNotEmpty) {
+          requestData['passwordHash'] = _passwordController.text;
+        }
+
+        await _userProvider.update(widget.user!.id, requestData);
       }
       
       widget.onSaved();
     } catch (e) {
+      // Handle specific backend validation errors
+      String errorMessage = 'Failed to save user: $e';
+      
+      if (e.toString().contains('username')) {
+        setState(() {
+          _usernameError = 'Username validation failed';
+        });
+      } else if (e.toString().contains('email')) {
+        setState(() {
+          _emailError = 'Email validation failed';
+        });
+      } else if (e.toString().contains('password')) {
+        setState(() {
+          _passwordError = 'Password validation failed';
+        });
+      }
+      
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to save user: $e'), backgroundColor: Colors.red),
+        SnackBar(content: Text(errorMessage), backgroundColor: Colors.red),
       );
     } finally {
       setState(() => _isLoading = false);
     }
+  }
+
+  String? _validatePassword(String? value) {
+    if (widget.user == null && (value == null || value.isEmpty)) {
+      return 'Password is required';
+    }
+    if (value != null && value.isNotEmpty && value.length < 6) {
+      return 'Password must be at least 6 characters';
+    }
+    return null;
   }
 
   @override
@@ -156,30 +283,56 @@ class _UserFormDialogState extends State<UserFormDialog> {
                       Row(
                         children: [
                           Expanded(
-                            child: TextFormField(
-                              controller: _usernameController,
-                              decoration: const InputDecoration(
-                                labelText: 'Username *',
-                                border: OutlineInputBorder(),
-                              ),
-                              validator: (value) => value?.isEmpty == true ? 'Username is required' : null,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                TextFormField(
+                                  controller: _usernameController,
+                                  decoration: InputDecoration(
+                                    labelText: 'Username *',
+                                    border: const OutlineInputBorder(),
+                                    errorText: _usernameError,
+                                  ),
+                                  validator: (value) => value?.isEmpty == true ? 'Username is required' : null,
+                                  onChanged: (value) {
+                                    if (_usernameError != null) {
+                                      setState(() {
+                                        _usernameError = null;
+                                      });
+                                    }
+                                  },
+                                ),
+                              ],
                             ),
                           ),
                           const SizedBox(width: 16),
                           Expanded(
-                            child: TextFormField(
-                              controller: _emailController,
-                              decoration: const InputDecoration(
-                                labelText: 'Email *',
-                                border: OutlineInputBorder(),
-                              ),
-                              validator: (value) {
-                                if (value?.isEmpty == true) return 'Email is required';
-                                if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value!)) {
-                                  return 'Enter a valid email';
-                                }
-                                return null;
-                              },
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                TextFormField(
+                                  controller: _emailController,
+                                  decoration: InputDecoration(
+                                    labelText: 'Email *',
+                                    border: const OutlineInputBorder(),
+                                    errorText: _emailError,
+                                  ),
+                                  validator: (value) {
+                                    if (value?.isEmpty == true) return 'Email is required';
+                                    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value!)) {
+                                      return 'Enter a valid email';
+                                    }
+                                    return null;
+                                  },
+                                  onChanged: (value) {
+                                    if (_emailError != null) {
+                                      setState(() {
+                                        _emailError = null;
+                                      });
+                                    }
+                                  },
+                                ),
+                              ],
                             ),
                           ),
                         ],
@@ -213,16 +366,37 @@ class _UserFormDialogState extends State<UserFormDialog> {
                       ),
                       const SizedBox(height: 16),
                       
-                      TextFormField(
-                        controller: _passwordController,
-                        decoration: InputDecoration(
-                          labelText: widget.user == null ? 'Password *' : 'Password (leave empty to keep current)',
-                          border: const OutlineInputBorder(),
-                        ),
-                        obscureText: true,
-                        validator: widget.user == null 
-                            ? (value) => value?.isEmpty == true ? 'Password is required' : null
-                            : null,
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          TextFormField(
+                            controller: _passwordController,
+                            decoration: InputDecoration(
+                              labelText: widget.user == null ? 'Password *' : 'Password (leave empty to keep current)',
+                              border: const OutlineInputBorder(),
+                              errorText: _passwordError,
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    _isPasswordVisible = !_isPasswordVisible;
+                                  });
+                                },
+                              ),
+                            ),
+                            obscureText: !_isPasswordVisible,
+                            validator: _validatePassword,
+                            onChanged: (value) {
+                              if (_passwordError != null) {
+                                setState(() {
+                                  _passwordError = null;
+                                });
+                              }
+                            },
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 16),
                       
@@ -337,7 +511,7 @@ class _UserFormDialogState extends State<UserFormDialog> {
                         ? const SizedBox(
                             width: 20,
                             height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
+                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                           )
                         : Text(widget.user == null ? 'Create' : 'Update'),
                   ),

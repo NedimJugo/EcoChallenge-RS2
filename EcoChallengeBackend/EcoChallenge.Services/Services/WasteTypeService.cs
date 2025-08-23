@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace EcoChallenge.Services.Services
 {
@@ -32,6 +33,20 @@ namespace EcoChallenge.Services.Services
             }
 
             return query;
+        }
+
+        protected override async Task BeforeDelete(WasteType entity, CancellationToken cancellationToken = default)
+        {
+            // Check if there are any users with this user type
+            var hasWaste = await _db.Requests.AnyAsync(u => u.WasteTypeId == entity.Id, cancellationToken);
+
+
+            if (hasWaste)
+            {
+                throw new InvalidOperationException($"Cannot delete waste type '{entity.Name}' because it is being used by one or more users.");
+            }
+
+            await base.BeforeDelete(entity, cancellationToken);
         }
     }
 }
