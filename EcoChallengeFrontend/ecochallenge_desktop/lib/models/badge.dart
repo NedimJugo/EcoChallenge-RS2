@@ -1,4 +1,6 @@
 // Badge Response model
+import 'package:ecochallenge_desktop/models/search_objects.dart';
+
 class BadgeResponse {
   final int id;
   final String? name;
@@ -116,5 +118,36 @@ class BadgeUpdateRequest {
     if (isActive != null) data['isActive'] = isActive;
     
     return data;
+  }
+}
+
+class BadgeSearchObject extends BaseSearchObject {
+  String? name;
+  int? badgeTypeId;
+
+  BadgeSearchObject({
+    this.name,
+    this.badgeTypeId,
+    int? page = 0,
+    int? pageSize = 20,
+    String sortBy = "Id",
+    bool desc = false,
+    bool includeTotalCount = true,
+    bool retrieveAll = false,
+  }) : super(
+          page: page,
+          pageSize: pageSize,
+          sortBy: sortBy,
+          desc: desc,
+          includeTotalCount: includeTotalCount,
+          retrieveAll: retrieveAll,
+        );
+
+  @override
+  Map<String, dynamic> toJson() {
+    final json = super.toJson();
+    if (name != null) json['name'] = name;
+    if (badgeTypeId != null) json['badgeTypeId'] = badgeTypeId;
+    return json;
   }
 }

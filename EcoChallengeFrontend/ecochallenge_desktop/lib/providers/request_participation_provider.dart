@@ -25,9 +25,6 @@ class RequestParticipationProvider extends BaseProvider<RequestParticipationResp
     RequestParticipationUpdateRequest request,
   ) async {
     // Prepare the multipart request
-    var baseUrl = BaseProvider.baseUrl.endsWith('/')
-        ? BaseProvider.baseUrl.substring(0, BaseProvider.baseUrl.length - 1)
-        : BaseProvider.baseUrl;
     var uri = Uri.parse('$baseUrl/RequestParticipation/$id');
     var multipartRequest = http.MultipartRequest('PUT', uri);
         

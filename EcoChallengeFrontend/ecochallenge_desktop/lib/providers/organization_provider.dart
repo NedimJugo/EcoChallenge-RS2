@@ -13,8 +13,7 @@ class OrganizationProvider extends BaseProvider<OrganizationResponse> {
   }
 
   Future<void> insertOrganization(OrganizationInsertRequest request) async {
-  final uri = Uri.parse('${BaseProvider.baseUrl}Organization'); // or with slash logic if needed
-
+  final uri = Uri.parse('$baseUrl/Organization'); // or with slash logic if needed
 
   final multipartRequest = http.MultipartRequest('POST', uri);
 
