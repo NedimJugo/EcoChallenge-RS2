@@ -1,3 +1,4 @@
+import 'package:ecochallenge_desktop/layouts/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:ecochallenge_desktop/models/badge_type.dart';
@@ -177,7 +178,7 @@ class _BadgeTypeManagementPageState extends State<BadgeTypeManagementPage> {
                         icon: const Icon(Icons.search, size: 16),
                         label: const Text('Search', style: TextStyle(fontSize: 12)),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green[700],
+                          backgroundColor: oliveGreen[500],
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(horizontal: 8),
                         ),
@@ -210,7 +211,7 @@ class _BadgeTypeManagementPageState extends State<BadgeTypeManagementPage> {
                         icon: const Icon(Icons.add, size: 16),
                         label: const Text('Add Badge Type', style: TextStyle(fontSize: 12)),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue[700],
+                          backgroundColor: forestGreen[700],
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(horizontal: 12),
                         ),

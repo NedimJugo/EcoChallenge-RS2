@@ -1,3 +1,4 @@
+import 'package:ecochallenge_desktop/layouts/constants.dart';
 import 'package:ecochallenge_desktop/pages/management/badge_management_page.dart';
 import 'package:ecochallenge_desktop/pages/management/badge_type_management_page.dart';
 import 'package:ecochallenge_desktop/pages/management/balance_settings_management_page.dart';
@@ -30,67 +31,67 @@ class _ManagementPageState extends State<ManagementPage> with TickerProviderStat
       icon: Icons.people_rounded,
       label: 'Users',
       page: UserManagementPage(),
-      color: Colors.blue,
+      color: goldenBrown,
     ),
     TabInfo(
       icon: Icons.category_rounded,
       label: 'User Types',
       page: UserTypeManagementPage(),
-      color: Colors.purple,
+      color: goldenBrown,
     ),
     TabInfo(
       icon: Icons.location_on_rounded,
       label: 'Locations',
       page: LocationManagementPage(),
-      color: Colors.red,
+      color: goldenBrown,
     ),
     TabInfo(
       icon: Icons.recycling_rounded,
       label: 'Waste Types',
       page: WasteTypeManagementPage(),
-      color: Colors.green,
+      color: goldenBrown,
     ),
     TabInfo(
       icon: Icons.military_tech_rounded,
       label: 'Badge Types',
       page: BadgeTypeManagementPage(),
-      color: Colors.amber,
+      color: goldenBrown,
     ),
     TabInfo(
       icon: Icons.business_rounded,
       label: 'Organizations',
       page: OrganizationManagementPage(),
-      color: Colors.indigo,
+      color: goldenBrown,
     ),
     TabInfo(
       icon: Icons.event_rounded,
       label: 'Event Types',
       page: EventTypeManagementPage(),
-      color: Colors.teal,
+      color: goldenBrown,
     ),
     TabInfo(
       icon: Icons.stars_rounded,
       label: 'Badges',
       page: BadgeManagementPage(),
-      color: Colors.orange,
+      color: goldenBrown,
     ),
     TabInfo(
       icon: Icons.account_balance_wallet_rounded,
       label: 'Balance Settings',
       page: BalanceSettingManagementPage(),
-      color: Colors.pink,
+      color: goldenBrown,
     ),
     TabInfo(
       icon: Icons.event_available_rounded,
       label: 'Events',
       page: EventManagementPage(),
-      color: Colors.cyan,
+      color: goldenBrown,
     ),
     TabInfo(
       icon: Icons.photo_library_rounded,
       label: 'Gallery Showcases',
       page: GalleryShowcaseManagementPage(),
-      color: Colors.deepOrange,
+      color: goldenBrown,
     ),
   ];
 

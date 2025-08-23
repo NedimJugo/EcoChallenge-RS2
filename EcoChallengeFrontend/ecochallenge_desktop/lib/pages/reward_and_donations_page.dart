@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:ecochallenge_desktop/layouts/constants.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:pdf/pdf.dart';
@@ -615,7 +616,7 @@ class _RewardsPageState extends State<RewardsPage> {
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.blue : Colors.grey[200],
+          color: isSelected ? forestGreen : Colors.grey[200],
           borderRadius: BorderRadius.circular(20),
         ),
         child: Text(
