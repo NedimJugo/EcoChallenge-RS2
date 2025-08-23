@@ -25,14 +25,12 @@ namespace EcoChallenge.Services.Mapping
                 .ForMember(dest => dest.User, opt => opt.Ignore())
                 .ForMember(dest => dest.Organization, opt => opt.Ignore())
                 .ForMember(dest => dest.Status, opt => opt.Ignore())
-                .ForMember(dest => dest.Rewards, opt => opt.Ignore())
                 .ForMember(dest => dest.ActivityLogs, opt => opt.Ignore());
 
             CreateMap<DonationUpdateRequest, Donation>()
                 .ForMember(dest => dest.User, opt => opt.Ignore())
                 .ForMember(dest => dest.Organization, opt => opt.Ignore())
                 .ForMember(dest => dest.Status, opt => opt.Ignore())
-                .ForMember(dest => dest.Rewards, opt => opt.Ignore())
                 .ForMember(dest => dest.ActivityLogs, opt => opt.Ignore())
                 .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
         }

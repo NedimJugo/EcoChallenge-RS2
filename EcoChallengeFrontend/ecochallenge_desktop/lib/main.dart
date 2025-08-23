@@ -1,10 +1,10 @@
 import 'package:ecochallenge_desktop/providers/admin_auth_provider.dart';
+import 'package:ecochallenge_desktop/providers/balance_setting_provider.dart';
 import 'package:ecochallenge_desktop/providers/gallery_showcase_provider.dart';
 import 'package:ecochallenge_desktop/providers/request_participation_provider.dart';
 import 'package:ecochallenge_desktop/providers/user_provider.dart';
 import 'package:ecochallenge_desktop/providers/request_provider.dart';
 import 'package:ecochallenge_desktop/providers/donation_provider.dart';
-import 'package:ecochallenge_desktop/providers/reward_provider.dart';
 import 'package:ecochallenge_desktop/providers/location_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -25,9 +25,9 @@ void main() async {
         ChangeNotifierProvider(create: (_) => UserProvider()),
         ChangeNotifierProvider(create: (_) => RequestProvider()),
         ChangeNotifierProvider(create: (_) => DonationProvider()),
-        ChangeNotifierProvider(create: (_) => RewardProvider()),
         ChangeNotifierProvider(create: (_) => LocationProvider()),
         ChangeNotifierProvider(create: (_) => RequestParticipationProvider()),
+        ChangeNotifierProvider(create: (_) => BalanceSettingProvider()),
         ChangeNotifierProvider(create: (_) => GalleryShowcaseProvider()),
       ],
       child: MyApp(),

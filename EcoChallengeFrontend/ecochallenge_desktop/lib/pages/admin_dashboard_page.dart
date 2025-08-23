@@ -28,6 +28,10 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
   
   final BalanceSettingProvider _balanceProvider = BalanceSettingProvider();
   
+  void _refreshBalance() {
+    _loadBalanceData();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -90,7 +94,9 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
     OverviewPage(onNavigateToRewards: () => _navigateToPage(2)),
     ManagementPage(),
     RewardsPage(),
-    AdminRequestManagementPage(),
+    AdminRequestManagementPage(
+      onBalanceChanged: _refreshBalance, // Pass refresh callback
+    ),
   ];
   
   final List<String> _titles = [
@@ -586,19 +592,6 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                       ),
                       Row(
                         children: [
-                          // Search Icon
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFF3F4F6), // Grey 100
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Icon(
-                              Icons.search,
-                              size: 20,
-                              color: const Color(0xFF4B5563), // Grey 600
-                            ),
-                          ),
                           SizedBox(width: 16),
                           
                           // User Avatar with Dropdown

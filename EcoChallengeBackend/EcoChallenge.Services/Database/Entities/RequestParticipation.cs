@@ -46,6 +46,18 @@ namespace EcoChallenge.Services.Database.Entities
 
         [Column("rejection_reason")]
         public string? RejectionReason { get; set; }
+        [Column("finance_status")]
+        public FinanceStatus FinanceStatus { get; set; } = FinanceStatus.Pending;
+
+        [Column("finance_notes")]
+        public string? FinanceNotes { get; set; }
+
+        [ForeignKey(nameof(FinanceManager)), Column("finance_manager_id")]
+        public int? FinanceManagerId { get; set; }
+        public virtual User? FinanceManager { get; set; }
+
+        [Column("finance_processed_at")]
+        public DateTime? FinanceProcessedAt { get; set; }
 
         [Column("submitted_at")]
         public DateTime SubmittedAt { get; set; } = DateTime.UtcNow;

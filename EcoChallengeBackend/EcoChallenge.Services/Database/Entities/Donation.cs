@@ -49,7 +49,6 @@ namespace EcoChallenge.Services.Database.Entities
         public DateTime? ProcessedAt { get; set; }
 
         // Navigation properties
-        public virtual ICollection<Reward>? Rewards { get; set; }
         public virtual ICollection<ActivityHistory>? ActivityLogs { get; set; }
     }
 }

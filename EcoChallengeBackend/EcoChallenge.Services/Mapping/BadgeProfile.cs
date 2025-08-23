@@ -18,12 +18,10 @@ namespace EcoChallenge.Services.Mapping
 
             CreateMap<BadgeInsertRequest, Badge>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
-                .ForMember(dest => dest.UserBadges, opt => opt.Ignore())
-                .ForMember(dest => dest.Rewards, opt => opt.Ignore());
+                .ForMember(dest => dest.UserBadges, opt => opt.Ignore());
 
             CreateMap<BadgeUpdateRequest, Badge>()
                 .ForMember(dest => dest.UserBadges, opt => opt.Ignore())
-                .ForMember(dest => dest.Rewards, opt => opt.Ignore())
                 .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
         }
     }

@@ -30,6 +30,5 @@ namespace EcoChallenge.Services.Database.Entities
 
         // Navigation properties
         public virtual ICollection<UserBadge>? UserBadges { get; set; }
-        public virtual ICollection<Reward>? Rewards { get; set; }
     }
 }

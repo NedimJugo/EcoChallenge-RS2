@@ -22,6 +22,28 @@ extension ParticipationStatusExtension on ParticipationStatus {
   }
 }
 
+enum FinanceStatus {
+  pending,
+  processed,
+  rejected
+}
+
+extension FinanceStatusExtension on FinanceStatus {
+  String get displayName {
+    switch (this) {
+      case FinanceStatus.pending:
+        return 'Pending Finance Review';
+      case FinanceStatus.processed:
+        return 'Processed';
+      case FinanceStatus.rejected:
+        return 'Rejected';
+    }
+  }
+
+  static FinanceStatus fromInt(int value) {
+    return FinanceStatus.values[value];
+  }
+}
 // Request Participation Response Model
 class RequestParticipationResponse {
   final int id;
@@ -34,11 +56,14 @@ class RequestParticipationResponse {
   final DateTime submittedAt;
   final DateTime? approvedAt;
   final List<String>? photoUrls;
-   // Payment Details - New fields
   final String? cardHolderName;
   final String? bankName;
   final String? transactionNumber;
-  final String? rejectionReason; // For payment denial reasons
+  final String? rejectionReason;
+  final FinanceStatus financeStatus;
+  final String? financeNotes;
+  final int? financeManagerId;
+  final DateTime? financeProcessedAt;
 
   RequestParticipationResponse({
     required this.id,
@@ -55,6 +80,10 @@ class RequestParticipationResponse {
     this.bankName,
     this.transactionNumber,
     this.rejectionReason,
+    required this.financeStatus,
+    this.financeNotes,
+    this.financeManagerId,
+    this.financeProcessedAt,
   });
 
   factory RequestParticipationResponse.fromJson(Map<String, dynamic> json) {
@@ -67,14 +96,22 @@ class RequestParticipationResponse {
       rewardPoints: json['rewardPoints'],
       rewardMoney: (json['rewardMoney'] as num).toDouble(),
       submittedAt: DateTime.parse(json['submittedAt']),
-      approvedAt: json['approvedAt'] != null ? DateTime.parse(json['approvedAt']) : null,
-      photoUrls: json['photoUrls'] != null 
+      approvedAt: json['approvedAt'] != null
+          ? DateTime.parse(json['approvedAt'])
+          : null,
+      photoUrls: json['photoUrls'] != null
           ? List<String>.from(json['photoUrls'])
           : null,
-       cardHolderName: json['cardHolderName'],
+      cardHolderName: json['cardHolderName'],
       bankName: json['bankName'],
       transactionNumber: json['transactionNumber'],
       rejectionReason: json['rejectionReason'],
+      financeStatus: FinanceStatusExtension.fromInt(json['financeStatus']),
+      financeNotes: json['financeNotes'],
+      financeManagerId: json['financeManagerId'],
+      financeProcessedAt: json['financeProcessedAt'] != null
+          ? DateTime.parse(json['financeProcessedAt'])
+          : null,
     );
   }
 
@@ -94,9 +131,14 @@ class RequestParticipationResponse {
       'bankName': bankName,
       'transactionNumber': transactionNumber,
       'rejectionReason': rejectionReason,
+      'financeStatus': financeStatus.index,
+      'financeNotes': financeNotes,
+      'financeManagerId': financeManagerId,
+      'financeProcessedAt': financeProcessedAt?.toIso8601String(),
     };
   }
 }
+
 
 // Request Participation Insert Request Model
 class RequestParticipationInsertRequest {
@@ -144,6 +186,10 @@ class RequestParticipationUpdateRequest {
   final String? bankName;
   final String? transactionNumber;
   final String? rejectionReason;
+  final FinanceStatus? financeStatus;
+  final String? financeNotes;
+  final int? financeManagerId;
+  final DateTime? financeProcessedAt;
 
   RequestParticipationUpdateRequest({
     required this.id,
@@ -157,6 +203,10 @@ class RequestParticipationUpdateRequest {
     this.bankName,
     this.transactionNumber,
     this.rejectionReason,
+    this.financeStatus,
+    this.financeNotes,
+    this.financeManagerId,
+    this.financeProcessedAt,
   });
 
   Map<String, dynamic> toJson() {
@@ -172,6 +222,12 @@ class RequestParticipationUpdateRequest {
     if (bankName != null) data['bankName'] = bankName;
     if (transactionNumber != null) data['transactionNumber'] = transactionNumber;
     if (rejectionReason != null) data['rejectionReason'] = rejectionReason;
+    if (financeStatus != null) data['financeStatus'] = financeStatus!.index;
+    if (financeNotes != null) data['financeNotes'] = financeNotes;
+    if (financeManagerId != null) data['financeManagerId'] = financeManagerId;
+    if (financeProcessedAt != null) {
+      data['financeProcessedAt'] = financeProcessedAt!.toIso8601String();
+    }
     return data;
   }
 }
@@ -187,6 +243,7 @@ class RequestParticipationSearchObject {
   int? userId;
   int? requestId;
   ParticipationStatus? status;
+  FinanceStatus? financeStatus;
 
   RequestParticipationSearchObject({
     this.page = 0,
@@ -198,6 +255,7 @@ class RequestParticipationSearchObject {
     this.userId,
     this.requestId,
     this.status,
+    this.financeStatus,
   });
 
   Map<String, dynamic> toJson() {
@@ -213,6 +271,7 @@ class RequestParticipationSearchObject {
     if (userId != null) data['userId'] = userId;
     if (requestId != null) data['requestId'] = requestId;
     if (status != null) data['status'] = status!.index;
+    if (financeStatus != null) data['financeStatus'] = financeStatus!.index;
 
     return data;
   }

@@ -8,6 +8,12 @@ import '../widgets/request_details_widget.dart';
 import '../widgets/payment_approval_widget.dart';
 
 class AdminRequestManagementPage extends StatefulWidget {
+  final VoidCallback? onBalanceChanged; 
+   const AdminRequestManagementPage({
+    Key? key,
+    this.onBalanceChanged,
+  }) : super(key: key);
+  
   @override
   _AdminRequestManagementPageState createState() => _AdminRequestManagementPageState();
 }
@@ -59,6 +65,7 @@ class _AdminRequestManagementPageState extends State<AdminRequestManagementPage>
             _loadData();
           },
           availableHeight: screenHeight,
+           onBalanceChanged: widget.onBalanceChanged,
         );
       case 2:
         return PaymentApprovalWidget(

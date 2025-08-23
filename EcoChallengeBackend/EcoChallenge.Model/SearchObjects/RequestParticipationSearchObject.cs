@@ -14,5 +14,6 @@ namespace EcoChallenge.Models.SearchObjects
         public int? RequestId { get; set; }
 
         public ParticipationStatus? Status { get; set; }
+        public FinanceStatus? FinanceStatus { get; set; }
     }
 }

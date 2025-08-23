@@ -72,8 +72,6 @@ namespace EcoChallenge.Services.Database.Entities
         [Column("completed_at")]
         public DateTime? CompletedAt { get; set; }
 
-        // Navigation properties
-        public virtual ICollection<Reward>? Rewards { get; set; }
         public virtual ICollection<Photo>? Photos { get; set; } // NEW: Replace ImageUrl/CompletionImageUrl
         public virtual ICollection<GalleryShowcase>? GalleryShowcases { get; set; }
         public virtual ICollection<ActivityHistory>? History { get; set; }
