@@ -25,9 +25,12 @@ EcoChallenge je platforma koja omogućava korisnicima da učestvuju u ekološkim
 
 ### Frontend aplikacije
 
-1. Otvoriti `EcoChallengeFrontend` folder
-2. **Za desktop aplikaciju:** otvoriti `ecochallenge_desktop` folder i pokrenuti aplikaciju
-3. **Za mobilnu aplikaciju:** otvoriti `ecochallenge_mobile` folder
+1. **Vratiti se u EcoChallenge_RS2 folder i locirati `fit-build-25-08-24.zip` arhivu**
+2. **Iz te arhive uraditi extract, gdje biste trebali dobiti dva foldera: `Release` i `flutter-apk`**
+3. **Otvoriti `Release` folder i iz njega otvoriti `ecochallenge_desktop.exe`**
+4. **Otvoriti `flutter-apk` folder**
+5. **File `app-release.apk` prenijeti na emulator i sačekati da se instalira** *(Deinstalirati aplikaciju sa emulatora ukoliko je prije bila instalirana!)*
+6. **Nakon instaliranja obe aplikacije, na iste se možete prijaviti koristeći kredencijale ispod**
 
 ## 🔐 Kredencijali za prijavu
 
