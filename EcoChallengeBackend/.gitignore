@@ -10,6 +10,7 @@ Release/
 *.development.json
 app_config.json
 .env.json
+*.env
 appsettings.Development.json
 
 

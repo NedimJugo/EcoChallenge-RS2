@@ -9,6 +9,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using System;
+using DotNetEnv; // or your specific dotenv library
+
+// Load .env variables before configuration is built
+Env.Load();
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration
@@ -99,7 +103,8 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<EcoChallengeDbContext>();
-    dbContext.Database.EnsureCreated();
+    //dbContext.Database.EnsureCreated();
+    dbContext.Database.Migrate();
 }
 
 

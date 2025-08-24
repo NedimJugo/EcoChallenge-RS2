@@ -1,0 +1,111 @@
+services:
+  ecochallenge-app-db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=Password123!
+      - MSSQL_PID=Developer
+    restart: unless-stopped
+    ports:
+      - "1434:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+    expose:
+      - 1433
+    networks:
+      - ecochallenge-network
+  ecochallenge-rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+    expose:
+      - 5672
+      - 15672
+    restart: unless-stopped
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - ecochallenge-network
+  ecochallenge-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultConnection=Server=ecochallenge-app-db;Database=EcoChallengeDB;User Id=sa;Password=Password123!;MultipleActiveResultSets=true;TrustServerCertificate=True;Trusted_Connection=False
+      - ASPNETCORE_HTTP_PORTS=8080
+      # RabbitMQ Configuration
+      - RabbitMQ__HostName=ecochallenge-rabbitmq
+      - RabbitMQ__Port=5672
+      - RabbitMQ__UserName=guest
+      - RabbitMQ__Password=guest
+      - RabbitMQ__VirtualHost=/
+      - RabbitMQ__ExchangeName=ecochallenge.notifications
+      - RabbitMQ__QueueNames__RequestStatusChanged=ecochallenge.request.status.changed
+      - RabbitMQ__QueueNames__ProofStatusChanged=ecochallenge.proof.status.changed
+      - RabbitMQ__QueueNames__PasswordResetRequested=ecochallenge.password.reset.requested
+      # Azure Blob Storage Configuration
+      - AzureBlobStorage__ConnectionString=${AZUREBLOBSTORAGE__CONNECTIONSTRING}
+      - AzureBlobStorage__Container_name=${AZUREBLOBSTORAGE__CONTAINER_NAME}
+      # Stripe Configuration
+      - Stripe__PublishableKey=${STRIPE__PUBLISHABLEKEY}
+      - Stripe__SecretKey=${STRIPE__SECRETKEY}
+      - Stripe__WebhookSecret=${STRIPE__WEBHOOKSECRET}
+      # Azure Vision Configuration
+      - AzureVision__Endpoint=${AZUREVISION__ENDPOINT}
+      - AzureVision__ApiKey=${AZUREVISION__APIKEY}
+    restart: unless-stopped
+    ports:
+      - "5087:8080"
+    expose:
+      - 8080
+    depends_on:
+      - ecochallenge-app-db
+      - ecochallenge-rabbitmq
+    networks:
+      - ecochallenge-network
+  
+  ecochallenge-subscriber:
+    build:
+      context: .
+      dockerfile: EcoChallenge.Subscriber/Dockerfile
+    environment:
+      # Environment Configuration
+      - ASPNETCORE_ENVIRONMENT=Production
+      # RabbitMQ Configuration
+      - RabbitMQ__HostName=ecochallenge-rabbitmq
+      - RabbitMQ__Port=5672
+      - RabbitMQ__UserName=guest
+      - RabbitMQ__Password=guest
+      - RabbitMQ__VirtualHost=/
+      - RabbitMQ__ExchangeName=ecochallenge.notifications
+      - RabbitMQ__QueueNames__RequestStatusChanged=ecochallenge.request.status.changed
+      - RabbitMQ__QueueNames__ProofStatusChanged=ecochallenge.proof.status.changed
+      - RabbitMQ__QueueNames__PasswordResetRequested=ecochallenge.password.reset.requested
+      # Email Configuration
+      - Email__SmtpHost=smtp.gmail.com
+      - Email__SmtpPort=587
+      - Email__EnableSsl=true
+      - Email__Username=${EMAIL__USERNAME}
+      - Email__Password=${EMAIL__PASSWORD}
+      - Email__FromEmail=${EMAIL__FROMEMAIL}
+      - Email__FromName=EcoChallenge Team
+    restart: unless-stopped
+    depends_on:
+      - ecochallenge-rabbitmq
+    networks:
+      - ecochallenge-network
+
+networks:
+  ecochallenge-network:
+    driver: bridge
+
+volumes:
+  sqlserver_data:
+    driver: local
+  rabbitmq_data:
+    driver: local

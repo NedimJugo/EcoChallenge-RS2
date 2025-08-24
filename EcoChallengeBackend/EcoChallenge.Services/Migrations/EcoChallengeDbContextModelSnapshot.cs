@@ -220,6 +220,7 @@ namespace EcoChallenge.Services.Migrations
                             CreatedAt = new DateTime(2025, 4, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             CriteriaTypeId = 1,
                             CriteriaValue = 1,
+                            IconUrl = "https://ecochallengeblob.blob.core.windows.net/ecochallenge/award.png",
                             IsActive = true,
                             Name = "First Cleanup"
                         },
@@ -230,6 +231,7 @@ namespace EcoChallenge.Services.Migrations
                             CreatedAt = new DateTime(2025, 4, 2, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             CriteriaTypeId = 4,
                             CriteriaValue = 1,
+                            IconUrl = "https://ecochallengeblob.blob.core.windows.net/ecochallenge/badge.png",
                             IsActive = true,
                             Name = "Donation Star"
                         },
@@ -241,6 +243,7 @@ namespace EcoChallenge.Services.Migrations
                             CriteriaTypeId = 2,
                             CriteriaValue = 1000,
                             Description = "Reached 1000 points",
+                            IconUrl = "https://ecochallengeblob.blob.core.windows.net/ecochallenge/eco.png",
                             IsActive = true,
                             Name = "Eco Warrior"
                         },
@@ -252,6 +255,7 @@ namespace EcoChallenge.Services.Migrations
                             CriteriaTypeId = 2,
                             CriteriaValue = 2500,
                             Description = "Earned 2500 points",
+                            IconUrl = "https://ecochallengeblob.blob.core.windows.net/ecochallenge/award.png",
                             IsActive = true,
                             Name = "Environmental Champion"
                         },
@@ -263,6 +267,7 @@ namespace EcoChallenge.Services.Migrations
                             CriteriaTypeId = 2,
                             CriteriaValue = 5000,
                             Description = "Accumulated 5000 points",
+                            IconUrl = "https://ecochallengeblob.blob.core.windows.net/ecochallenge/badge.png",
                             IsActive = true,
                             Name = "Green Legend"
                         },
@@ -274,6 +279,7 @@ namespace EcoChallenge.Services.Migrations
                             CriteriaTypeId = 1,
                             CriteriaValue = 1,
                             Description = "Completed your first cleanup activity",
+                            IconUrl = "https://ecochallengeblob.blob.core.windows.net/ecochallenge/award.png",
                             IsActive = true,
                             Name = "First Cleanup"
                         },
@@ -285,6 +291,7 @@ namespace EcoChallenge.Services.Migrations
                             CriteriaTypeId = 1,
                             CriteriaValue = 3,
                             Description = "Completed 3 cleanup activities",
+                            IconUrl = "https://ecochallengeblob.blob.core.windows.net/ecochallenge/award.png",
                             IsActive = true,
                             Name = "Getting Active"
                         },
@@ -296,6 +303,7 @@ namespace EcoChallenge.Services.Migrations
                             CriteriaTypeId = 1,
                             CriteriaValue = 5,
                             Description = "Completed 5 cleanup activities",
+                            IconUrl = "https://ecochallengeblob.blob.core.windows.net/ecochallenge/badge.png",
                             IsActive = true,
                             Name = "Active Member"
                         },
@@ -1294,8 +1302,8 @@ namespace EcoChallenge.Services.Migrations
                         new
                         {
                             Id = 1,
-                            AfterImageUrl = "https://example.com/images/after/riverbank-park-1.jpg",
-                            BeforeImageUrl = "https://example.com/images/before/riverbank-park-1.jpg",
+                            AfterImageUrl = "https://ecochallengeblob.blob.core.windows.net/ecochallenge/16879a815fc12df11c9f29cb433ef446.jpg",
+                            BeforeImageUrl = "https://ecochallengeblob.blob.core.windows.net/ecochallenge/16879a815fc12df11c9f29cb433ef446.jpg",
                             CreatedAt = new DateTime(2025, 6, 10, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             CreatedByAdminId = 1,
                             Description = "Amazing transformation of Riverbank Park after our community cleanup event. Removed over 30 bags of litter and restored the natural beauty.",
@@ -1312,8 +1320,8 @@ namespace EcoChallenge.Services.Migrations
                         new
                         {
                             Id = 2,
-                            AfterImageUrl = "https://example.com/images/after/city-beach-2.jpg",
-                            BeforeImageUrl = "https://example.com/images/before/city-beach-2.jpg",
+                            AfterImageUrl = "https://ecochallengeblob.blob.core.windows.net/ecochallenge/premium_photo-1690957591806-95a2b81b1075.jpeg",
+                            BeforeImageUrl = "https://ecochallengeblob.blob.core.windows.net/ecochallenge/istockphoto-1448602820-170667a.jpg",
                             CreatedAt = new DateTime(2025, 6, 20, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             CreatedByAdminId = 1,
                             Description = "Volunteers worked together to clean City Beach, removing large amounts of plastic waste and debris from the coastline.",
@@ -1330,8 +1338,8 @@ namespace EcoChallenge.Services.Migrations
                         new
                         {
                             Id = 3,
-                            AfterImageUrl = "https://example.com/images/after/downtown-square-3.jpg",
-                            BeforeImageUrl = "https://example.com/images/before/downtown-square-3.jpg",
+                            AfterImageUrl = "https://ecochallengeblob.blob.core.windows.net/ecochallenge/premium_photo-1690957591806-95a2b81b1075.jpeg",
+                            BeforeImageUrl = "https://ecochallengeblob.blob.core.windows.net/ecochallenge/istockphoto-1448602820-170667a.jpg",
                             CreatedAt = new DateTime(2025, 6, 25, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             CreatedByAdminId = 1,
                             Description = "Local business district cleanup and beautification project completed by community volunteers in Sarajevo's downtown area.",
@@ -1348,8 +1356,8 @@ namespace EcoChallenge.Services.Migrations
                         new
                         {
                             Id = 4,
-                            AfterImageUrl = "https://example.com/images/after/forest-trail-4.jpg",
-                            BeforeImageUrl = "https://example.com/images/before/forest-trail-4.jpg",
+                            AfterImageUrl = "https://ecochallengeblob.blob.core.windows.net/ecochallenge/premium_photo-1690957591806-95a2b81b1075.jpeg",
+                            BeforeImageUrl = "https://ecochallengeblob.blob.core.windows.net/ecochallenge/istockphoto-1448602820-170667a.jpg",
                             CreatedAt = new DateTime(2025, 6, 30, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             CreatedByAdminId = 1,
                             Description = "Hiking trail cleared of fallen branches and litter, new trail markers installed for better navigation.",
@@ -1618,6 +1626,7 @@ namespace EcoChallenge.Services.Migrations
                             Description = "Environmental NGO",
                             IsActive = true,
                             IsVerified = false,
+                            LogoUrl = "https://ecochallengeblob.blob.core.windows.net/ecochallenge/259-2593009_eco-logo-leaves-eco-friendly.png",
                             Name = "GreenEarth",
                             UpdatedAt = new DateTime(2025, 2, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Website = "https://greenearth.org"
@@ -1630,6 +1639,7 @@ namespace EcoChallenge.Services.Migrations
                             Description = "Marine conservation group",
                             IsActive = true,
                             IsVerified = false,
+                            LogoUrl = "https://ecochallengeblob.blob.core.windows.net/ecochallenge/259-2593009_eco-logo-leaves-eco-friendly.png",
                             Name = "OceanCare",
                             UpdatedAt = new DateTime(2025, 2, 2, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Website = "https://oceancare.org"
@@ -1749,7 +1759,7 @@ namespace EcoChallenge.Services.Migrations
                         {
                             Id = 1,
                             Caption = "Initial state of Riverbank Park with scattered litter",
-                            ImageUrl = "https://example.com/photos/riverbank-before-1.jpg",
+                            ImageUrl = "https://ecochallengeblob.blob.core.windows.net/ecochallenge/premium_photo-1690957591806-95a2b81b1075.jpeg",
                             IsPrimary = true,
                             OrderIndex = 1,
                             PhotoType = 1,
@@ -1761,7 +1771,7 @@ namespace EcoChallenge.Services.Migrations
                         {
                             Id = 2,
                             Caption = "Clean Riverbank Park after community cleanup",
-                            ImageUrl = "https://example.com/photos/riverbank-after-1.jpg",
+                            ImageUrl = "https://ecochallengeblob.blob.core.windows.net/ecochallenge/0e474596096b5c9718b87ecb790f4aa4.jpg",
                             IsPrimary = false,
                             OrderIndex = 2,
                             PhotoType = 2,
@@ -1773,7 +1783,7 @@ namespace EcoChallenge.Services.Migrations
                         {
                             Id = 3,
                             Caption = "City Beach covered with plastic waste",
-                            ImageUrl = "https://example.com/photos/beach-before-1.jpg",
+                            ImageUrl = "https://ecochallengeblob.blob.core.windows.net/ecochallenge/premium_photo-1690957591806-95a2b81b1075.jpeg",
                             IsPrimary = true,
                             OrderIndex = 1,
                             PhotoType = 1,
@@ -1785,7 +1795,7 @@ namespace EcoChallenge.Services.Migrations
                         {
                             Id = 4,
                             Caption = "Pristine City Beach after plastic removal",
-                            ImageUrl = "https://example.com/photos/beach-after-1.jpg",
+                            ImageUrl = "https://ecochallengeblob.blob.core.windows.net/ecochallenge/0e474596096b5c9718b87ecb790f4aa4.jpg",
                             IsPrimary = false,
                             OrderIndex = 2,
                             PhotoType = 2,
@@ -1797,7 +1807,7 @@ namespace EcoChallenge.Services.Migrations
                         {
                             Id = 5,
                             Caption = "Downtown Square before cleanup",
-                            ImageUrl = "https://example.com/photos/downtown-before-1.jpg",
+                            ImageUrl = "https://ecochallengeblob.blob.core.windows.net/ecochallenge/premium_photo-1690957591806-95a2b81b1075.jpeg",
                             IsPrimary = true,
                             OrderIndex = 1,
                             PhotoType = 1,
@@ -1809,7 +1819,7 @@ namespace EcoChallenge.Services.Migrations
                         {
                             Id = 6,
                             Caption = "Revitalized Downtown Square",
-                            ImageUrl = "https://example.com/photos/downtown-after-1.jpg",
+                            ImageUrl = "https://ecochallengeblob.blob.core.windows.net/ecochallenge/0e474596096b5c9718b87ecb790f4aa4.jpg",
                             IsPrimary = false,
                             OrderIndex = 2,
                             PhotoType = 2,
@@ -1821,7 +1831,7 @@ namespace EcoChallenge.Services.Migrations
                         {
                             Id = 7,
                             Caption = "Forest trail blocked by debris",
-                            ImageUrl = "https://example.com/photos/forest-before-1.jpg",
+                            ImageUrl = "https://ecochallengeblob.blob.core.windows.net/ecochallenge/premium_photo-1690957591806-95a2b81b1075.jpeg",
                             IsPrimary = true,
                             OrderIndex = 1,
                             PhotoType = 1,
@@ -1833,7 +1843,7 @@ namespace EcoChallenge.Services.Migrations
                         {
                             Id = 8,
                             Caption = "Clear forest trail with new markers",
-                            ImageUrl = "https://example.com/photos/forest-after-1.jpg",
+                            ImageUrl = "https://ecochallengeblob.blob.core.windows.net/ecochallenge/0e474596096b5c9718b87ecb790f4aa4.jpg",
                             IsPrimary = false,
                             OrderIndex = 2,
                             PhotoType = 2,
@@ -1845,7 +1855,7 @@ namespace EcoChallenge.Services.Migrations
                         {
                             Id = 9,
                             Caption = "Volunteers installing trail markers",
-                            ImageUrl = "https://example.com/photos/forest-progress-1.jpg",
+                            ImageUrl = "https://ecochallengeblob.blob.core.windows.net/ecochallenge/premium_photo-1690957591806-95a2b81b1075.jpeg",
                             IsPrimary = false,
                             OrderIndex = 3,
                             PhotoType = 3,
@@ -2450,14 +2460,14 @@ namespace EcoChallenge.Services.Migrations
                             FirstName = "Alice",
                             IsActive = true,
                             LastName = "Anderson",
-                            PasswordHash = "HASH1",
+                            PasswordHash = "100000.oyZoYudmUt4jDcDU1NfFeQ==.Gaukxx2FL2FeOV/Kl3eJWCq9xWJlaC9y7tXO4Spno34=",
                             TotalCleanups = 0,
                             TotalEventsOrganized = 0,
                             TotalEventsParticipated = 0,
                             TotalPoints = 0,
                             UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             UserTypeId = 1,
-                            Username = "alice"
+                            Username = "desktop"
                         },
                         new
                         {
@@ -2469,14 +2479,14 @@ namespace EcoChallenge.Services.Migrations
                             FirstName = "Bob",
                             IsActive = true,
                             LastName = "Baker",
-                            PasswordHash = "HASH2",
+                            PasswordHash = "100000.oyZoYudmUt4jDcDU1NfFeQ==.Gaukxx2FL2FeOV/Kl3eJWCq9xWJlaC9y7tXO4Spno34=",
                             TotalCleanups = 0,
                             TotalEventsOrganized = 0,
                             TotalEventsParticipated = 0,
                             TotalPoints = 0,
                             UpdatedAt = new DateTime(2025, 1, 2, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             UserTypeId = 2,
-                            Username = "bob"
+                            Username = "mobile"
                         },
                         new
                         {
@@ -2488,7 +2498,7 @@ namespace EcoChallenge.Services.Migrations
                             FirstName = "Carol",
                             IsActive = true,
                             LastName = "Clark",
-                            PasswordHash = "HASH3",
+                            PasswordHash = "100000.oyZoYudmUt4jDcDU1NfFeQ==.Gaukxx2FL2FeOV/Kl3eJWCq9xWJlaC9y7tXO4Spno34=",
                             TotalCleanups = 0,
                             TotalEventsOrganized = 0,
                             TotalEventsParticipated = 0,
@@ -2507,7 +2517,7 @@ namespace EcoChallenge.Services.Migrations
                             FirstName = "David",
                             IsActive = true,
                             LastName = "Davis",
-                            PasswordHash = "HASH4",
+                            PasswordHash = "100000.oyZoYudmUt4jDcDU1NfFeQ==.Gaukxx2FL2FeOV/Kl3eJWCq9xWJlaC9y7tXO4Spno34=",
                             TotalCleanups = 0,
                             TotalEventsOrganized = 0,
                             TotalEventsParticipated = 0,
@@ -2526,7 +2536,7 @@ namespace EcoChallenge.Services.Migrations
                             FirstName = "Eve",
                             IsActive = true,
                             LastName = "Evans",
-                            PasswordHash = "HASH5",
+                            PasswordHash = "100000.oyZoYudmUt4jDcDU1NfFeQ==.Gaukxx2FL2FeOV/Kl3eJWCq9xWJlaC9y7tXO4Spno34=",
                             TotalCleanups = 0,
                             TotalEventsOrganized = 0,
                             TotalEventsParticipated = 0,
@@ -2545,7 +2555,7 @@ namespace EcoChallenge.Services.Migrations
                             FirstName = "Frank",
                             IsActive = true,
                             LastName = "Foster",
-                            PasswordHash = "HASH6",
+                            PasswordHash = "100000.oyZoYudmUt4jDcDU1NfFeQ==.Gaukxx2FL2FeOV/Kl3eJWCq9xWJlaC9y7tXO4Spno34=",
                             TotalCleanups = 0,
                             TotalEventsOrganized = 0,
                             TotalEventsParticipated = 0,

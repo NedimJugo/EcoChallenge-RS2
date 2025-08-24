@@ -68,11 +68,15 @@ namespace EcoChallenge.Subscriber.Services
                 // Set QoS to process one message at a time
                 _channel.BasicQos(prefetchSize: 0, prefetchCount: 1, global: false);
 
-                _logger.LogInformation("RabbitMQ consumer connection established successfully");
+                _logger.LogInformation("RabbitMQ consumer connection established successfully to {HostName}:{Port}", 
+                    factory.HostName, factory.Port);
+                _logger.LogInformation("Using exchange: {ExchangeName}, VirtualHost: {VirtualHost}", 
+                    _exchangeName, factory.VirtualHost);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to establish RabbitMQ consumer connection");
+                _logger.LogError(ex, "Failed to establish RabbitMQ consumer connection to {HostName}:{Port}", 
+                    factory.HostName, factory.Port);
                 throw;
             }
         }
@@ -83,10 +87,39 @@ namespace EcoChallenge.Subscriber.Services
             {
                 _logger.LogInformation("Setting up consumers...");
 
-                // Setup consumers for both queues
-                SetupRequestStatusConsumer();
-                SetupProofStatusConsumer();
-                SetupPasswordResetConsumer();
+                // Setup consumers for all queues with error handling
+                try
+                {
+                    SetupRequestStatusConsumer();
+                    _logger.LogInformation("Request status consumer setup completed");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to setup request status consumer");
+                    throw;
+                }
+
+                try
+                {
+                    SetupProofStatusConsumer();
+                    _logger.LogInformation("Proof status consumer setup completed");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to setup proof status consumer");
+                    throw;
+                }
+
+                try
+                {
+                    SetupPasswordResetConsumer();
+                    _logger.LogInformation("Password reset consumer setup completed");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to setup password reset consumer");
+                    throw;
+                }
 
                 _logger.LogInformation("Started consuming messages from RabbitMQ. Consumer tags: {ConsumerTags}",
                     string.Join(", ", _consumerTags));
@@ -207,30 +240,27 @@ namespace EcoChallenge.Subscriber.Services
         private void SetupProofStatusConsumer()
         {
             var queueName = "ecochallenge.proof.status.changed";
-            var arguments = new Dictionary<string, object>
-    {
-        {"x-message-ttl", 3600000}, // 1 hour TTL
-    };
-
+            
             try
             {
-                // First try passive declaration to check if queue exists
-                _channel.QueueDeclarePassive(queueName);
+                _logger.LogInformation("Setting up proof status consumer for queue: {QueueName}", queueName);
 
-                // If no exception, queue exists - just bind it
-                _logger.LogInformation("Queue {QueueName} already exists, skipping declaration", queueName);
-            }
-            catch (OperationInterruptedException)
-            {
-                // Queue doesn't exist, create it with desired parameters
-                _channel.QueueDeclare(
+                // Simply declare the queue - this is idempotent and will create if not exists
+                var queueDeclareOk = _channel.QueueDeclare(
                     queue: queueName,
                     durable: true,
                     exclusive: false,
                     autoDelete: false,
-                    arguments: arguments
+                    arguments: null  // Simplified - removed TTL for now
                 );
-                _logger.LogInformation("Created queue {QueueName} with TTL and retry settings", queueName);
+                
+                _logger.LogInformation("Successfully declared queue {QueueName}. Messages: {MessageCount}, Consumers: {ConsumerCount}", 
+                    queueName, queueDeclareOk.MessageCount, queueDeclareOk.ConsumerCount);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to declare queue {QueueName}", queueName);
+                throw;
             }
 
             var proofRoutingKeys = new[] {
