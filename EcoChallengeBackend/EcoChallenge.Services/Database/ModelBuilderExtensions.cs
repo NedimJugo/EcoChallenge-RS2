@@ -582,6 +582,8 @@ namespace EcoChallenge.Services.Database
                     EstimatedAmount = EstimatedAmount.Small,
                     SuggestedRewardMoney = 20.00m,
                     SuggestedRewardPoints = 100,
+                    ActualRewardMoney = 20.00m,
+                    ActualRewardPoints = 100,
                     StatusId = 1,
                     CreatedAt = new DateTime(2025, 6, 1),
                     UpdatedAt = new DateTime(2025, 6, 1)
@@ -597,6 +599,8 @@ namespace EcoChallenge.Services.Database
                     EstimatedAmount = EstimatedAmount.Large,
                     SuggestedRewardMoney = 21.00m,
                     SuggestedRewardPoints = 100,
+                    ActualRewardMoney = 20.00m,
+                    ActualRewardPoints = 100,
                     StatusId = 2,
                     CreatedAt = new DateTime(2025, 6, 2),
                     UpdatedAt = new DateTime(2025, 6, 2),
@@ -613,6 +617,8 @@ namespace EcoChallenge.Services.Database
                      EstimatedAmount = EstimatedAmount.Medium,
                      SuggestedRewardMoney = 22.00m,
                      SuggestedRewardPoints = 100,
+                     ActualRewardMoney = 20.00m,
+                     ActualRewardPoints = 100,
                      StatusId = 4, // Completed
                      CreatedAt = new DateTime(2025, 6, 3),
                      UpdatedAt = new DateTime(2025, 6, 15),
@@ -629,6 +635,8 @@ namespace EcoChallenge.Services.Database
         EstimatedAmount = EstimatedAmount.Small,
         SuggestedRewardMoney = 23.00m,
         SuggestedRewardPoints = 100,
+        ActualRewardMoney = 20.00m,
+        ActualRewardPoints = 100,
         StatusId = 4, // Completed
         CreatedAt = new DateTime(2025, 6, 4),
         UpdatedAt = new DateTime(2025, 6, 20),
@@ -687,7 +695,7 @@ namespace EcoChallenge.Services.Database
                      EventTypeId = 2,
                      EventDate = new DateTime(2025, 12, 12),
                      EventTime = new TimeSpan(14, 0, 0),
-                     StatusId = 1,
+                     StatusId = 2,
                      CreatedAt = new DateTime(2025, 6, 11),
                      UpdatedAt = new DateTime(2025, 6, 11)
                  }
