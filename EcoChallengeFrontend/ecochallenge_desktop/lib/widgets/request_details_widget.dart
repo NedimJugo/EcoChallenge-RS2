@@ -61,8 +61,8 @@ class _RequestDetailsWidgetState extends State<RequestDetailsWidget> {
   void _initializeControllers() {
     _titleController = TextEditingController(text: widget.request.title ?? '');
     _descriptionController = TextEditingController(text: widget.request.description ?? '');
-    _rewardController = TextEditingController(text: widget.request.actualRewardMoney.toString());
-    _pointsController = TextEditingController(text: widget.request.actualRewardPoints.toString());
+    _rewardController = TextEditingController(text: widget.request.suggestedRewardMoney.toString());
+    _pointsController = TextEditingController(text: widget.request.suggestedRewardPoints.toString());
     
     // Initialize with current request values
     _selectedUrgency = widget.request.urgencyLevel;

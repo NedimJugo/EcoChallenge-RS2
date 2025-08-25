@@ -163,7 +163,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       final filteredRequests = allRequests.where((request) {
         bool isParticipated = _userParticipatedRequestIds.contains(request.id);
         // Check if it's a paid request (you might need to adjust this logic based on your model)
-        bool isPaidRequest = request.suggestedRewardMoney >= 0;
+        bool isPaidRequest = request.actualRewardMoney >= 0;
         return !isParticipated && isPaidRequest;
       }).take(3).toList();
 
@@ -694,7 +694,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        '${request.suggestedRewardMoney.toStringAsFixed(0)}KM',
+                        '${request.actualRewardMoney.toStringAsFixed(0)}KM',
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,

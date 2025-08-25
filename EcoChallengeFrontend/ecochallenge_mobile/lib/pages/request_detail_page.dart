@@ -640,13 +640,13 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
       _buildDetailCard(
         Icons.star,
         'Reward Points',
-        '${widget.request.suggestedRewardPoints}',
+        '${widget.request.actualRewardPoints}',
       ),
-      if (widget.request.suggestedRewardMoney > 0)
+      if (widget.request.actualRewardMoney > 0)
         _buildDetailCard(
           Icons.attach_money,
           'Money Reward',
-          '\$${widget.request.suggestedRewardMoney.toStringAsFixed(2)}',
+          '${widget.request.actualRewardMoney.toStringAsFixed(2)} KM',
         ),
     ]);
 
@@ -703,8 +703,8 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
   }
 
   Widget _buildSignUpButton() {
-    final hasMoneyReward = widget.request.suggestedRewardMoney > 0;
-    
+    final hasMoneyReward = widget.request.actualRewardMoney > 0;
+
     return Container(
       color: Colors.white,
       padding: EdgeInsets.all(24),

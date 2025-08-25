@@ -1,4 +1,6 @@
 import 'package:ecochallenge_mobile/layouts/constants.dart';
+import 'package:ecochallenge_mobile/models/request_participation.dart';
+import 'package:ecochallenge_mobile/providers/request_participation_provider.dart';
 import 'package:ecochallenge_mobile/widgets/bottom_navigation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -43,15 +45,33 @@ class _CleanupMapPageState extends State<CleanupMapPage> {
 
       final requestProvider = Provider.of<RequestProvider>(context, listen: false);
       final locationProvider = Provider.of<LocationProvider>(context, listen: false);
+      final requestParticipationProvider = Provider.of<RequestParticipationProvider>(context, listen: false);
 
       final searchFilter = RequestSearchObject(
-        status: 2, // Only show requests with status = 1
+        status: 2, // Only show requests with status = 2
         retrieveAll: true,
       );
 
-      // Fetch requests with status = 1
+      // Fetch requests with status = 2
       final requestResult = await requestProvider.get(filter: searchFilter.toJson());
       final statusOneRequests = requestResult.items ?? [];
+
+      final participationSearchFilter = RequestParticipationSearchObject(
+      retrieveAll: true,
+    );
+
+      final participationResult = await requestParticipationProvider.get(filter: participationSearchFilter.toJson());
+    final allParticipations = participationResult.items ?? [];
+
+    // Get set of request IDs that already have participations
+    final requestsWithParticipations = allParticipations
+        .map((participation) => participation.requestId)
+        .toSet();
+
+    // Filter out requests that already have participations
+    final availableRequests = statusOneRequests
+        .where((request) => !requestsWithParticipations.contains(request.id))
+        .toList();
 
       // Fetch location details for each request
       final locationIds = statusOneRequests.map((r) => r.locationId).toSet();
@@ -73,7 +93,7 @@ class _CleanupMapPageState extends State<CleanupMapPage> {
       }
 
       setState(() {
-        _unresolvedRequests = statusOneRequests; // Use status = 1 requests
+        _unresolvedRequests = availableRequests; // Use status = 1 requests
         _locations = locationMap;
         _isLoading = false;
       });
@@ -391,11 +411,11 @@ class _CleanupMapPageState extends State<CleanupMapPage> {
       mapController: _mapController,
       options: MapOptions(
         initialCenter: _locations.isNotEmpty
-            ? LatLng(
-                _locations.values.first.latitude,
-                _locations.values.first.longitude,
-              )
-            : const LatLng(51.5, -0.09), // Default to London
+    ? LatLng(
+        _locations.values.first.latitude,
+        _locations.values.first.longitude,
+      )
+    : const LatLng(43.3438, 17.8078), // Default to Mostar// Default to London
         initialZoom: 13.0,
         onTap: (tapPosition, point) {
           setState(() {

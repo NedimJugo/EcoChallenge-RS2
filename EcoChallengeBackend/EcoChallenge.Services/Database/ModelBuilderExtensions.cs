@@ -580,6 +580,8 @@ namespace EcoChallenge.Services.Database
                     UrgencyLevel = UrgencyLevel.Medium,
                     WasteTypeId = 5,
                     EstimatedAmount = EstimatedAmount.Small,
+                    SuggestedRewardMoney = 20.00m,
+                    SuggestedRewardPoints = 100,
                     StatusId = 1,
                     CreatedAt = new DateTime(2025, 6, 1),
                     UpdatedAt = new DateTime(2025, 6, 1)
@@ -593,6 +595,8 @@ namespace EcoChallenge.Services.Database
                     UrgencyLevel = UrgencyLevel.High,
                     WasteTypeId = 1,
                     EstimatedAmount = EstimatedAmount.Large,
+                    SuggestedRewardMoney = 21.00m,
+                    SuggestedRewardPoints = 100,
                     StatusId = 2,
                     CreatedAt = new DateTime(2025, 6, 2),
                     UpdatedAt = new DateTime(2025, 6, 2),
@@ -607,6 +611,8 @@ namespace EcoChallenge.Services.Database
                      UrgencyLevel = UrgencyLevel.Medium,
                      WasteTypeId = 5,
                      EstimatedAmount = EstimatedAmount.Medium,
+                     SuggestedRewardMoney = 22.00m,
+                     SuggestedRewardPoints = 100,
                      StatusId = 4, // Completed
                      CreatedAt = new DateTime(2025, 6, 3),
                      UpdatedAt = new DateTime(2025, 6, 15),
@@ -621,6 +627,8 @@ namespace EcoChallenge.Services.Database
         UrgencyLevel = UrgencyLevel.Low,
         WasteTypeId = 7,
         EstimatedAmount = EstimatedAmount.Small,
+        SuggestedRewardMoney = 23.00m,
+        SuggestedRewardPoints = 100,
         StatusId = 4, // Completed
         CreatedAt = new DateTime(2025, 6, 4),
         UpdatedAt = new DateTime(2025, 6, 20),
@@ -654,7 +662,35 @@ namespace EcoChallenge.Services.Database
                     StatusId = 1,
                     CreatedAt = new DateTime(2025, 6, 11),
                     UpdatedAt = new DateTime(2025, 6, 11)
-                }
+                },
+
+                 new Event
+                 {
+                     Id = 3,
+                     CreatorUserId = 3,     // carol
+                     LocationId = 3,
+                     Title = "Street Cleanup",
+                     EventTypeId = 2,
+                     EventDate = new DateTime(2025, 12, 12),
+                     EventTime = new TimeSpan(14, 0, 0),
+                     StatusId = 1,
+                     CreatedAt = new DateTime(2025, 6, 11),
+                     UpdatedAt = new DateTime(2025, 6, 11)
+                 },
+
+                 new Event
+                 {
+                     Id = 4,
+                     CreatorUserId = 3,     // carol
+                     LocationId = 4,
+                     Title = "Forest Cleanup",
+                     EventTypeId = 2,
+                     EventDate = new DateTime(2025, 12, 12),
+                     EventTime = new TimeSpan(14, 0, 0),
+                     StatusId = 1,
+                     CreatedAt = new DateTime(2025, 6, 11),
+                     UpdatedAt = new DateTime(2025, 6, 11)
+                 }
             );
 
 
@@ -882,7 +918,34 @@ namespace EcoChallenge.Services.Database
         IsPrimary = false,
         UploadedAt = new DateTime(2025, 6, 28),
         OrderIndex = 3
-    }
+    },
+     new Photo
+     {
+         Id = 10,
+         RequestId = null,
+         EventId = 3,
+         UserId = 6, // frank
+         ImageUrl = "https://ecochallengeblob.blob.core.windows.net/ecochallenge/premium_photo-1690957591806-95a2b81b1075.jpeg",
+         Caption = "Volunteers installing trail markers",
+         PhotoType = PhotoType.Progress,
+         IsPrimary = false,
+         UploadedAt = new DateTime(2025, 6, 28),
+         OrderIndex = 3
+     },
+      new Photo
+      {
+          Id = 11,
+          RequestId = null,
+          EventId = 4,
+          UserId = 6, // frank
+          ImageUrl = "https://ecochallengeblob.blob.core.windows.net/ecochallenge/premium_photo-1690957591806-95a2b81b1075.jpeg",
+          Caption = "Volunteers installing trail markers",
+          PhotoType = PhotoType.Progress,
+          IsPrimary = false,
+          UploadedAt = new DateTime(2025, 6, 28),
+          OrderIndex = 3
+      }
+
 );// 8) EventParticipants
             builder.Entity<EventParticipant>().HasData(
                             new EventParticipant

@@ -939,6 +939,42 @@ namespace EcoChallenge.Services.Migrations
                             StatusId = 1,
                             Title = "Beach Education",
                             UpdatedAt = new DateTime(2025, 6, 11, 0, 0, 0, 0, DateTimeKind.Unspecified)
+                        },
+                        new
+                        {
+                            Id = 3,
+                            AdminApproved = false,
+                            CreatedAt = new DateTime(2025, 6, 11, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            CreatorUserId = 3,
+                            CurrentParticipants = 0,
+                            DurationMinutes = 120,
+                            EquipmentProvided = false,
+                            EventDate = new DateTime(2025, 12, 12, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            EventTime = new TimeSpan(0, 14, 0, 0, 0),
+                            EventTypeId = 2,
+                            LocationId = 3,
+                            MaxParticipants = 0,
+                            StatusId = 1,
+                            Title = "Street Cleanup",
+                            UpdatedAt = new DateTime(2025, 6, 11, 0, 0, 0, 0, DateTimeKind.Unspecified)
+                        },
+                        new
+                        {
+                            Id = 4,
+                            AdminApproved = false,
+                            CreatedAt = new DateTime(2025, 6, 11, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            CreatorUserId = 3,
+                            CurrentParticipants = 0,
+                            DurationMinutes = 120,
+                            EquipmentProvided = false,
+                            EventDate = new DateTime(2025, 12, 12, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            EventTime = new TimeSpan(0, 14, 0, 0, 0),
+                            EventTypeId = 2,
+                            LocationId = 4,
+                            MaxParticipants = 0,
+                            StatusId = 1,
+                            Title = "Forest Cleanup",
+                            UpdatedAt = new DateTime(2025, 6, 11, 0, 0, 0, 0, DateTimeKind.Unspecified)
                         });
                 });
 
@@ -1862,6 +1898,30 @@ namespace EcoChallenge.Services.Migrations
                             RequestId = 4,
                             UploadedAt = new DateTime(2025, 6, 28, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             UserId = 6
+                        },
+                        new
+                        {
+                            Id = 10,
+                            Caption = "Volunteers installing trail markers",
+                            EventId = 3,
+                            ImageUrl = "https://ecochallengeblob.blob.core.windows.net/ecochallenge/premium_photo-1690957591806-95a2b81b1075.jpeg",
+                            IsPrimary = false,
+                            OrderIndex = 3,
+                            PhotoType = 3,
+                            UploadedAt = new DateTime(2025, 6, 28, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            UserId = 6
+                        },
+                        new
+                        {
+                            Id = 11,
+                            Caption = "Volunteers installing trail markers",
+                            EventId = 4,
+                            ImageUrl = "https://ecochallengeblob.blob.core.windows.net/ecochallenge/premium_photo-1690957591806-95a2b81b1075.jpeg",
+                            IsPrimary = false,
+                            OrderIndex = 3,
+                            PhotoType = 3,
+                            UploadedAt = new DateTime(2025, 6, 28, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            UserId = 6
                         });
                 });
 
@@ -1999,8 +2059,8 @@ namespace EcoChallenge.Services.Migrations
                             EstimatedAmount = 0,
                             LocationId = 1,
                             StatusId = 1,
-                            SuggestedRewardMoney = 0m,
-                            SuggestedRewardPoints = 0,
+                            SuggestedRewardMoney = 20.00m,
+                            SuggestedRewardPoints = 100,
                             Title = "Trash at Park",
                             UpdatedAt = new DateTime(2025, 6, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             UrgencyLevel = 1,
@@ -2017,8 +2077,8 @@ namespace EcoChallenge.Services.Migrations
                             EstimatedAmount = 2,
                             LocationId = 2,
                             StatusId = 2,
-                            SuggestedRewardMoney = 0m,
-                            SuggestedRewardPoints = 0,
+                            SuggestedRewardMoney = 21.00m,
+                            SuggestedRewardPoints = 100,
                             Title = "Plastic on Beach",
                             UpdatedAt = new DateTime(2025, 6, 2, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             UrgencyLevel = 2,
@@ -2035,8 +2095,8 @@ namespace EcoChallenge.Services.Migrations
                             EstimatedAmount = 1,
                             LocationId = 3,
                             StatusId = 4,
-                            SuggestedRewardMoney = 0m,
-                            SuggestedRewardPoints = 0,
+                            SuggestedRewardMoney = 22.00m,
+                            SuggestedRewardPoints = 100,
                             Title = "Downtown Street Cleanup",
                             UpdatedAt = new DateTime(2025, 6, 15, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             UrgencyLevel = 1,
@@ -2053,8 +2113,8 @@ namespace EcoChallenge.Services.Migrations
                             EstimatedAmount = 0,
                             LocationId = 4,
                             StatusId = 4,
-                            SuggestedRewardMoney = 0m,
-                            SuggestedRewardPoints = 0,
+                            SuggestedRewardMoney = 23.00m,
+                            SuggestedRewardPoints = 100,
                             Title = "Forest Trail Maintenance",
                             UpdatedAt = new DateTime(2025, 6, 20, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             UrgencyLevel = 0,
