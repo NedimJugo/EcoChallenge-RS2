@@ -56,10 +56,22 @@ class _PaymentApprovalWidgetState extends State<PaymentApprovalWidget> {
     _reasonController = TextEditingController();
     _titleController = TextEditingController();
     _descriptionController = TextEditingController();
+
+    // Add listeners to update UI when text changes
+    _cardHolderController.addListener(_onFormChanged);
+    _bankNameController.addListener(_onFormChanged);
+    _transactionController.addListener(_onFormChanged);
+    _reasonController.addListener(_onFormChanged);
+    _titleController.addListener(_onFormChanged);
+    _descriptionController.addListener(_onFormChanged);
   }
 
-  
-
+  // This method is called whenever any text field changes
+  void _onFormChanged() {
+    setState(() {
+      // The setState will trigger a rebuild and recalculate button states
+    });
+  }
 
   bool _canApprove() {
     return _cardHolderController.text.trim().isNotEmpty &&
@@ -913,6 +925,7 @@ class _PaymentApprovalWidgetState extends State<PaymentApprovalWidget> {
     setState(() => _isLoading = false);
   }
 }
+
   void _showLargeImageViewer(String imageUrl) {
     showDialog(
       context: context,
@@ -1033,6 +1046,15 @@ class _PaymentApprovalWidgetState extends State<PaymentApprovalWidget> {
 
   @override
   void dispose() {
+    // Remove listeners before disposing
+    _cardHolderController.removeListener(_onFormChanged);
+    _bankNameController.removeListener(_onFormChanged);
+    _transactionController.removeListener(_onFormChanged);
+    _reasonController.removeListener(_onFormChanged);
+    _titleController.removeListener(_onFormChanged);
+    _descriptionController.removeListener(_onFormChanged);
+    
+    // Dispose controllers
     _cardHolderController.dispose();
     _bankNameController.dispose();
     _transactionController.dispose();

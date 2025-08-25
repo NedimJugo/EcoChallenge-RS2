@@ -46,7 +46,15 @@ EcoChallenge je platforma koja omogućava korisnicima da učestvuju u ekološkim
 
 ## 💳 Stripe kredencijali za donacije
 
-Donacije su omogućene u mobilnoj aplikaciji kroz Stripe integraciju
+Donacije su omogućene u mobilnoj aplikaciji kroz Stripe integraciju.  
+Za testiranje donacija koristi se Stripe test okruženje sa sledećim kartičnim podacima:
+
+### Test kartica
+- **Broj kartice:** `4242 4242 4242 4242`
+- **Datum isteka:** bilo koji datum u budućnosti (npr. `12/34`)
+- **CVC:** bilo koji trocifreni broj (npr. `123`)
+- **ZIP / Poštanski broj:** bilo koji važeći (npr. `10000`)
+
 
 ## 🔧 Mikroservis funkcionalnosti
 

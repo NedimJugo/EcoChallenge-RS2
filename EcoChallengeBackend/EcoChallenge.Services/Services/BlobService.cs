@@ -18,7 +18,7 @@ namespace EcoChallenge.Services.Services
         public BlobService(IConfiguration config)
         {
             _blobServiceClient = new BlobServiceClient(config["AzureBlobStorage:ConnectionString"]);
-            _containerName = config["AzureBlobStorage:Container name"]!;
+            _containerName = config["AzureBlobStorage:ContainerName"]!;
         }
 
         public async Task<string> UploadFileAsync(IFormFile file)

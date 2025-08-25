@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:ecochallenge_mobile/models/request_participation.dart';
 import 'package:ecochallenge_mobile/providers/auth_provider.dart';
 import 'package:ecochallenge_mobile/providers/request_participation_provider.dart';
+import 'package:ecochallenge_mobile/pages/home_page.dart';
 
 
 class ProofSubmissionPage extends StatefulWidget {
@@ -555,8 +556,11 @@ class _ProofReviewPageState extends State<ProofReviewPage> {
         ),
       );
 
-      // Return to RequestDetailPage
-      Navigator.of(context).popUntil((route) => route.settings.name == '/request-detail' || route.isFirst);
+      // Navigate to home and remove all previous routes
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => HomePage()),
+        (route) => false,
+      );
       
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(

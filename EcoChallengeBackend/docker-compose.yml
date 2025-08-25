@@ -50,7 +50,7 @@ services:
       - RabbitMQ__QueueNames__PasswordResetRequested=ecochallenge.password.reset.requested
       # Azure Blob Storage Configuration
       - AzureBlobStorage__ConnectionString=${AZUREBLOBSTORAGE__CONNECTIONSTRING}
-      - AzureBlobStorage__Container_name=${AZUREBLOBSTORAGE__CONTAINER_NAME}
+      - AzureBlobStorage__ContainerName=${AZUREBLOBSTORAGE__CONTAINERNAME}
       # Stripe Configuration
       - Stripe__PublishableKey=${STRIPE__PUBLISHABLEKEY}
       - Stripe__SecretKey=${STRIPE__SECRETKEY}
