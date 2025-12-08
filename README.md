@@ -4,7 +4,7 @@ Seminarski rad iz predmeta **Razvoj softvera 2** na Fakultetu informacijskih teh
 
 ## 📖 O projektu
 
-EcoChallenge je platforma koja omogućava korisnicima da učestvuju u ekološkim izazovima i doprinose očuvanju životne sredine. Korisnici mogu da se prijave na različite izazove, šalju dokaze o ispunjenim zadacima, a administratori mogu da upravljaju zahtevima i odobravaju ili odbijaju poslate dokaze. Aplikacija takođe omogućava donacije kroz Stripe integraciju.
+EcoChallenge je platforma koja omogućava korisnicima da učestvuju u ekološkim izazovima i doprinose očuvanju životne sredine. Korisnici mogu da se prijave na različite izazove, šalju dokaze o ispunjenim zadacima, a administratori mogu da upravljaju zahtjevima i odobravaju ili odbijaju poslate dokaze. Aplikacija takođe omogućava donacije kroz Stripe integraciju.
 
 ## 🚀 Upute za pokretanje
 
@@ -21,7 +21,7 @@ EcoChallenge je platforma koja omogućava korisnicima da učestvuju u ekološkim
    ```bash
    docker compose up --build
    ```
-   Te sačekati da se sve uspešno build-a
+   Te sačekati da se sve uspješno build-a
 
 ### Frontend aplikacije
 
@@ -47,7 +47,7 @@ EcoChallenge je platforma koja omogućava korisnicima da učestvuju u ekološkim
 ## 💳 Stripe kredencijali za donacije
 
 Donacije su omogućene u mobilnoj aplikaciji kroz Stripe integraciju.  
-Za testiranje donacija koristi se Stripe test okruženje sa sledećim kartičnim podacima:
+Za testiranje donacija koristi se Stripe test okruženje sa sljedećim kartičnim podacima:
 
 ### Test kartica
 - **Broj kartice:** `4242 4242 4242 4242`
@@ -58,11 +58,11 @@ Za testiranje donacija koristi se Stripe test okruženje sa sledećim kartičnim
 
 ## 🔧 Mikroservis funkcionalnosti
 
-Aplikacija koristi **RabbitMQ** mikroservis za automatsko slanje email obaveštenja u sledećim slučajevima:
+Aplikacija koristi **RabbitMQ** mikroservis za automatsko slanje email obavještenja u sljedećim slučajevima:
 
 - **Reset lozinke** - šalje se reset kod
-- **Odobravanje/odbijanje zahteva** - obaveštenje o statusu zahteva
-- **Odobravanje/odbijanje dokaza (proof)** - obaveštenje o statusu poslatог dokaza
+- **Odobravanje/odbijanje zahteva** - obaveštenje o statusu zahtjeva
+- **Odobravanje/odbijanje dokaza (proof)** - obaveštenje o statusu poslatоg dokaza
 
 ## 🛠️ Tehnologije
 
